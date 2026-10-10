@@ -486,7 +486,7 @@
         assessment: JSON.parse(JSON.stringify(sc)), gwpIndex: state.gwpIndex,
         actions: state.selectedActions, plan: state.plan, profile: state.profile,
       });
-      const content = res.ai === false ? `${t('chat_no_ai')}\n\n${res.reply || '–'}` : res.reply;
+      const content = res.ai === false ? (res.reply ? `${t('chat_no_ai')}\n\n${res.reply}` : t('chat_no_match')) : res.reply;
       state.chat.push({ role: 'assistant', content, sources: res.sources, local: res.ai === false });
     } catch (err) {
       state.chat.push({ role: 'assistant', content: `${t('error')}: ${err.message}`, local: true });
@@ -510,6 +510,10 @@
     if (loc) { state.location = loc.dataset.loc; state.lang = loc.dataset.loc === 'indonesia' ? 'id' : 'en'; save(); return render(); }
   });
   $('#btn-checkpoint').onclick = checkpoint;
+  $('#chat-clear').onclick = () => {
+    if (!state.chat.length || !confirm(t('confirm_clear_chat'))) return;
+    state.chat = []; save(); renderChat(); toast(t('chat_cleared'));
+  };
   $('#chat-toggle').onclick = () => { state.ui.chatOpen = !state.ui.chatOpen; save(); applyShell(); };
   $('#chat-form').onsubmit = e => { e.preventDefault(); const v = $('#chat-input').value; $('#chat-input').value = ''; askChat(v); };
   $('#chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#chat-form').requestSubmit(); } });
