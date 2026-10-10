@@ -1,0 +1,16 @@
+{
+  "_note": "Stage 3 framework. Edit freely: phases are applied to every selected action. Durations in weeks. Owners are default roles the user can change.",
+  "phases": [
+    {"key": "confirm",  "en": "Confirm data and decision condition", "id": "Konfirmasi data dan syarat keputusan", "weeks": 4,  "owner": {"en": "Utility engineering team", "id": "Tim teknik utilitas"}},
+    {"key": "design",   "en": "Feasibility study and technical design", "id": "Studi kelayakan dan desain teknis", "weeks": 8,  "owner": {"en": "Engineering consultant", "id": "Konsultan teknik"}},
+    {"key": "finance",  "en": "Budget approval and financing", "id": "Persetujuan anggaran dan pembiayaan", "weeks": 8,  "owner": {"en": "Finance director", "id": "Direktur keuangan"}},
+    {"key": "procure",  "en": "Procurement", "id": "Pengadaan", "weeks": 12, "owner": {"en": "Procurement unit", "id": "Unit pengadaan"}},
+    {"key": "build",    "en": "Implementation and commissioning", "id": "Pelaksanaan dan uji operasi", "weeks": 24, "owner": {"en": "Contractor with utility operations", "id": "Kontraktor bersama operasional utilitas"}},
+    {"key": "measure",  "en": "Monitoring: repeat the ECAM assessment", "id": "Pemantauan: ulangi penilaian ECAM", "weeks": 52, "owner": {"en": "Utility energy/climate officer", "id": "Petugas energi/iklim utilitas"}}
+  ],
+  "category_weeks": {
+    "energy":     {"build": 16},
+    "water":      {"build": 40},
+    "sanitation": {"build": 36}
+  }
+}

@@ -1,0 +1,1 @@
+Explain the improvement option below to utility staff in {{LANGUAGE}}, 120–200 words: what it is, why the ECAM results point to it, how the expected result was calculated (repeat the stated basis and assumptions, do not change numbers), and what data or checks are needed before deciding. If something is needed from the user, end with one concrete question.

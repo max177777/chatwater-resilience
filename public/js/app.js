@@ -1,0 +1,542 @@
+/*
+ * ChatWater Resilience — app shell: state, language, routing, stages 2–4, chat.
+ * ECAM objects (Ecam, Scenarios, Global, Structure, …) come from the unmodified
+ * ECAM backend scripts loaded before this file.
+ */
+(() => {
+  const STORE = 'cwr.v1';
+  const $ = s => document.querySelector(s);
+
+  // ---------------------------------------------------------------- state
+  const defaults = () => ({
+    lang: 'id', location: 'indonesia', profile: null,
+    assessments: [], current: 0, gwpIndex: 0,
+    finished: {}, // assessment name -> ISO time of "finish assessment"
+    selectedAssessment: 0, actionResult: null, selectedIds: [], actionNotes: {}, selectedActions: [],
+    plan: null, financing: { route: 'general' }, proposal: null,
+    chat: [], checkpoints: [], explanations: {},
+    ui: { tab: 'assess', view: 'assess:choose', sel: { kind: 'general' }, chatOpen: true },
+  });
+  let state;
+  try { state = Object.assign(defaults(), JSON.parse(localStorage.getItem(STORE) || 'null') || {}); }
+  catch { state = defaults(); }
+  state.ui = Object.assign(defaults().ui, state.ui || {});
+
+  let LANGS = { en: {}, id: {} }; // ECAM label dictionaries
+  let META = { ai: false };
+
+  // ---------------------------------------------------------------- utils
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // ECAM labels contain a few formatting tags; keep only those.
+  const rich = s => esc(s).replace(/&lt;(\/?)(sub|sup|b|i|br)\s*\/?&gt;/gi, '<$1$2>');
+  const t = k => (UI[state.lang] && UI[state.lang][k]) ?? UI.en[k] ?? k;
+  const tE = k => LANGS[state.lang]?.['#' + k] || LANGS.en['#' + k] || '';
+  const stageLabel = k => (STAGE_LABELS[state.lang] || STAGE_LABELS.en)[k] || tE(k) || k;
+  const L = o => (o && typeof o === 'object') ? (o[state.lang] || o.en) : (o ?? '');
+  function fmt(n, digits) {
+    if (n == null || !Number.isFinite(n)) return '–';
+    if (digits === undefined) {
+      const a = Math.abs(n);
+      digits = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 0.1 ? 2 : a >= 0.01 ? 3 : 4;
+      if (n === 0) digits = 0;
+    }
+    return new Intl.NumberFormat('en-US', { maximumFractionDigits: digits }).format(n);
+  }
+  function toast(msg) {
+    const el = $('#toast'); el.textContent = msg; el.hidden = false;
+    clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2600);
+  }
+  function download(content, filename, type) {
+    const blob = content instanceof Blob ? content : new Blob([content], { type });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: filename });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  }
+  async function api(path, body, asBlob) {
+    const res = await fetch(path, { method: body ? 'POST' : 'GET', headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+    if (!res.ok) {
+      let msg = res.statusText;
+      try { msg = (await res.json()).error || msg; } catch {}
+      const e = new Error(msg); e.status = res.status; throw e;
+    }
+    return asBlob ? res.blob() : res.json();
+  }
+  const busy = (btn, on, label) => {
+    if (!btn) return;
+    if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label || '')}`; }
+    else { btn.disabled = false; btn.innerHTML = btn.dataset.label || btn.innerHTML; }
+  };
+
+  // ---------------------------------------------------------------- ECAM scenarios
+  function setGwp(i) {
+    state.gwpIndex = i;
+    Configuration.gwp_reports_index = i;
+    Cts.ct_ch4_eq.value = GWP_reports[i].ct_ch4_eq;
+    Cts.ct_n2o_eq.value = GWP_reports[i].ct_n2o_eq;
+    save();
+  }
+  function setCurrent(i) {
+    state.current = Math.max(0, Math.min(i, Scenarios.length - 1));
+    Global = Scenarios[state.current];
+    state.ui.sel = { kind: 'general' };
+    save();
+  }
+  function newScenario() {
+    const s = new Ecam();
+    const n = Scenarios.length + 1;
+    s.General.Name = (state.profile?.name || (state.lang === 'id' ? 'Penilaian' : 'Assessment')) + (n > 1 ? ' ' + n : '');
+    if (state.location === 'indonesia' || state.profile?.country) {
+      const country = state.profile?.country || 'Indonesia';
+      const c = Countries[country];
+      if (c) Object.assign(s.General, { Country: country, Currency: c.currency, conv_kwh_co2: c.conv_kwh_co2, prot_con: c.prot_con, bod_pday: c.bod_pday });
+    }
+    if (state.profile?.population) { s.Water.ws_resi_pop = +state.profile.population || 0; s.Waste.ww_resi_pop = +state.profile.population || 0; }
+    Scenarios.push(s);
+    setCurrent(Scenarios.length - 1);
+    return s;
+  }
+  function duplicateScenario() {
+    const o = JSON.parse(JSON.stringify(Global));
+    o.General.Name += state.lang === 'id' ? ' (salinan)' : ' (copy)';
+    Scenarios.push(Ecam.from(o)); setCurrent(Scenarios.length - 1);
+  }
+  function deleteScenario() {
+    if (Scenarios.length < 2) return;
+    Scenarios.splice(state.current, 1); setCurrent(0);
+  }
+  async function loadSample() {
+    const data = await fetch('/samples/utility-a-indonesia.json').then(r => r.json());
+    data.forEach(o => Scenarios.push(Ecam.from(o)));
+    setCurrent(Scenarios.length - 1);
+    toast(t('file_loaded')); render();
+  }
+
+  // ---------------------------------------------------------------- persistence
+  let saveTimer;
+  function save() {
+    $('#save-status').textContent = t('saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      state.assessments = JSON.parse(JSON.stringify(Scenarios));
+      try {
+        localStorage.setItem(STORE, JSON.stringify(state));
+        $('#save-status').textContent = `${t('saved')} · ${new Date().toLocaleTimeString()}`;
+      } catch (e) { $('#save-status').textContent = t('error') + ': ' + e.message; }
+    }, 250);
+  }
+  function checkpoint() {
+    state.assessments = JSON.parse(JSON.stringify(Scenarios));
+    const snap = JSON.parse(JSON.stringify({ ...state, checkpoints: undefined, chat: undefined }));
+    state.checkpoints = [{ at: new Date().toISOString(), view: state.ui.view, snap }, ...(state.checkpoints || [])].slice(0, 5);
+    save(); toast(t('checkpoint_saved'));
+  }
+
+  // ---------------------------------------------------------------- shell
+  function applyShell() {
+    document.documentElement.lang = state.lang;
+    document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+    document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang === state.lang));
+    document.querySelectorAll('[data-loc]').forEach(b => b.classList.toggle('on', b.dataset.loc === state.location));
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === state.ui.view.split(':')[0]));
+    $('#profile-chip').textContent = state.profile?.name ? `${state.profile.name}${state.profile.location ? ' · ' + state.profile.location : ''}` : '';
+    $('#chat-input').placeholder = t('chat_placeholder');
+    $('#chat').classList.toggle('collapsed', !state.ui.chatOpen);
+    $('#chat-toggle').textContent = state.ui.chatOpen ? '–' : '+';
+  }
+
+  function go(view) { state.ui.view = view; save(); render(); window.scrollTo({ top: 0 }); }
+
+  const VIEWS = {
+    'assess:choose': viewChoose,
+    'assess:entry': root => CWForm.renderEntry(root),
+    'assess:results': root => CWForm.renderResults(root),
+    'actions:select': viewActionsSelect,
+    'actions:compare': viewActionsCompare,
+    'plan': viewPlan,
+    'finance': viewFinance,
+    'finance:draft': viewDraft,
+  };
+
+  function render() {
+    applyShell();
+    const root = document.createElement('div');
+    $('#view').replaceChildren(root);
+    (VIEWS[state.ui.view] || viewChoose)(root);
+    renderChat();
+  }
+
+  // ---------------------------------------------------------------- stage 1: choose module + profile
+  function viewChoose(root) {
+    root.innerHTML = `
+      <div class="page-head"><h1>${esc(t('choose_module'))}</h1><p class="muted">${esc(t('choose_module_sub'))}</p></div>
+      <div class="card"><h2>${esc(t('ecam_available'))}</h2><p>${esc(t('ecam_desc'))}</p>
+        <button class="btn primary" data-go="assess:entry">ECAM</button>
+        <a class="btn" href="https://climatesmartwater.org/ecam/" target="_blank" rel="noopener" style="margin-left:6px">climatesmartwater.org/ecam ↗</a></div>
+      <div class="card muted-card"><h2>${esc(t('later_modules'))}</h2>
+        <p><b>CREAT</b> · ${esc(t('creat_desc'))}</p>
+        <p style="margin:0"><b>WHO</b> · ${esc(t('who_desc'))}</p></div>
+      <div class="card"><div class="row"><div class="grow"><h3>${esc(t('profile_title'))}</h3>
+        <p class="muted small" style="margin:0">${state.profile?.name ? esc(profileLine()) : esc(t('profile_missing'))}</p></div>
+        <button class="btn" data-act="profile">${esc(t('upload_profile'))}</button></div></div>
+      <div class="actions-row"><button class="btn primary" data-go="assess:entry">${esc(t('start_assessment'))}</button></div>`;
+    root.querySelector('[data-act=profile]').onclick = openProfile;
+  }
+  function profileLine() {
+    const p = state.profile || {};
+    return [p.name, p.location, p.country, p.service_type && t('p_type_' + p.service_type), p.served && `${fmt(+p.served)} ${state.lang === 'id' ? 'jiwa terlayani' : 'people served'}`].filter(Boolean).join(' · ');
+  }
+
+  const PROFILE_FIELDS = [
+    ['name', 'p_name', 'text'], ['location', 'p_location', 'text'], ['country', 'p_country', 'country'],
+    ['service_type', 'p_type', 'type'], ['population', 'p_pop', 'number'], ['served', 'p_served', 'number'],
+    ['connections', 'p_conn', 'number'], ['volume', 'p_volume', 'number'], ['staff', 'p_staff', 'number'],
+    ['contact', 'p_contact', 'text'], ['notes', 'p_notes', 'textarea'],
+  ];
+  function openProfile() {
+    const p = state.profile || { country: state.location === 'indonesia' ? 'Indonesia' : '' };
+    const field = ([k, lab, type]) => {
+      const v = esc(p[k] ?? '');
+      let input;
+      if (type === 'country') input = `<select name="${k}"><option value=""></option>${Object.keys(Countries).map(c => `<option ${c === p[k] ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`;
+      else if (type === 'type') input = `<select name="${k}">${['water', 'ww', 'both'].map(o => `<option value="${o}" ${p[k] === o ? 'selected' : ''}>${esc(t('p_type_' + o))}</option>`).join('')}</select>`;
+      else if (type === 'textarea') input = `<textarea class="field" name="${k}" rows="3">${v}</textarea>`;
+      else input = `<input type="${type}" name="${k}" value="${v}" ${type === 'number' ? 'step="any" min="0"' : ''}>`;
+      return `<label class="field"${type === 'textarea' ? ' style="grid-column:1/-1"' : ''}><span>${esc(t(lab))}</span>${input}</label>`;
+    };
+    const m = $('#modal');
+    m.innerHTML = `<form class="box" id="profile-form"><h2>${esc(t('profile_title'))}</h2><p class="muted">${esc(t('profile_sub'))}</p>
+      <div class="row" style="margin-bottom:12px"><label class="btn sm">${esc(t('p_upload'))}<input type="file" id="profile-file" accept=".csv,.json" hidden></label>
+        <button type="button" class="link" id="profile-template">${esc(t('p_template'))}</button></div>
+      <div class="grid2">${PROFILE_FIELDS.map(field).join('')}</div>
+      <div class="actions-row"><button type="button" class="btn" id="profile-cancel">${esc(t('cancel'))}</button><button class="btn primary">${esc(t('p_apply'))}</button></div></form>`;
+    m.hidden = false;
+    $('#profile-cancel').onclick = () => (m.hidden = true);
+    $('#profile-template').onclick = () => download('field,value\n' + PROFILE_FIELDS.map(([k]) => `${k},`).join('\n') + '\n', 'utility-profile-template.csv', 'text/csv');
+    $('#profile-file').onchange = e => {
+      const f = e.target.files[0]; if (!f) return;
+      f.text().then(txt => {
+        let data = {};
+        if (/\.json$/i.test(f.name)) data = JSON.parse(txt);
+        else txt.split(/\r?\n/).slice(1).forEach(line => {
+          const i = line.indexOf(','); if (i < 0) return;
+          data[line.slice(0, i).trim()] = line.slice(i + 1).trim().replace(/^"|"$/g, '');
+        });
+        const form = $('#profile-form');
+        for (const [k] of PROFILE_FIELDS) if (data[k] != null && form.elements[k]) form.elements[k].value = data[k];
+      }).catch(err => alert(t('error') + ': ' + err.message));
+    };
+    $('#profile-form').onsubmit = e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      state.profile = Object.fromEntries(PROFILE_FIELDS.map(([k]) => [k, String(fd.get(k) ?? '').trim()]));
+      // reuse the profile in the current assessment where it is still empty
+      if (Global) {
+        if (/^(Untitled assessment|Assessment|Penilaian)( \d+)?$/.test(Global.General.Name) && state.profile.name) Global.General.Name = state.profile.name;
+        const c = Countries[state.profile.country];
+        if (c && !Global.General.Country) Object.assign(Global.General, { Country: state.profile.country, Currency: c.currency, conv_kwh_co2: c.conv_kwh_co2, prot_con: c.prot_con, bod_pday: c.bod_pday });
+        if (!Global.Water.ws_resi_pop && +state.profile.population) Global.Water.ws_resi_pop = +state.profile.population;
+        if (!Global.Waste.ww_resi_pop && +state.profile.population) Global.Waste.ww_resi_pop = +state.profile.population;
+      }
+      m.hidden = true; save(); toast(t('p_saved')); render();
+    };
+  }
+
+  function finishAssessment() {
+    state.finished[Global.General.Name] = new Date().toISOString();
+    state.selectedAssessment = state.current;
+    save(); toast(t('finished'));
+    go('actions:select');
+  }
+
+  // ---------------------------------------------------------------- stage 2: actions
+  function summaryOf(sc) {
+    const g = sc.TotalGHG();
+    const rows = CWForm.stageTotals(sc).sort((a, b) => b.total - a.total);
+    const top = rows[0];
+    return `${fmt(g.total / 1000)} tCO₂eq · ${fmt(sc.TotalNRG())} kWh` + (top && top.total ? ` · ${t('top_source')}: ${stageLabel(top.prefix)} (${fmt(100 * top.total / g.total, 0)}%)` : '');
+  }
+
+  function viewActionsSelect(root) {
+    if (!Scenarios.some(s => s.TotalGHG().total > 0)) {
+      root.innerHTML = `<div class="page-head"><h1>${esc(t('identify_title'))}</h1></div><div class="notice warn">${esc(t('no_assessments'))}</div>
+        <button class="btn primary" data-go="assess:entry">${esc(t('tab_assess'))}</button>`;
+      return;
+    }
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('identify_title'))}</h1><p class="muted">${esc(t('identify_sub'))}</p></div>
+      <div class="card result-list">${Scenarios.map((s, i) => `<label><input type="radio" name="asel" value="${i}" ${i === state.selectedAssessment ? 'checked' : ''}>
+        <div><b>${esc(s.General.Name)}</b> <span class="muted small">${esc(s.General.AssessmentPeriodStart)} – ${esc(s.General.AssessmentPeriodEnd)}${state.finished[s.General.Name] ? ' · ✓' : ''}</span><br>
+        <span class="small">${esc(summaryOf(s))}</span></div></label>`).join('')}</div>
+      <div class="actions-row"><button class="btn primary" id="show-options">${esc(t('show_options'))}</button></div>`;
+    root.querySelectorAll('[name=asel]').forEach(r => r.onchange = () => { state.selectedAssessment = +r.value; save(); });
+    root.querySelector('#show-options').onclick = async e => {
+      busy(e.target, true, t('show_options'));
+      try {
+        const assessment = JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment]));
+        const res = await api('/api/actions', { assessment, gwpIndex: state.gwpIndex, lang: state.lang });
+        const sameAssessment = state.actionResult?.assessmentName === assessment.General.Name;
+        state.actionResult = { options: res.options, assumptions: res.assumptions, assessmentName: assessment.General.Name };
+        if (!sameAssessment) state.selectedIds = [];
+        go('actions:compare');
+      } catch (err) { toast(t('error') + ': ' + err.message); busy(e.target, false); }
+    };
+  }
+
+  function expectedCell(o) {
+    const parts = [];
+    if (o.expected_kgco2) parts.push(`${fmt(o.expected_kgco2 / 1000, 0)} tCO₂eq`);
+    if (o.expected_kwh) parts.push(`${fmt(o.expected_kwh)} kWh`);
+    if (!parts.length) return esc(L(o.expected_text) || '–');
+    return esc(parts.join(' · ')) + (o.scenario ? ` <span class="muted small">(${state.lang === 'id' ? 'skenario' : 'scenario'})</span>` : '');
+  }
+
+  function viewActionsCompare(root) {
+    const r = state.actionResult;
+    if (!r) return go('actions:select');
+    const showDetails = !!state.ui.showDetails;
+    const rows = r.options.map(o => {
+      const sel = state.selectedIds.includes(o.id);
+      const detail = showDetails ? `<tr class="detail"><td colspan="4"><dl>
+          <dt>${esc(t('evidence'))}</dt><dd>${esc(L(o.evidence))}</dd>
+          ${o.scenario ? `<dt>${esc(t('scenario'))}</dt><dd>${esc(L(o.scenario))}</dd>` : ''}
+          <dt>${esc(t('basis'))}</dt><dd><code>${esc(o.basis)}</code></dd></dl>
+          <textarea class="field small" data-note="${o.id}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(state.actionNotes[o.id] || '')}</textarea>
+          ${o.rule !== 'baseline' ? `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${o.id}">${esc(t('explain_ai'))}</button></div>` : ''}
+          ${state.explanations[o.id] ? `<div class="ai-text">${esc(state.explanations[o.id])}</div>` : ''}
+        </td></tr>` : '';
+      return `<tr class="${sel ? 'sel' : ''}"><td><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${o.id}" ${sel ? 'checked' : ''} ${o.rule === 'baseline' ? 'disabled' : ''}> <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label></td>
+        <td>${expectedCell(o)}</td><td>${esc(L(o.condition))}</td></tr>${detail}`;
+    }).join('');
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(r.assessmentName)}</b></p></div>
+      <div class="card" style="padding:0;overflow:auto"><table class="data"><thead><tr><th>${esc(t('option'))}</th><th>${esc(t('expected'))}</th><th>${esc(t('condition'))}</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <button class="btn primary" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button>
+      ${showDetails ? `<div class="notice small" style="margin-top:12px"><b>${esc(t('assumptions_title'))}:</b> ${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div>` : ''}
+      <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions">${esc(t('save_actions'))}</button></div>`;
+    root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; save(); render(); };
+    root.querySelectorAll('[data-pick]').forEach(cb => cb.onchange = () => {
+      const id = cb.dataset.pick;
+      state.selectedIds = cb.checked ? [...new Set([...state.selectedIds, id])] : state.selectedIds.filter(x => x !== id);
+      cb.closest('tr').classList.toggle('sel', cb.checked); save();
+    });
+    root.querySelectorAll('[data-note]').forEach(tx => tx.oninput = () => { state.actionNotes[tx.dataset.note] = tx.value; save(); });
+    root.querySelectorAll('[data-explain]').forEach(b => b.onclick = async () => {
+      const o = r.options.find(x => x.id === b.dataset.explain);
+      busy(b, true, t('thinking'));
+      try {
+        const res = await api('/api/actions/explain', { option: { ...o, notes: state.actionNotes[o.id] }, assessment: JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment])), gwpIndex: state.gwpIndex, lang: state.lang });
+        state.explanations[o.id] = res.text; save(); render();
+      } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
+    });
+    root.querySelector('#save-actions').onclick = () => {
+      state.selectedActions = r.options.filter(o => state.selectedIds.includes(o.id)).map(o => ({ ...o, notes: state.actionNotes[o.id] || '' }));
+      if (!state.selectedActions.length) return toast(t('no_actions'));
+      state.plan = null; save(); toast(t('actions_saved')); go('plan');
+    };
+  }
+
+  // ---------------------------------------------------------------- stage 3: plan
+  function recomputeSchedule(plan) {
+    const byId = Object.fromEntries(plan.tasks.map(k => [k.id, k]));
+    for (const k of plan.tasks) {
+      k.start_week = (k.depends_on || []).reduce((m, d) => byId[d] ? Math.max(m, byId[d].start_week + byId[d].weeks) : m, 0);
+    }
+    plan.total_weeks = plan.tasks.reduce((m, k) => Math.max(m, k.start_week + k.weeks), 0);
+  }
+
+  function viewPlan(root) {
+    if (!state.selectedActions.length) {
+      root.innerHTML = `<div class="page-head"><h1>${esc(t('plan_title'))}</h1></div><div class="notice warn">${esc(t('no_actions'))}</div><button class="btn primary" data-go="actions:select">${esc(t('tab_actions'))}</button>`;
+      return;
+    }
+    const p = state.plan;
+    const acts = state.selectedActions.map(a => `<li><b>${esc(a.id)}</b> ${esc(L(a.title))} — <span class="muted">${expectedCell(a)}</span></li>`).join('');
+    let body = '';
+    if (p) {
+      const max = p.total_weeks || 1;
+      body = `<div class="card"><h2>${esc(t('project_summary'))}</h2>
+          ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
+          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div></div>
+        <div class="card" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
+          <table class="data"><thead><tr><th>ID</th><th>${esc(t('task'))}</th><th>${esc(t('owner'))}</th><th class="num">${esc(t('start_week'))}</th><th class="num">${esc(t('weeks'))}</th><th>${esc(t('depends'))}</th></tr></thead><tbody>
+          ${p.tasks.map((k, i) => `<tr><td>${esc(k.id)}</td><td><span class="muted small">${esc(k.action_id)} · ${esc(k.action)}</span><br>${esc(k.name)}
+              ${state.ui.planDetails ? `<div class="gantt"><div class="gbar" style="margin-left:${100 * k.start_week / max}%;width:${Math.max(1, 100 * k.weeks / max)}%"></div></div>` : ''}</td>
+            <td><input type="text" data-owner="${i}" value="${esc(k.owner)}"></td><td class="num">${k.start_week}</td>
+            <td><input type="number" min="0" step="1" data-weeks="${i}" value="${k.weeks}" style="width:70px"></td><td>${esc((k.depends_on || []).join(', '))}</td></tr>`).join('')}
+          </tbody></table></div>`;
+    }
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('plan_title'))}</h1><p class="muted">${esc(t('plan_sub'))}</p></div>
+      <div class="card"><ul style="margin:0;padding-left:18px">${acts}</ul></div>
+      ${body}
+      <div class="actions-row">
+        <button class="btn" data-go="actions:compare">${esc(t('back'))}</button>
+        <button class="btn" id="gen-plan">${esc(p ? t('regenerate') : t('generate_plan'))}</button>
+        ${p ? `<button class="btn" id="plan-details">${esc(t('review_details'))}</button><button class="btn primary" id="save-plan">${esc(t('save_plan'))}</button>` : ''}
+      </div>`;
+    root.querySelector('#gen-plan').onclick = async e => {
+      busy(e.target, true, t('drafting'));
+      try {
+        state.plan = await api('/api/plan', { actions: state.selectedActions, assessment: JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment] || Global)), gwpIndex: state.gwpIndex, profile: state.profile, lang: state.lang });
+        save(); render();
+      } catch (err) { busy(e.target, false); toast(t('error') + ': ' + err.message); }
+    };
+    if (!p) return;
+    root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); };
+    root.querySelectorAll('[data-owner]').forEach(i => i.oninput = () => { p.tasks[+i.dataset.owner].owner = i.value; save(); });
+    root.querySelectorAll('[data-weeks]').forEach(i => i.onchange = () => { p.tasks[+i.dataset.weeks].weeks = Math.max(0, parseInt(i.value, 10) || 0); recomputeSchedule(p); save(); render(); });
+    root.querySelector('#plan-details').onclick = () => { state.ui.planDetails = !state.ui.planDetails; save(); render(); };
+    root.querySelector('#save-plan').onclick = () => { save(); toast(t('plan_saved')); go('finance'); };
+  }
+
+  // ---------------------------------------------------------------- stage 4: financing
+  function viewFinance(root) {
+    const f = state.financing;
+    const card = (route, title, desc, btn) => `<div class="card pick ${f.route === route ? 'on' : ''}" data-route="${route}"><h2>${esc(title)}</h2><p>${esc(desc)}</p>${btn}</div>`;
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
+      ${!state.plan ? `<div class="notice warn">${esc(t('no_plan'))}</div>` : ''}
+      ${card('general', t('general_proposal'), t('general_desc'), `<button class="btn ${f.route === 'general' ? 'primary' : ''}">${esc(t('use_general'))}</button>`)}
+      ${card('custom', t('tailor'), t('tailor_desc'), `<label class="btn ${f.route === 'custom' ? 'primary' : ''}">${esc(t('add_guide'))}<input type="file" id="guide-file" accept=".pdf,.docx,.txt,.md" hidden></label>
+        ${f.guideName ? `<span class="small muted" style="margin-left:8px">${esc(t('guide_loaded'))}: ${esc(f.guideName)}</span>` : ''}
+        ${f.customFramework?.requirements?.length ? `<div class="notice small" style="margin-top:10px"><b>${esc(t('requirements'))}</b><ul>${f.customFramework.requirements.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
+        ${f.customFramework?._note ? `<p class="small muted" style="margin-top:8px">${esc(f.customFramework._note)}</p>` : ''}`)}
+      ${card('gcf', t('gcf'), t('gcf_desc'), `<button class="btn ${f.route === 'gcf' ? 'primary' : ''}">${esc(t('use_gcf'))}</button><p class="small muted" style="margin:8px 0 0">${esc(t('gcf_note'))}</p>`)}
+      <div class="actions-row"><button class="btn" data-go="plan">${esc(t('back'))}</button>
+        <button class="btn" id="dl-all">${esc(t('download_all'))}</button>
+        <button class="btn primary" id="draft">${esc(t('review_draft'))}</button></div>`;
+    root.querySelectorAll('[data-route]').forEach(c => c.onclick = e => {
+      if (e.target.closest('label')) { f.route = c.dataset.route; save(); return; }
+      f.route = c.dataset.route; save(); render();
+    });
+    root.querySelector('#guide-file').onchange = async e => {
+      const file = e.target.files[0]; if (!file) return;
+      f.route = 'custom';
+      const lbl = e.target.closest('label'); busy(lbl, true, file.name);
+      try {
+        const buf = await file.arrayBuffer();
+        let bin = ''; const bytes = new Uint8Array(buf);
+        for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+        const res = await api('/api/guide/parse', { filename: file.name, base64: btoa(bin), lang: state.lang });
+        Object.assign(f, { guideName: file.name, guideText: res.guideText, customFramework: res.framework });
+        save(); render();
+      } catch (err) { busy(lbl, false); toast(t('error') + ': ' + err.message); }
+    };
+    root.querySelector('#draft').onclick = async e => {
+      busy(e.target, true, t('drafting'));
+      try {
+        state.proposal = await api('/api/proposal', {
+          route: f.route, customFramework: f.customFramework, guideText: f.guideText,
+          actions: state.selectedActions, plan: state.plan, profile: state.profile,
+          assessment: JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment] || Global)), gwpIndex: state.gwpIndex, lang: state.lang,
+        });
+        go('finance:draft');
+      } catch (err) { busy(e.target, false); toast(t('error') + ': ' + err.message); }
+    };
+    root.querySelector('#dl-all').onclick = e => downloadAll(e.target);
+  }
+
+  function exportState() {
+    return { ...JSON.parse(JSON.stringify(state)), assessments: JSON.parse(JSON.stringify(Scenarios)), chat: undefined, checkpoints: undefined };
+  }
+  async function downloadAll(btn) {
+    busy(btn, true, t('download_all'));
+    try {
+      const blob = await api('/api/export', exportState(), true);
+      download(blob, `${(state.profile?.name || 'chatwater').replace(/[^\w-]+/g, '_')}-chatwater-files.zip`);
+    } catch (err) { toast(t('error') + ': ' + err.message); }
+    busy(btn, false);
+  }
+
+  function viewDraft(root) {
+    const p = state.proposal;
+    if (!p) return go('finance');
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('proposal_title'))}</h1><p class="muted">${esc(p.title)}</p></div>
+      ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
+      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea></div>`).join('')}
+      <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
+        <button class="btn" id="dl-word">${esc(t('download_word'))}</button>
+        <button class="btn primary" id="dl-all">${esc(t('download_all'))}</button></div>`;
+    root.querySelectorAll('[data-sec]').forEach(tx => tx.oninput = () => { p.sections[+tx.dataset.sec].text = tx.value; save(); });
+    root.querySelector('#dl-word').onclick = async e => {
+      busy(e.target, true, t('download_word'));
+      try { download(await api('/api/export/docx', exportState(), true), 'proposal.docx'); }
+      catch (err) { toast(t('error') + ': ' + err.message); }
+      busy(e.target, false);
+    };
+    root.querySelector('#dl-all').onclick = e => downloadAll(e.target);
+  }
+
+  // ---------------------------------------------------------------- chat
+  function renderChat() {
+    const log = $('#chat-log');
+    const intro = `<div class="msg bot">${esc(t('chat_intro'))}</div>`;
+    log.innerHTML = intro + state.chat.map(m => `<div class="msg ${m.role === 'user' ? 'user' : 'bot'}">${esc(m.content)}${m.sources?.length ? `<div class="src">${esc(t('sources'))}: ${esc(m.sources.join('; '))}</div>` : ''}</div>`).join('');
+    log.scrollTop = log.scrollHeight;
+  }
+  async function askChat(text, focus) {
+    if (!text.trim()) return;
+    state.ui.chatOpen = true; applyShell();
+    state.chat.push({ role: 'user', content: text });
+    renderChat();
+    const log = $('#chat-log');
+    const pending = document.createElement('div'); pending.className = 'msg bot'; pending.innerHTML = `<span class="spin"></span> ${esc(t('thinking'))}`;
+    log.appendChild(pending); log.scrollTop = log.scrollHeight;
+    try {
+      const sc = Scenarios[state.ui.view.startsWith('assess') ? state.current : state.selectedAssessment] || Global;
+      const res = await api('/api/chat', {
+        messages: state.chat.filter(m => !m.local).map(({ role, content }) => ({ role, content })),
+        lang: state.lang, stage: state.ui.view, focus: focus || '',
+        assessment: JSON.parse(JSON.stringify(sc)), gwpIndex: state.gwpIndex,
+        actions: state.selectedActions, plan: state.plan, profile: state.profile,
+      });
+      const content = res.ai === false ? `${t('chat_no_ai')}\n\n${res.reply || '–'}` : res.reply;
+      state.chat.push({ role: 'assistant', content, sources: res.sources, local: res.ai === false });
+    } catch (err) {
+      state.chat.push({ role: 'assistant', content: `${t('error')}: ${err.message}`, local: true });
+    }
+    state.chat = state.chat.slice(-40);
+    save(); renderChat();
+  }
+
+  // ---------------------------------------------------------------- events
+  document.addEventListener('click', e => {
+    const g = e.target.closest('[data-go]');
+    if (g) { e.preventDefault(); return go(g.dataset.go); }
+    const tab = e.target.closest('[data-tab]');
+    if (tab) {
+      const map = { assess: 'assess:choose', actions: state.actionResult ? 'actions:compare' : 'actions:select', plan: 'plan', finance: state.proposal ? 'finance:draft' : 'finance' };
+      return go(map[tab.dataset.tab]);
+    }
+    const lang = e.target.closest('[data-lang]');
+    if (lang) { state.lang = lang.dataset.lang; save(); return render(); }
+    const loc = e.target.closest('[data-loc]');
+    if (loc) { state.location = loc.dataset.loc; state.lang = loc.dataset.loc === 'indonesia' ? 'id' : 'en'; save(); return render(); }
+  });
+  $('#btn-checkpoint').onclick = checkpoint;
+  $('#chat-toggle').onclick = () => { state.ui.chatOpen = !state.ui.chatOpen; save(); applyShell(); };
+  $('#chat-form').onsubmit = e => { e.preventDefault(); const v = $('#chat-input').value; $('#chat-input').value = ''; askChat(v); };
+  $('#chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#chat-form').requestSubmit(); } });
+  $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') e.target.hidden = true; });
+
+  // ---------------------------------------------------------------- boot
+  window.App = {
+    get state() { return state; }, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
+    setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, render, finishAssessment,
+  };
+
+  async function boot() {
+    const [en, id] = await Promise.all([
+      fetch('/ecam/languages/en.json').then(r => r.json()),
+      fetch('/i18n/ecam.id.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+    ]);
+    LANGS = { en, id };
+    Scenarios.length = 0;
+    (state.assessments || []).forEach(o => { try { Scenarios.push(Ecam.from(o)); } catch (e) { console.warn('skip assessment', e); } });
+    const sel = state.ui.sel;
+    if (!Scenarios.length) newScenario();
+    setCurrent(Math.min(state.current || 0, Scenarios.length - 1));
+    state.ui.sel = sel || { kind: 'general' };
+    setGwp(state.gwpIndex || 0);
+    render();
+    $('#save-status').textContent = t('saved');
+    api('/api/health').then(h => { META = h; }).catch(() => {});
+  }
+  boot();
+})();

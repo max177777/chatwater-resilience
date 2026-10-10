@@ -1,0 +1,19 @@
+# Render Blueprint — deploy with: Render dashboard → New → Blueprint → pick this repo.
+services:
+  - type: web
+    name: chatwater-resilience
+    runtime: node
+    plan: free            # free instances sleep when idle; switch to "starter" for always-on
+    buildCommand: npm ci && npm test
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true      # every push to main redeploys
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ANTHROPIC_API_KEY   # enables AI chat and drafting; app works without it
+        sync: false
+      - key: CLAUDE_MODEL
+        value: claude-sonnet-5-5
+    domains:
+      - supermaxtest.com      # Render adds www.supermaxtest.com redirecting here

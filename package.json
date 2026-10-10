@@ -1,0 +1,27 @@
+{
+  "name": "chatwater-resilience",
+  "version": "0.1.0",
+  "description": "ChatWater Resilience — from ECAM GHG assessment to project plan and financing proposal for water utilities",
+  "main": "server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/engine.test.js && node test/api.test.js",
+    "build:sample": "node scripts/make-sample.js",
+    "build:id": "node scripts/build-id-labels.js"
+  },
+  "license": "CC-BY-SA-4.0",
+  "dependencies": {
+    "docx": "^9.9.0",
+    "express": "^4.22.3",
+    "jszip": "^3.10.2",
+    "mammoth": "^1.13.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  }
+}

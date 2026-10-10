@@ -1,0 +1,15 @@
+{
+  "id": "general",
+  "name": {"en": "General proposal", "id": "Proposal umum"},
+  "_note": "For a first discussion with the utility board, local government, a lender or a donor.",
+  "sections": [
+    {"key": "summary",   "en": "Project summary", "id": "Ringkasan proyek", "guidance": "Half a page: the utility, the problem, the selected actions, total expected reduction (tCO2eq/year) and energy saving (kWh/year), indicative cost and request."},
+    {"key": "context",   "en": "Utility and context", "id": "Profil utilitas dan konteks", "guidance": "Who the utility is, service area, population served, current service levels and climate exposure."},
+    {"key": "baseline",  "en": "Baseline emissions (ECAM)", "id": "Emisi dasar (ECAM)", "guidance": "ECAM results: total and by stage and gas, assessment period, GWP report, grid factor. Only numbers from the results."},
+    {"key": "actions",   "en": "Proposed actions", "id": "Usulan kegiatan", "guidance": "Each selected action: what it is, why (evidence from ECAM), expected result and assumptions, what still needs confirmation."},
+    {"key": "plan",      "en": "Implementation plan", "id": "Rencana pelaksanaan", "guidance": "Phases, timeline, owners, dependencies from the project plan."},
+    {"key": "budget",    "en": "Indicative budget and financing need", "id": "Anggaran indikatif dan kebutuhan pembiayaan", "guidance": "Costs provided by the user only. If none, list what costing is needed."},
+    {"key": "risks",     "en": "Risks and mitigation", "id": "Risiko dan mitigasi", "guidance": "Technical, financial, institutional risks."},
+    {"key": "mrv",       "en": "Monitoring, reporting and verification", "id": "Pemantauan, pelaporan dan verifikasi", "guidance": "How results are tracked: repeat ECAM yearly, metering, data owners."}
+  ]
+}

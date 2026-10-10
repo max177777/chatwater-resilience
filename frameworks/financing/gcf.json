@@ -1,0 +1,17 @@
+{
+  "id": "gcf",
+  "name": {"en": "GCF pathway", "id": "Jalur GCF"},
+  "_note": "PLACEHOLDER structure built on the six GCF investment criteria. Replace/extend with the 2024 GCF Water/Sanitation Project Design Guidelines framework (Chimdi/Silvia). Keep the keys stable if possible.",
+  "sections": [
+    {"key": "summary",       "en": "A. Project summary", "id": "A. Ringkasan proyek", "guidance": "Accredited entity, country (Indonesia), sector, mitigation/adaptation, size, request."},
+    {"key": "rationale",     "en": "B. Climate rationale and context", "id": "B. Alasan iklim dan konteks", "guidance": "Climate rationale based on ECAM baseline and climate risks; baseline scenario without the project."},
+    {"key": "impact",        "en": "C1. Impact potential", "id": "C1. Potensi dampak", "guidance": "Expected tCO2eq reduced per year and over lifetime from ECAM-calculated options; beneficiaries."},
+    {"key": "paradigm",      "en": "C2. Paradigm shift potential", "id": "C2. Potensi perubahan paradigma", "guidance": "Replication across Indonesian utilities (PDAM / PD PAL), knowledge, enabling environment."},
+    {"key": "sustainable",   "en": "C3. Sustainable development potential", "id": "C3. Potensi pembangunan berkelanjutan", "guidance": "Co-benefits: service quality, public health, NRW, cost savings, gender."},
+    {"key": "needs",         "en": "C4. Needs of the recipient", "id": "C4. Kebutuhan penerima", "guidance": "Vulnerability, financing gap, capacity."},
+    {"key": "ownership",     "en": "C5. Country ownership", "id": "C5. Kepemilikan negara", "guidance": "Alignment with Indonesia NDC and national/local plans; stakeholder engagement."},
+    {"key": "efficiency",    "en": "C6. Efficiency and effectiveness", "id": "C6. Efisiensi dan efektivitas", "guidance": "Cost per tCO2eq (only with user-provided costs), co-financing, financial structure."},
+    {"key": "logframe",      "en": "D. Results framework and MRV", "id": "D. Kerangka hasil dan MRV", "guidance": "Indicators, baselines (ECAM), targets, monitoring with repeated ECAM assessments."},
+    {"key": "risks",         "en": "E. Risks, environmental and social safeguards", "id": "E. Risiko dan pengaman lingkungan-sosial", "guidance": "Key risks and mitigation."}
+  ]
+}
