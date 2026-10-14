@@ -53,6 +53,11 @@ function table(headers, rows, widths) {
   });
 }
 
+function sourceList(sources) {
+  return sources.map(src => new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ size: 17, color: '555555',
+    text: `[${src.id}] ${src.title}${src.cite ? `, ${src.cite}` : ''}${src.heading ? ` — ${src.heading}` : ''}${src.url ? `. ${src.url}` : ''}` })] }));
+}
+
 function textToParagraphs(text) {
   const out = [];
   for (const block of String(text || '').split(/\n\s*\n/)) {
@@ -77,6 +82,7 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
   for (const s of proposal.sections || []) {
     children.push(new Paragraph({ heading: HeadingLevel.HEADING_1, children: [new TextRun(s.title)] }));
     children.push(...textToParagraphs(s.text));
+    if (s.sources?.length) children.push(...sourceList(s.sources));
     if (s.key === 'baseline' || s.key === 'rationale') children.push(...resultsBlock());
     if (s.key === 'actions' || s.key === 'impact') children.push(...actionsBlock());
     if (s.key === 'plan' || s.key === 'logframe') children.push(...planBlock());
@@ -158,7 +164,8 @@ async function buildZip(state, docxBuffer) {
   if (state.plan?.tasks) {
     zip.file('plan/project-plan.csv', csv([['id', 'action', 'task', 'owner', 'start_week', 'weeks', 'depends_on'],
       ...state.plan.tasks.map(k => [k.id, k.action, k.name, k.owner, k.start_week, k.weeks, k.depends_on.join(' ')])]));
-    if (state.plan.summary) zip.file('plan/project-summary.txt', state.plan.summary);
+    if (state.plan.summary) zip.file('plan/project-summary.txt', state.plan.summary +
+      (state.plan.sources?.length ? '\n\nSources:\n' + state.plan.sources.map(x => `[${x.id}] ${x.title}${x.cite ? ', ' + x.cite : ''}${x.url ? ' ' + x.url : ''}`).join('\n') : ''));
   }
   if (state.profile) zip.file('utility-profile.json', JSON.stringify(state.profile, null, 2));
   zip.file('README.txt', [

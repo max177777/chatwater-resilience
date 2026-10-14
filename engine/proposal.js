@@ -6,6 +6,18 @@ const fs = require('fs');
 const path = require('path');
 const { callClaude, aiEnabled } = require('./ai');
 const { expectedText } = require('./export');
+const knowledge = require('./knowledge');
+
+// Topics each kind of draft prefers when retrieving (first folder under /knowledge)
+const PLAN_TOPICS = ['plan', 'indonesia', 'general'];
+const FINANCE_TOPICS = ['financing', 'indonesia', 'general'];
+
+/** Retrieve passages for a draft: section/plan wording + selected actions + place. */
+function retrieve(f, extra, topics, k = 6) { // topics are a hard filter: no off-topic citations
+  const acts = (f.selected_actions || []).filter(a => a.id !== 'A00').map(a => a.title).join(' ');
+  const place = [f.utility_profile?.location, f.utility_profile?.country || f.ecam_results?.country].filter(Boolean).join(' ');
+  return knowledge.asSources(knowledge.search(`${extra} ${acts} ${place}`, { k, topics, only: topics, excludeEcam: true }));
+}
 
 const FW_DIR = path.join(__dirname, '..', 'frameworks');
 const prompt = name => fs.readFileSync(path.join(FW_DIR, 'prompts', name + '.md'), 'utf8');
@@ -68,11 +80,16 @@ function templatePlanSummary(f, lang) {
 async function planSummary(input) {
   const lang = input.lang || 'en';
   const f = facts(input);
-  if (!aiEnabled()) return { text: templatePlanSummary(f, lang), ai: false };
+  const src = retrieve(f, 'project implementation plan phases procurement permits regulation utility', PLAN_TOPICS);
+  if (!aiEnabled()) {
+    return { text: templatePlanSummary(f, lang), sources: src.list, ai: false };
+  }
   const system = fill(prompt('system-base'), { LANGUAGE: LANG_NAME[lang] });
   const text = await callClaude({ system, max_tokens: 900, messages: [{ role: 'user',
-    content: fill(prompt('project-plan'), { LANGUAGE: LANG_NAME[lang] }) + '\n\nDATA:\n' + JSON.stringify(f, null, 1) }] });
-  return { text, ai: true };
+    content: fill(prompt('project-plan'), { LANGUAGE: LANG_NAME[lang] }) +
+      '\n\nDATA:\n' + JSON.stringify(f, null, 1) +
+      '\n\nSOURCES:\n' + (src.block || '(none available yet)') }] });
+  return { text, sources: knowledge.citedSources(text, src.list), ai: true };
 }
 
 function templateSection(sec, f, lang) {
@@ -102,17 +119,24 @@ async function draftProposal(input, framework, guideText) {
   // sequential keeps rate use modest; sections are short
   for (const sec of framework.sections) {
     const title = sec[lang] || sec.en || sec.title;
-    let text;
+    // baseline-type sections may also cite the ECAM method notes
+    const topics = ['baseline', 'rationale', 'logframe', 'mrv'].includes(sec.key) ? [...FINANCE_TOPICS, 'ecam'] : FINANCE_TOPICS;
+    const src = retrieve(f, `${sec.en || title} ${sec.guidance || ''} ${L(framework.name)}`, topics);
+    let text, sources = [];
     if (useAI) {
       const content = fill(prompt('proposal-section'), {
         SECTION: title, ROUTE: L(framework.name), GUIDANCE: sec.guidance, LANGUAGE: LANG_NAME[lang],
-      }) + (guideText ? `\n\nFUNDING GUIDE EXCERPT:\n${guideText.slice(0, 12000)}` : '') + `\n\nDATA:\n${data}`;
-      try { text = await callClaude({ system, max_tokens: 900, messages: [{ role: 'user', content }] }); }
-      catch (e) { text = templateSection(sec, f, lang) + `\n\n[AI error: ${e.message}]`; }
+      }) + (guideText ? `\n\nFUNDING GUIDE EXCERPT:\n${guideText.slice(0, 12000)}` : '') +
+        `\n\nDATA:\n${data}\n\nSOURCES:\n${src.block || '(none available yet)'}`;
+      try {
+        text = await callClaude({ system, max_tokens: 900, messages: [{ role: 'user', content }] });
+        sources = knowledge.citedSources(text, src.list);
+      } catch (e) { text = templateSection(sec, f, lang) + `\n\n[AI error: ${e.message}]`; }
     } else {
       text = templateSection(sec, f, lang);
+      sources = src.list;
     }
-    sections.push({ key: sec.key, title, guidance: sec.guidance, text });
+    sections.push({ key: sec.key, title, guidance: sec.guidance, text, sources });
   }
   return { route: framework.id, title: `${L(framework.name)} — ${f.utility_profile?.name || f.ecam_results?.assessment || ''}`.trim(), sections, ai: useAI };
 }

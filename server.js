@@ -38,7 +38,16 @@ const wrap = fn => (req, res) => Promise.resolve(fn(req, res)).catch(e => {
 // drafts only ever see numbers produced by ECAM's formulas.
 const resultsFor = (assessment, gwpIndex) => assessment ? engine.calculateOne(assessment, gwpIndex || 0) : null;
 
-app.get('/api/health', (req, res) => res.json({ ok: true, ai: aiEnabled(), model: aiEnabled() ? MODEL : null, ecam: '3.0.1' }));
+app.get('/api/health', (req, res) => {
+  const k = knowledge.summary();
+  res.json({ ok: true, ai: aiEnabled(), model: aiEnabled() ? MODEL : null, ecam: '3.0.1', knowledge: { documents: k.documents, byTopic: k.byTopic } });
+});
+
+// What the RAG knowledge base contains (for the team to check their uploads were read)
+app.get('/api/knowledge', (req, res) => res.json(knowledge.summary()));
+app.get('/api/knowledge/search', (req, res) => res.json(knowledge.search(String(req.query.q || ''), {
+  k: Math.min(+req.query.k || 6, 20), topics: req.query.topic ? String(req.query.topic).split(',') : null,
+})));
 
 app.get('/api/meta', (req, res) => res.json({
   countries: engine.countries(), gwpReports: engine.gwpReports(),
@@ -59,18 +68,21 @@ app.post('/api/actions', wrap((req, res) => {
 app.post('/api/actions/explain', limitAI, wrap(async (req, res) => {
   const { option, assessment, gwpIndex, lang = 'en' } = req.body;
   const f = P.facts({ results: resultsFor(assessment, gwpIndex), actions: [option], lang });
+  const L = o => (o && typeof o === 'object') ? (o.en || '') : (o || '');
+  const src = knowledge.asSources(knowledge.search(`${L(option.title)} ${L(option.condition)} ${f.ecam_results?.country || ''}`, { k: 4, topics: ['plan', 'indonesia', 'ecam'] }));
   const text = await callClaude({
     system: P.fill(P.prompt('system-base'), { LANGUAGE: P.LANG_NAME[lang] }), max_tokens: 700,
-    messages: [{ role: 'user', content: P.fill(P.prompt('actions-explain'), { LANGUAGE: P.LANG_NAME[lang] }) + '\n\nDATA:\n' + JSON.stringify(f, null, 1) }],
+    messages: [{ role: 'user', content: P.fill(P.prompt('actions-explain'), { LANGUAGE: P.LANG_NAME[lang] }) +
+      '\n\nDATA:\n' + JSON.stringify(f, null, 1) + '\n\nSOURCES:\n' + (src.block || '(none)') }],
   });
-  res.json({ text });
+  res.json({ text, sources: knowledge.citedSources(text, src.list) });
 }));
 
 app.post('/api/plan', limitAI, wrap(async (req, res) => {
   const { actions = [], assessment, gwpIndex, profile, lang = 'en' } = req.body;
   const plan = buildPlan(actions, lang);
   const summary = await P.planSummary({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, lang });
-  res.json({ ...plan, summary: summary.text, ai: summary.ai });
+  res.json({ ...plan, summary: summary.text, sources: summary.sources || [], ai: summary.ai });
 }));
 
 app.post('/api/guide/parse', limitAI, wrap(async (req, res) => {
@@ -99,17 +111,19 @@ app.post('/api/chat', limitAI, wrap(async (req, res) => {
   const last = messages.filter(m => m.role === 'user').slice(-1)[0]?.content || '';
   const sources = knowledge.search(`${last} ${focus || ''}`, 6);
   if (!aiEnabled()) {
-    // Without an API key the chat still returns the matching ECAM guidance.
-    return res.json({ ai: false, reply: sources.slice(0, 3).map(s => `**${s.source}**\n${s.text}`).join('\n\n'), sources: sources.map(s => s.source) });
+    // Without an API key the chat still returns the matching guidance passages.
+    return res.json({ ai: false, reply: sources.slice(0, 3).map(s => `${s.source}\n${s.text}`).join('\n\n'), sources: sources.map(s => s.source) });
   }
+  const src = knowledge.asSources(sources);
   const f = P.facts({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, lang });
   const system = P.fill(P.prompt('system-base'), { LANGUAGE: P.LANG_NAME[lang] }) +
     `\n\nCURRENT STAGE: ${stage}${focus ? `\nUSER IS LOOKING AT: ${focus}` : ''}` +
     `\n\nUTILITY DATA (from ECAM):\n${JSON.stringify(f, null, 1)}` +
-    `\n\nREFERENCES:\n${sources.map(s => `[${s.source}] ${s.text}`).join('\n\n')}`;
+    `\n\nSOURCES:\n${src.block}`;
   const reply = await callClaude({ system, max_tokens: 1200,
     messages: messages.slice(-12).map(m => ({ role: m.role, content: String(m.content).slice(0, 8000) })) });
-  res.json({ reply, sources: sources.map(s => s.source) });
+  const cited = knowledge.citedSources(reply, src.list);
+  res.json({ reply, sources: cited.map(s => `[${s.id}] ${s.title}${s.heading ? ' — ' + s.heading : ''}`) });
 }));
 
 app.post('/api/export', wrap(async (req, res) => {
@@ -139,6 +153,10 @@ app.post('/api/export/docx', wrap(async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
+  knowledge.load().then(k => {
+    console.log(`Knowledge base: ${k.documents} documents, ${k.chunks} passages`, k.byTopic);
+    k.errors.forEach(e => console.warn(`  could not read ${e.file}: ${e.error}`));
+  }).catch(e => console.error('Knowledge base failed to load:', e));
   app.listen(PORT, () => console.log(`ChatWater Resilience on http://localhost:${PORT} (AI ${aiEnabled() ? 'on: ' + MODEL : 'off'})`));
 }
 module.exports = app;

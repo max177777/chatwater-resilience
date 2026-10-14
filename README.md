@@ -11,7 +11,7 @@ Live: https://supermaxtest.com (Render)
 | 3 Project plan | Edits owners and durations | Builds tasks and dependencies from `frameworks/project-plan.json`; drafts the summary |
 | 4 Financing | Chooses General, Funding guide (upload PDF/Word) or GCF | Drafts each section of the chosen framework; exports Word and a ZIP of all files |
 
-The ChatWater Help panel is available on every page. It retrieves passages from ECAM's variable documentation and `knowledge/*.md`, and answers using the current assessment's results.
+The ChatWater Help panel is available on every page. Chat, the plan summary and every proposal section retrieve passages from the knowledge base (`knowledge/`, plus ECAM's variable documentation) and must cite them as `[S1]`, `[S2]`. Utility numbers always come from the ECAM calculation; facts about Indonesia, funders and regulations must come from a cited document, otherwise the draft leaves a `[To be provided: …]` placeholder.
 
 ## How the ECAM calculation is reproduced
 
@@ -58,7 +58,7 @@ Every push to `main` redeploys. On the free plan the service sleeps after inacti
 | Project-plan phases, durations, owners | `frameworks/project-plan.json` |
 | Proposal sections (General, GCF) | `frameworks/financing/*.json` — **`gcf.json` is a placeholder** built on the six GCF investment criteria; replace it with the 2024 GCF Water/Sanitation guideline framework |
 | AI prompts | `frameworks/prompts/*.md` |
-| Chat knowledge base (RAG) | Add `.md` or `.txt` files to `knowledge/`, e.g. ECAM guideline excerpts or GCF guides |
+| Knowledge base (RAG) for chat, plan and proposal | Add PDF/Word/Markdown files to `knowledge/financing`, `knowledge/plan` or `knowledge/indonesia` — see [`knowledge/README.md`](knowledge/README.md). Check what was loaded at `/api/knowledge` |
 | Interface text EN / ID | `public/js/i18n.js` |
 | ECAM labels in Bahasa | `scripts/ecam-id-terms.json`, then run `npm run build:id` |
 
@@ -71,7 +71,7 @@ engine/actions.js         Stage 2 options
 engine/plan.js            Stage 3 tasks
 engine/proposal.js        AI drafting with template fallback
 engine/export.js          Word (.docx) and ZIP
-engine/knowledge.js       Retrieval for chat
+engine/knowledge.js       Knowledge base: reads knowledge/ (PDF, Word, MD), retrieval + citations
 public/                   Front end (no build step)
 vendor/ecam/              Unmodified ECAM v3 (CC BY-SA 4.0) — see NOTICE.md
 ```

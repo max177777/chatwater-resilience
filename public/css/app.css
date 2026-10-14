@@ -154,3 +154,10 @@ table.data input[type=text], table.data input[type=number] { padding: 4px 6px; }
   table.inputs td.lab { width: auto; }
   .detail dl { grid-template-columns: 1fr; }
 }
+
+/* citations under AI drafts */
+.sources { margin-top: 8px; font-size: 12.5px; color: var(--ink-2); }
+.sources ol { margin: 4px 0 0; padding-left: 0; list-style: none; }
+.sources li { margin: 2px 0; }
+.sources .sid { display: inline-block; min-width: 26px; font-weight: 600; color: var(--teal); }
+.sources a { color: var(--teal); }

@@ -61,6 +61,9 @@
     }
     return asBlob ? res.blob() : res.json();
   }
+  // Citation list shown under AI drafts: [S1] Title, publisher year — heading ↗
+  const sourcesHtml = list => list?.length ? `<div class="sources"><b>${esc(t('sources'))}</b><ol>${list.map(x =>
+    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${esc(x.cite)}` : ''}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}</li>`).join('')}</ol></div>` : '';
   const busy = (btn, on, label) => {
     if (!btn) return;
     if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label || '')}`; }
@@ -301,7 +304,7 @@
           <dt>${esc(t('basis'))}</dt><dd><code>${esc(o.basis)}</code></dd></dl>
           <textarea class="field small" data-note="${o.id}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(state.actionNotes[o.id] || '')}</textarea>
           ${o.rule !== 'baseline' ? `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${o.id}">${esc(t('explain_ai'))}</button></div>` : ''}
-          ${state.explanations[o.id] ? `<div class="ai-text">${esc(state.explanations[o.id])}</div>` : ''}
+          ${state.explanations[o.id] ? `<div class="ai-text">${esc(state.explanations[o.id])}${sourcesHtml(state.explanationSources?.[o.id])}</div>` : ''}
         </td></tr>` : '';
       return `<tr class="${sel ? 'sel' : ''}"><td><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${o.id}" ${sel ? 'checked' : ''} ${o.rule === 'baseline' ? 'disabled' : ''}> <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label></td>
         <td>${expectedCell(o)}</td><td>${esc(L(o.condition))}</td></tr>${detail}`;
@@ -323,7 +326,7 @@
       busy(b, true, t('thinking'));
       try {
         const res = await api('/api/actions/explain', { option: { ...o, notes: state.actionNotes[o.id] }, assessment: JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment])), gwpIndex: state.gwpIndex, lang: state.lang });
-        state.explanations[o.id] = res.text; save(); render();
+        state.explanations[o.id] = res.text; state.explanationSources = { ...(state.explanationSources || {}), [o.id]: res.sources || [] }; save(); render();
       } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
     });
     root.querySelector('#save-actions').onclick = () => {
@@ -354,7 +357,7 @@
       const max = p.total_weeks || 1;
       body = `<div class="card"><h2>${esc(t('project_summary'))}</h2>
           ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
-          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div></div>
+          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${sourcesHtml(p.sources)}</div>
         <div class="card" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
           <table class="data"><thead><tr><th>ID</th><th>${esc(t('task'))}</th><th>${esc(t('owner'))}</th><th class="num">${esc(t('start_week'))}</th><th class="num">${esc(t('weeks'))}</th><th>${esc(t('depends'))}</th></tr></thead><tbody>
           ${p.tasks.map((k, i) => `<tr><td>${esc(k.id)}</td><td><span class="muted small">${esc(k.action_id)} · ${esc(k.action)}</span><br>${esc(k.name)}
@@ -449,7 +452,7 @@
     if (!p) return go('finance');
     root.innerHTML = `<div class="page-head"><h1>${esc(t('proposal_title'))}</h1><p class="muted">${esc(p.title)}</p></div>
       ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
-      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea></div>`).join('')}
+      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${sourcesHtml(s.sources)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         <button class="btn" id="dl-word">${esc(t('download_word'))}</button>
         <button class="btn primary" id="dl-all">${esc(t('download_all'))}</button></div>`;
