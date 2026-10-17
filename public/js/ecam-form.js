@@ -13,13 +13,14 @@ const CWForm = (() => {
   const STAGES = () => Structure.filter(s => s.sublevel);
 
   // --- value helpers ------------------------------------------------------
-  const mult = code => { try { return Units.multiplier(code) || 1; } catch { return 1; } };
-  function unitOf(code) {
+  // value shown = stored base value / mult, labelled with the same unit the multiplier came from
+  const mult = code => CW.unitView(Units, Info, Global, code).mult;
+  function unitOf(code, base = false) {
     const i = Info[code];
     if (!i) return '';
     if (i.magnitude === 'Currency') return Global.General.Currency;
     if (i.magnitude === 'Option') return '';
-    return i.unit || '';
+    return base ? (i.unit || '') : CW.unitView(Units, Info, Global, code).unit;
   }
   function labelOf(code) {
     return A().tE(code + '_descr') || A().tE(code) || code;
@@ -111,7 +112,7 @@ const CWForm = (() => {
       const v = safeNum(() => outputTotal(ss[eq]()));
       if (v === null || v === 0) return '';
       const isGHG = /_KPI_GHG/.test(eq);
-      const unit = isGHG ? 'kgCO₂eq' : unitOf(eq);
+      const unit = isGHG ? 'kgCO₂eq' : unitOf(eq, true);
       return `<tr${isGHG && eq === struct.prefix + '_KPI_GHG' ? ' style="font-weight:700"' : ''}><td>${A().rich(labelOf(eq))}</td><td class="num">${fmt(v)}</td><td class="unit small muted">${A().rich(unit)}</td></tr>`;
     }).join('');
     return rows ? `<table class="outputs"><tbody>${rows}</tbody></table>` : `<p class="muted small">–</p>`;

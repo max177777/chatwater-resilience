@@ -221,6 +221,9 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
     ['Waste', 'Collection'], ['Waste', 'Treatment'], ['Waste', 'Onsite']];
   let i = 0;
   for (const [lv, sl] of order) for (const ss of assessment[lv][sl]) results.substages[i++].inputs = ss;
+  // position of each substage within its stage, so callers can give the option a stable identity
+  const where = new Map(), count = {};
+  for (const s of results.substages) { count[s.prefix] = count[s.prefix] || 0; where.set(s, { prefix: s.prefix, index: count[s.prefix]++ }); }
 
   const options = [{
     id: 'A00', rule: 'baseline', category: 'baseline',
@@ -236,7 +239,7 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
   }];
   for (const rule of RULES) {
     for (const m of rule.applies(results)) {
-      options.push({ rule: rule.id, ...rule.build(m, results, ctx) });
+      options.push({ rule: rule.id, ...rule.build(m, results, ctx), substage: where.get(m) || null });
     }
   }
   options.forEach((o, k) => { if (!o.id) o.id = 'A' + String(k).padStart(2, '0'); });

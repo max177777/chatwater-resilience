@@ -31,6 +31,8 @@ p { margin: 0 0 10px; }
 .tabs button { border: 0; background: transparent; padding: 9px 6px; border-radius: 8px; cursor: pointer; font-weight: 500; color: var(--ink); }
 .tabs button.on { background: var(--teal); color: #fff; box-shadow: var(--shadow); }
 .tabs button:not(.on):hover { background: rgba(255,255,255,.6); }
+.tabs button.stale::after { content: ' ⚠'; color: #B45309; }
+.badge-outdated { font-size: 13px; font-weight: 600; vertical-align: middle; background: #FDE7C7; color: #8A4B08; border-radius: 6px; padding: 2px 8px; }
 .banner { background: var(--banner); padding: 5px 24px; font-size: 13px; color: #5A4A1A; }
 
 /* layout */
@@ -78,6 +80,9 @@ label.field > span { display: block; margin-bottom: 3px; color: var(--ink-2); fo
 .page-head { margin-bottom: 14px; }
 .notice { background: var(--teal-faint); border-left: 3px solid var(--teal); padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 14px; }
 .notice.warn { background: #FFF6E5; border-color: #E0A43A; }
+.notice.error { background: #FDECEC; border-color: #C0392B; }
+.notice.error p { margin: 6px 0 8px; }
+.storage-alert { padding: 12px 24px 0; }
 
 /* ECAM entry */
 .ecam { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 16px; }

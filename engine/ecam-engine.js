@@ -22,7 +22,7 @@ const FILES = [
 const source = FILES
   .map(f => `//--- ${f}.js\n` + fs.readFileSync(path.join(BACKEND_DIR, f + '.js'), 'utf8'))
   .join('\n;\n') +
-  `\n;globalThis.__ECAM = {Ecam, Structure, Countries, GWP_reports, Cts, Tables, Info, Questions, Estimations,
+  `\n;globalThis.__ECAM = {Ecam, Structure, Countries, GWP_reports, Cts, Tables, Info, Questions, Estimations, Units,
      setGlobal(s){ Global = s; Scenarios = [s]; } };`;
 
 const ctx = vm.createContext({ console });

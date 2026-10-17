@@ -8,18 +8,40 @@
   const $ = s => document.querySelector(s);
 
   // ---------------------------------------------------------------- state
+  // ChatWater IDs live in a WeakMap keyed by the ECAM objects themselves, so they follow an
+  // assessment or substage through reordering, renaming and deletion. They are saved in
+  // state.assessmentMeta (aligned with state.assessments), never inside the ECAM JSON.
+  const ids = new WeakMap();
+  const newId = p => `${p}_${(window.crypto?.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, '').slice(0, 16)}`;
+  function idOf(obj, p = 'a') { let v = ids.get(obj); if (!v) { v = newId(p); ids.set(obj, v); } return v; }
+  function metaOf(sc) {
+    return { id: idOf(sc, 'a'), substages: Object.fromEntries(CW.STAGE_KEYS.map(([p, lv, sl]) => [p, sc[lv][sl].map(ss => idOf(ss, 's'))])) };
+  }
+  function attachMeta(sc, m) {
+    if (!m?.id) return;
+    ids.set(sc, m.id);
+    for (const [p, lv, sl] of CW.STAGE_KEYS) sc[lv][sl].forEach((ss, i) => { const sid = m.substages?.[p]?.[i]; if (sid) ids.set(ss, sid); });
+  }
+  const byId = id => (id && Scenarios.find(s => idOf(s) === id)) || null;
+  const plain = o => JSON.parse(JSON.stringify(o));
+
   const defaults = () => ({
-    lang: 'id', location: 'indonesia', profile: null,
-    assessments: [], current: 0, gwpIndex: 0,
-    finished: {}, // assessment name -> ISO time of "finish assessment"
-    selectedAssessment: 0, actionResult: null, selectedIds: [], actionNotes: {}, selectedActions: [],
+    schema: CW.SCHEMA, lang: 'id', location: 'indonesia', profile: null,
+    assessments: [], assessmentMeta: [], current: 0, gwpIndex: 0,
+    finished: {}, // assessment ID -> ISO time of "finish assessment"
+    selectedAssessmentId: null, actionResult: null, selectedKeys: [], actionNotes: {}, actionLabels: {}, actionReview: [],
+    actionSet: null, selectedActions: [],
     plan: null, financing: { route: 'general' }, proposal: null,
     chat: [], checkpoints: [], explanations: {},
     ui: { tab: 'assess', view: 'assess:choose', sel: { kind: 'general' }, chatOpen: true },
   });
-  let state;
-  try { state = Object.assign(defaults(), JSON.parse(localStorage.getItem(STORE) || 'null') || {}); }
-  catch { state = defaults(); }
+  // storageLock: the saved session could not be read or backed up, so it must not be written over
+  // until the user chooses to. storageFail: the last write failed (the previous save is still in place).
+  let storageLock = null, storageFail = null, loaded;
+  try { loaded = CW.loadSession(window.localStorage, STORE, newId); }
+  catch (e) { loaded = { state: null, problem: 'read_failed', error: e, original: null }; }
+  let state = Object.assign(defaults(), loaded.state || {});
+  if (loaded.problem) storageLock = { kind: loaded.problem, quota: !!loaded.quota, original: loaded.original };
   state.ui = Object.assign(defaults().ui, state.ui || {});
 
   let LANGS = { en: {}, id: {} }; // ECAM label dictionaries
@@ -44,7 +66,7 @@
   }
   function toast(msg) {
     const el = $('#toast'); el.textContent = msg; el.hidden = false;
-    clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), 2600);
+    clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), Math.max(2600, 60 * String(msg).length));
   }
   function download(content, filename, type) {
     const blob = content instanceof Blob ? content : new Blob([content], { type });
@@ -116,22 +138,129 @@
 
   // ---------------------------------------------------------------- persistence
   let saveTimer;
+  /** Write now. Returns true only when the browser actually stored the session. */
+  function persist() {
+    clearTimeout(saveTimer);
+    state.assessments = plain(Scenarios);
+    state.assessmentMeta = Scenarios.map(metaOf);
+    let r;
+    if (storageLock) r = { ok: false, locked: true };
+    else {
+      try { r = CW.writeSession(window.localStorage, STORE, state); }
+      catch (e) { r = { ok: false, error: e, quota: CW.isQuota(e) }; }
+    }
+    storageFail = r.ok || r.locked ? null : { quota: !!r.quota, message: r.error?.message || '' };
+    $('#save-status').textContent = r.ok ? `${t('saved')} · ${new Date().toLocaleTimeString()}` : t('not_saved');
+    renderStorageAlert();
+    return r.ok;
+  }
   function save() {
     $('#save-status').textContent = t('saving');
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      state.assessments = JSON.parse(JSON.stringify(Scenarios));
-      try {
-        localStorage.setItem(STORE, JSON.stringify(state));
-        $('#save-status').textContent = `${t('saved')} · ${new Date().toLocaleTimeString()}`;
-      } catch (e) { $('#save-status').textContent = t('error') + ': ' + e.message; }
-    }, 250);
+    saveTimer = setTimeout(persist, 250);
   }
   function checkpoint() {
-    state.assessments = JSON.parse(JSON.stringify(Scenarios));
-    const snap = JSON.parse(JSON.stringify({ ...state, checkpoints: undefined, chat: undefined }));
-    state.checkpoints = [{ at: new Date().toISOString(), view: state.ui.view, snap }, ...(state.checkpoints || [])].slice(0, 5);
-    save(); toast(t('checkpoint_saved'));
+    state.assessments = plain(Scenarios);
+    state.assessmentMeta = Scenarios.map(metaOf);
+    const before = state.checkpoints || [];
+    const snap = JSON.parse(JSON.stringify({ ...state, checkpoints: undefined, chat: undefined, previous: undefined }));
+    state.checkpoints = [{ at: new Date().toISOString(), view: state.ui.view, snap }, ...before].slice(0, 5);
+    if (persist()) return toast(t('checkpoint_saved'));
+    state.checkpoints = before; persist();
+    toast(t('checkpoint_not_saved'));
+  }
+  const downloadJson = (text, name) => download(text, name, 'application/json');
+  function renderStorageAlert() {
+    const el = $('#storage-alert');
+    if (!el) return;
+    const lock = storageLock, fail = storageFail;
+    if (!lock && !fail) { el.hidden = true; el.innerHTML = ''; return; }
+    const kind = lock ? lock.kind : 'write_failed';
+    const detail = lock?.kind === 'backup_failed' ? t(lock.quota ? 'storage_full' : 'storage_refused')
+      : fail ? (fail.quota ? t('storage_full') : `${t('storage_refused')} ${fail.message}`) : '';
+    el.innerHTML = `<div class="notice error" data-storage="${kind}"><b>${esc(t('storage_title_' + kind))}</b>
+      <p>${esc(detail)} ${esc(t('storage_body_' + kind))}</p><div class="row">
+      ${lock?.original ? `<button class="btn sm" data-storage-act="original">${esc(t('download_original'))}</button>` : ''}
+      <button class="btn sm" data-storage-act="current">${esc(t('download_current'))}</button>
+      ${lock?.original ? `<button class="btn sm danger" data-storage-act="unlock">${esc(t('save_over_original'))}</button>` : ''}
+      ${fail ? `<button class="btn sm" data-storage-act="retry">${esc(t('retry_save'))}</button>` : ''}
+      ${fail && state.checkpoints?.length ? `<button class="btn sm danger" data-storage-act="checkpoints">${esc(t('drop_checkpoints'))}</button>` : ''}
+      </div></div>`;
+    el.hidden = false;
+    el.querySelectorAll('[data-storage-act]').forEach(b => b.onclick = () => {
+      const act = b.dataset.storageAct;
+      if (act === 'original') downloadJson(lock.original, 'chatwater-saved-session-original.json');
+      if (act === 'current') { state.assessments = plain(Scenarios); state.assessmentMeta = Scenarios.map(metaOf); downloadJson(JSON.stringify(state), 'chatwater-current-work.json'); }
+      if (act === 'unlock' && confirm(t('confirm_save_over_original'))) { storageLock = null; if (persist()) toast(t('saved')); }
+      if (act === 'retry' && persist()) toast(t('saved'));
+      if (act === 'checkpoints' && confirm(t('confirm_drop_checkpoints'))) { state.checkpoints = []; if (persist()) toast(t('saved')); }
+    });
+  }
+
+  // ---------------------------------------------------------------- freshness
+  function freshness() {
+    return CW.freshness({
+      assessments: Scenarios.map(s => ({ id: idOf(s), revision: CW.revision(s) })),
+      gwpIndex: state.gwpIndex, actionResult: state.actionResult, actionSet: state.actionSet,
+      selectedActions: state.selectedActions, plan: state.plan, proposal: state.proposal,
+      profile: state.profile, financing: state.financing,
+    });
+  }
+  // assessment the saved actions (and so the plan and proposal) were made from
+  const sourceAssessment = () => byId(state.actionSet?.assessmentId) || byId(state.proposal?.deps?.assessmentId) || byId(state.selectedAssessmentId);
+  function staleNotice(codes, what) {
+    if (!codes.length) return '';
+    return `<div class="notice warn" data-stale="${what}"><b>${esc(t('outdated_' + what))}</b>
+      <ul>${codes.map(c => `<li>${esc(t('stale_' + c))}</li>`).join('')}</ul>${esc(t('outdated_hint_' + what))}</div>`;
+  }
+  // Only schema-1 outputs can be confirmed as-is; anything outdated by a change must be regenerated.
+  const onlyLegacy = codes => codes.length === 1 && codes[0] === 'legacy';
+
+  // Generated text keeps the language it was written in; switching the interface never rewrites it.
+  const langName = l => (l ? t('lang_' + l) : t('lang_unknown'));
+  function outputLangNotice(out, what) {
+    if (!out) return '';
+    const line = `<p class="small muted" data-out-lang="${what}">${esc(t('output_language'))}: <b>${esc(langName(out.lang))}</b></p>`;
+    if (!out.lang || out.lang === state.lang) return line;
+    return line + `<div class="notice small" data-lang-differs="${what}">${esc(t('lang_differs_' + what).replaceAll('{out}', langName(out.lang)))}
+      <div class="row" style="margin-top:6px"><button class="btn sm" data-regen-lang="${what}">${esc(t('regenerate_in').replace('{lang}', langName(state.lang)))}</button></div></div>`;
+  }
+  const genErrorNotice = what => state.ui.genError?.what === what
+    ? `<div class="notice error" data-gen-error="${what}"><b>${esc(t('gen_failed_' + what))}</b> ${esc(state.ui.genError.message)}<br>${esc(t('gen_failed_kept'))}
+      <button class="link" data-dismiss-error>${esc(t('dismiss'))}</button></div>` : '';
+  function previousControl(what) {
+    const prev = state.previous?.[what];
+    return prev ? `<button class="btn" data-restore="${what}">${esc(t('restore_previous'))} <span class="muted small">(${esc(new Date(prev.at).toLocaleString())})</span></button>` : '';
+  }
+
+  async function generatePlan(btn, lang) {
+    const sc = byId(state.actionSet?.assessmentId);
+    if (!sc || freshness().actions.length) return toast(t('outdated_hint_actions'));
+    if (state.plan && !confirm(t('confirm_replace_plan'))) return;
+    busy(btn, true, t('drafting'));
+    try {
+      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, lang }));
+      state.ui.genError = null;
+    } catch (err) { state.ui.genError = { what: 'plan', message: err.message }; }
+    save(); render();
+  }
+  async function generateProposal(btn, lang) {
+    const now = freshness();
+    if (now.actions.length || now.plan.length) return toast(t(now.actions.length ? 'outdated_hint_actions' : 'outdated_hint_plan'));
+    const sc = sourceAssessment() || Global;
+    const f = state.financing;
+    if (state.proposal && !confirm(t('confirm_replace_proposal'))) return;
+    busy(btn, true, t('drafting'));
+    try {
+      await CW.regenerate(state, 'proposal', () => api('/api/proposal', {
+        route: f.route, customFramework: f.customFramework, guideText: f.guideText,
+        actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: state.profile,
+        assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, lang,
+      }));
+      state.ui.genError = null;
+      return go('finance:draft');
+    } catch (err) { state.ui.genError = { what: 'proposal', message: err.message }; }
+    save(); render();
   }
 
   // ---------------------------------------------------------------- shell
@@ -141,6 +270,9 @@
     document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang === state.lang));
     document.querySelectorAll('[data-loc]').forEach(b => b.classList.toggle('on', b.dataset.loc === state.location));
     document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === state.ui.view.split(':')[0]));
+    const f = freshness();
+    const staleTab = { actions: f.options.length || f.actions.length, plan: f.plan.length, finance: f.proposal.length };
+    document.querySelectorAll('[data-tab]').forEach(b => { b.classList.toggle('stale', !!staleTab[b.dataset.tab]); b.title = staleTab[b.dataset.tab] ? t('tab_outdated') : ''; });
     $('#profile-chip').textContent = state.profile?.name ? `${state.profile.name}${state.profile.location ? ' · ' + state.profile.location : ''}` : '';
     $('#chat-input').placeholder = t('chat_placeholder');
     $('#chat').classList.toggle('collapsed', !state.ui.chatOpen);
@@ -245,8 +377,8 @@
   }
 
   function finishAssessment() {
-    state.finished[Global.General.Name] = new Date().toISOString();
-    state.selectedAssessment = state.current;
+    state.finished[idOf(Global)] = new Date().toISOString();
+    state.selectedAssessmentId = idOf(Global);
     save(); toast(t('finished'));
     go('actions:select');
   }
@@ -265,20 +397,41 @@
         <button class="btn primary" data-go="assess:entry">${esc(t('tab_assess'))}</button>`;
       return;
     }
+    if (!byId(state.selectedAssessmentId)) state.selectedAssessmentId = idOf(Global);
+    const savedFrom = byId(state.actionSet?.assessmentId);
     root.innerHTML = `<div class="page-head"><h1>${esc(t('identify_title'))}</h1><p class="muted">${esc(t('identify_sub'))}</p></div>
-      <div class="card result-list">${Scenarios.map((s, i) => `<label><input type="radio" name="asel" value="${i}" ${i === state.selectedAssessment ? 'checked' : ''}>
-        <div><b>${esc(s.General.Name)}</b> <span class="muted small">${esc(s.General.AssessmentPeriodStart)} – ${esc(s.General.AssessmentPeriodEnd)}${state.finished[s.General.Name] ? ' · ✓' : ''}</span><br>
+      ${state.actionResult?.legacy ? `<div class="notice warn">${esc(t('legacy_options'))}</div>` : ''}
+      ${savedFrom && idOf(savedFrom) !== state.selectedAssessmentId ? `<div class="notice small">${esc(t('actions_saved_for'))}: <b>${esc(savedFrom.General.Name)}</b></div>` : ''}
+      <div class="card result-list">${Scenarios.map(s => `<label><input type="radio" name="asel" value="${esc(idOf(s))}" ${idOf(s) === state.selectedAssessmentId ? 'checked' : ''}>
+        <div><b>${esc(s.General.Name)}</b> <span class="muted small">${esc(s.General.AssessmentPeriodStart)} – ${esc(s.General.AssessmentPeriodEnd)}${state.finished[idOf(s)] ? ' · ✓' : ''}</span><br>
         <span class="small">${esc(summaryOf(s))}</span></div></label>`).join('')}</div>
       <div class="actions-row"><button class="btn primary" id="show-options">${esc(t('show_options'))}</button></div>`;
-    root.querySelectorAll('[name=asel]').forEach(r => r.onchange = () => { state.selectedAssessment = +r.value; save(); });
+    root.querySelectorAll('[name=asel]').forEach(r => r.onchange = () => { state.selectedAssessmentId = r.value; save(); });
     root.querySelector('#show-options').onclick = async e => {
       busy(e.target, true, t('show_options'));
       try {
-        const assessment = JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment]));
-        const res = await api('/api/actions', { assessment, gwpIndex: state.gwpIndex, lang: state.lang });
-        const sameAssessment = state.actionResult?.assessmentName === assessment.General.Name;
-        state.actionResult = { options: res.options, assumptions: res.assumptions, assessmentName: assessment.General.Name };
-        if (!sameAssessment) state.selectedIds = [];
+        const sc = byId(state.selectedAssessmentId) || Global;
+        const meta = metaOf(sc), aid = meta.id;
+        const res = await api('/api/actions', { assessment: plain(sc), meta, gwpIndex: state.gwpIndex, lang: state.lang });
+        state.actionLabels[aid] = CW.assignLabels(res.options, state.actionLabels[aid]);
+        const offered = new Set(res.options.map(o => o.key));
+        let base = state.actionResult?.assessmentId === aid && !state.actionResult.legacy ? state.selectedKeys
+          : state.actionSet?.assessmentId === aid && !state.actionSet.legacy ? state.selectedActions.map(a => a.key) : [];
+        let review = [];
+        if (state.actionSet?.legacy && (state.actionSet.assessmentId === aid || !state.actionSet.assessmentId)) {
+          // without a proven source assessment, nothing is mapped: every old selection goes to review
+          const m = state.actionSet.assessmentId === aid ? CW.mapLegacy(state.selectedActions, res.options)
+            : { mapped: [], review: state.selectedActions.filter(a => a.rule !== 'baseline') };
+          base = m.mapped.map(x => x.key);
+          m.mapped.forEach(x => { if (x.from.notes && !state.actionNotes[x.key]) state.actionNotes[x.key] = x.from.notes; });
+          review = m.review.map(a => a.title);
+        } else {
+          const known = [...(state.actionResult?.options || []), ...state.selectedActions];
+          review = base.filter(k => !offered.has(k)).map(k => known.find(o => o.key === k)?.title || k);
+        }
+        state.selectedKeys = base.filter(k => offered.has(k));
+        state.actionReview = review;
+        state.actionResult = { assessmentId: aid, assessmentName: sc.General.Name, basis: res.basis, options: res.options, assumptions: res.assumptions };
         go('actions:compare');
       } catch (err) { toast(t('error') + ': ' + err.message); busy(e.target, false); }
     };
@@ -294,45 +447,58 @@
 
   function viewActionsCompare(root) {
     const r = state.actionResult;
-    if (!r) return go('actions:select');
+    if (!r || r.legacy) return go('actions:select');
+    const f = freshness();
+    const optionsStale = f.options.length > 0;
     const showDetails = !!state.ui.showDetails;
     const rows = r.options.map(o => {
-      const sel = state.selectedIds.includes(o.id);
+      const k = o.key;
+      const sel = state.selectedKeys.includes(k);
       const detail = showDetails ? `<tr class="detail"><td colspan="4"><dl>
           <dt>${esc(t('evidence'))}</dt><dd>${esc(L(o.evidence))}</dd>
           ${o.scenario ? `<dt>${esc(t('scenario'))}</dt><dd>${esc(L(o.scenario))}</dd>` : ''}
           <dt>${esc(t('basis'))}</dt><dd><code>${esc(o.basis)}</code></dd></dl>
-          <textarea class="field small" data-note="${o.id}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(state.actionNotes[o.id] || '')}</textarea>
-          ${o.rule !== 'baseline' ? `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${o.id}">${esc(t('explain_ai'))}</button></div>` : ''}
-          ${state.explanations[o.id] ? `<div class="ai-text">${esc(state.explanations[o.id])}${sourcesHtml(state.explanationSources?.[o.id])}</div>` : ''}
+          <textarea class="field small" data-note="${esc(k)}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(state.actionNotes[k] || '')}</textarea>
+          ${o.rule !== 'baseline' ? `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(k)}">${esc(t('explain_ai'))}</button></div>` : ''}
+          ${state.explanations[k] ? `<div class="ai-text">${esc(state.explanations[k])}${sourcesHtml(state.explanationSources?.[k])}</div>` : ''}
         </td></tr>` : '';
-      return `<tr class="${sel ? 'sel' : ''}"><td><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${o.id}" ${sel ? 'checked' : ''} ${o.rule === 'baseline' ? 'disabled' : ''}> <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label></td>
+      return `<tr class="${sel ? 'sel' : ''}"><td><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${esc(k)}" ${sel ? 'checked' : ''} ${o.rule === 'baseline' ? 'disabled' : ''}> <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label></td>
         <td>${expectedCell(o)}</td><td>${esc(L(o.condition))}</td></tr>${detail}`;
     }).join('');
-    root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(r.assessmentName)}</b></p></div>
+    const review = state.actionReview || [];
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(byId(r.assessmentId)?.General.Name || r.assessmentName)}</b></p></div>
+      ${staleNotice(f.options, 'options')}
+      ${review.length ? `<div class="notice warn"><b>${esc(t('review_selection'))}</b><ul>${review.map(x => `<li>${esc(L(x))}</li>`).join('')}</ul></div>` : ''}
       <div class="card" style="padding:0;overflow:auto"><table class="data"><thead><tr><th>${esc(t('option'))}</th><th>${esc(t('expected'))}</th><th>${esc(t('condition'))}</th></tr></thead><tbody>${rows}</tbody></table></div>
       <button class="btn primary" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button>
       ${showDetails ? `<div class="notice small" style="margin-top:12px"><b>${esc(t('assumptions_title'))}:</b> ${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div>` : ''}
-      <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions">${esc(t('save_actions'))}</button></div>`;
+      <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions" ${optionsStale ? 'disabled' : ''}>${esc(t('save_actions'))}</button></div>`;
     root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; save(); render(); };
     root.querySelectorAll('[data-pick]').forEach(cb => cb.onchange = () => {
-      const id = cb.dataset.pick;
-      state.selectedIds = cb.checked ? [...new Set([...state.selectedIds, id])] : state.selectedIds.filter(x => x !== id);
+      const k = cb.dataset.pick;
+      state.selectedKeys = cb.checked ? [...new Set([...state.selectedKeys, k])] : state.selectedKeys.filter(x => x !== k);
       cb.closest('tr').classList.toggle('sel', cb.checked); save();
     });
     root.querySelectorAll('[data-note]').forEach(tx => tx.oninput = () => { state.actionNotes[tx.dataset.note] = tx.value; save(); });
     root.querySelectorAll('[data-explain]').forEach(b => b.onclick = async () => {
-      const o = r.options.find(x => x.id === b.dataset.explain);
+      const o = r.options.find(x => x.key === b.dataset.explain);
+      const sc = byId(r.assessmentId);
+      if (!sc) return toast(t('stale_assessment_missing'));
       busy(b, true, t('thinking'));
       try {
-        const res = await api('/api/actions/explain', { option: { ...o, notes: state.actionNotes[o.id] }, assessment: JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment])), gwpIndex: state.gwpIndex, lang: state.lang });
-        state.explanations[o.id] = res.text; state.explanationSources = { ...(state.explanationSources || {}), [o.id]: res.sources || [] }; save(); render();
+        const res = await api('/api/actions/explain', { option: { ...o, notes: state.actionNotes[o.key] }, assessment: plain(sc), gwpIndex: state.gwpIndex, lang: state.lang });
+        state.explanations[o.key] = res.text; state.explanationSources = { ...(state.explanationSources || {}), [o.key]: res.sources || [] }; save(); render();
       } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
     });
     root.querySelector('#save-actions').onclick = () => {
-      state.selectedActions = r.options.filter(o => state.selectedIds.includes(o.id)).map(o => ({ ...o, notes: state.actionNotes[o.id] || '' }));
-      if (!state.selectedActions.length) return toast(t('no_actions'));
-      state.plan = null; save(); toast(t('actions_saved')); go('plan');
+      if (freshness().options.length) return toast(t('outdated_hint_options'));
+      const chosen = r.options.filter(o => o.rule !== 'baseline' && state.selectedKeys.includes(o.key)).map(o => ({ ...o, notes: state.actionNotes[o.key] || '' }));
+      if (!chosen.length) return toast(t('no_actions'));
+      // plan and proposal are kept; freshness marks them outdated if this selection differs
+      state.selectedActions = chosen;
+      state.actionSet = { ...r.basis, savedAt: new Date().toISOString() };
+      state.actionReview = [];
+      toast(persist() ? t('actions_saved') : t('not_saved_kept_in_page')); go('plan');
     };
   }
 
@@ -351,6 +517,7 @@
       return;
     }
     const p = state.plan;
+    const fr = freshness();
     const acts = state.selectedActions.map(a => `<li><b>${esc(a.id)}</b> ${esc(L(a.title))} — <span class="muted">${expectedCell(a)}</span></li>`).join('');
     let body = '';
     if (p) {
@@ -367,34 +534,47 @@
           </tbody></table></div>`;
     }
     root.innerHTML = `<div class="page-head"><h1>${esc(t('plan_title'))}</h1><p class="muted">${esc(t('plan_sub'))}</p></div>
+      ${staleNotice(fr.actions, 'actions')}
+      ${staleNotice(fr.plan, 'plan')}
+      ${genErrorNotice('plan')}
+      ${p && onlyLegacy(fr.plan) && !fr.actions.length ? `<div class="actions-row" style="margin-top:0"><button class="btn" id="plan-reviewed">${esc(t('mark_reviewed'))}</button></div>` : ''}
+      ${outputLangNotice(p, 'plan')}
       <div class="card"><ul style="margin:0;padding-left:18px">${acts}</ul></div>
       ${body}
       <div class="actions-row">
         <button class="btn" data-go="actions:compare">${esc(t('back'))}</button>
-        <button class="btn" id="gen-plan">${esc(p ? t('regenerate') : t('generate_plan'))}</button>
+        ${previousControl('plan')}
+        <button class="btn" id="gen-plan" ${fr.actions.length ? 'disabled' : ''}>${esc(p ? t('regenerate') : t('generate_plan'))}</button>
         ${p ? `<button class="btn" id="plan-details">${esc(t('review_details'))}</button><button class="btn primary" id="save-plan">${esc(t('save_plan'))}</button>` : ''}
       </div>`;
-    root.querySelector('#gen-plan').onclick = async e => {
-      busy(e.target, true, t('drafting'));
-      try {
-        state.plan = await api('/api/plan', { actions: state.selectedActions, assessment: JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment] || Global)), gwpIndex: state.gwpIndex, profile: state.profile, lang: state.lang });
-        save(); render();
-      } catch (err) { busy(e.target, false); toast(t('error') + ': ' + err.message); }
-    };
+    root.querySelector('#gen-plan').onclick = e => generatePlan(e.target, p?.lang || state.lang);
+    const regenLang = root.querySelector('[data-regen-lang=plan]');
+    if (regenLang) regenLang.onclick = e => generatePlan(e.target, state.lang);
     if (!p) return;
+    const reviewed = root.querySelector('#plan-reviewed');
+    if (reviewed) reviewed.onclick = () => {
+      const sc = byId(state.actionSet?.assessmentId);
+      if (!sc) return toast(t('stale_assessment_missing'));
+      p.deps = CW.planDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, profile: state.profile });
+      save(); render();
+    };
     root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); };
     root.querySelectorAll('[data-owner]').forEach(i => i.oninput = () => { p.tasks[+i.dataset.owner].owner = i.value; save(); });
     root.querySelectorAll('[data-weeks]').forEach(i => i.onchange = () => { p.tasks[+i.dataset.weeks].weeks = Math.max(0, parseInt(i.value, 10) || 0); recomputeSchedule(p); save(); render(); });
     root.querySelector('#plan-details').onclick = () => { state.ui.planDetails = !state.ui.planDetails; save(); render(); };
-    root.querySelector('#save-plan').onclick = () => { save(); toast(t('plan_saved')); go('finance'); };
+    root.querySelector('#save-plan').onclick = () => { toast(persist() ? t('plan_saved') : t('not_saved_kept_in_page')); go('finance'); };
   }
 
   // ---------------------------------------------------------------- stage 4: financing
   function viewFinance(root) {
     const f = state.financing;
+    const fr = freshness();
+    const upstreamStale = fr.actions.length > 0 || fr.plan.length > 0;
+    const exportBlocked = upstreamStale || fr.proposal.length > 0;
     const card = (route, title, desc, btn) => `<div class="card pick ${f.route === route ? 'on' : ''}" data-route="${route}"><h2>${esc(title)}</h2><p>${esc(desc)}</p>${btn}</div>`;
     root.innerHTML = `<div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
       ${!state.plan ? `<div class="notice warn">${esc(t('no_plan'))}</div>` : ''}
+      ${staleNotice(fr.actions, 'actions')}${staleNotice(fr.plan, 'plan')}${staleNotice(fr.proposal, 'proposal')}${genErrorNotice('proposal')}
       ${card('general', t('general_proposal'), t('general_desc'), `<button class="btn ${f.route === 'general' ? 'primary' : ''}">${esc(t('use_general'))}</button>`)}
       ${card('custom', t('tailor'), t('tailor_desc'), `<label class="btn ${f.route === 'custom' ? 'primary' : ''}">${esc(t('add_guide'))}<input type="file" id="guide-file" accept=".pdf,.docx,.txt,.md" hidden></label>
         ${f.guideName ? `<span class="small muted" style="margin-left:8px">${esc(t('guide_loaded'))}: ${esc(f.guideName)}</span>` : ''}
@@ -402,8 +582,10 @@
         ${f.customFramework?._note ? `<p class="small muted" style="margin-top:8px">${esc(f.customFramework._note)}</p>` : ''}`)}
       ${card('gcf', t('gcf'), t('gcf_desc'), `<button class="btn ${f.route === 'gcf' ? 'primary' : ''}">${esc(t('use_gcf'))}</button><p class="small muted" style="margin:8px 0 0">${esc(t('gcf_note'))}</p>`)}
       <div class="actions-row"><button class="btn" data-go="plan">${esc(t('back'))}</button>
-        <button class="btn" id="dl-all">${esc(t('download_all'))}</button>
-        <button class="btn primary" id="draft">${esc(t('review_draft'))}</button></div>`;
+        ${state.proposal ? `<button class="btn" data-go="finance:draft">${esc(t('open_draft'))}</button>` : ''}
+        ${previousControl('proposal')}
+        <button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(t('download_all'))}</button>
+        <button class="btn primary" id="draft" ${upstreamStale ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
     root.querySelectorAll('[data-route]').forEach(c => c.onclick = e => {
       if (e.target.closest('label')) { f.route = c.dataset.route; save(); return; }
       f.route = c.dataset.route; save(); render();
@@ -421,24 +603,22 @@
         save(); render();
       } catch (err) { busy(lbl, false); toast(t('error') + ': ' + err.message); }
     };
-    root.querySelector('#draft').onclick = async e => {
-      busy(e.target, true, t('drafting'));
-      try {
-        state.proposal = await api('/api/proposal', {
-          route: f.route, customFramework: f.customFramework, guideText: f.guideText,
-          actions: state.selectedActions, plan: state.plan, profile: state.profile,
-          assessment: JSON.parse(JSON.stringify(Scenarios[state.selectedAssessment] || Global)), gwpIndex: state.gwpIndex, lang: state.lang,
-        });
-        go('finance:draft');
-      } catch (err) { busy(e.target, false); toast(t('error') + ': ' + err.message); }
-    };
+    root.querySelector('#draft').onclick = e => generateProposal(e.target, state.proposal?.lang || state.lang);
     root.querySelector('#dl-all').onclick = e => downloadAll(e.target);
   }
 
   function exportState() {
-    return { ...JSON.parse(JSON.stringify(state)), assessments: JSON.parse(JSON.stringify(Scenarios)), chat: undefined, checkpoints: undefined };
+    return { ...plain(state), assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), chat: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
+  }
+  // mirrors the server check so the user sees why before a request is made
+  function exportBlockedReason() {
+    const f = freshness();
+    for (const [k, what] of [['actions', 'actions'], ['plan', 'plan'], ['proposal', 'proposal']]) if (f[k].length) return t('outdated_hint_' + what);
+    return '';
   }
   async function downloadAll(btn) {
+    const why = exportBlockedReason();
+    if (why) return toast(why);
     busy(btn, true, t('download_all'));
     try {
       const blob = await api('/api/export', exportState(), true);
@@ -450,14 +630,33 @@
   function viewDraft(root) {
     const p = state.proposal;
     if (!p) return go('finance');
-    root.innerHTML = `<div class="page-head"><h1>${esc(t('proposal_title'))}</h1><p class="muted">${esc(p.title)}</p></div>
+    const fr = freshness();
+    const blocked = fr.actions.length || fr.plan.length || fr.proposal.length;
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('proposal_title'))}${fr.proposal.length ? ` <span class="badge-outdated">${esc(t('outdated_badge'))}</span>` : ''}</h1><p class="muted">${esc(p.title)}</p></div>
+      ${staleNotice(fr.proposal, 'proposal')}
+      ${genErrorNotice('proposal')}
+      ${onlyLegacy(fr.proposal) && !fr.actions.length && !fr.plan.length ? `<div class="actions-row" style="margin-top:0"><button class="btn" id="proposal-reviewed">${esc(t('mark_reviewed'))}</button></div>` : ''}
+      ${outputLangNotice(p, 'proposal')}
+      ${p.lang && state.plan?.lang && p.lang !== state.plan.lang ? `<div class="notice small warn" data-mixed-lang>${esc(t('mixed_lang').replaceAll('{proposal}', langName(p.lang)).replaceAll('{plan}', langName(state.plan.lang)))}</div>` : ''}
       ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
       ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${sourcesHtml(s.sources)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
-        <button class="btn" id="dl-word">${esc(t('download_word'))}</button>
-        <button class="btn primary" id="dl-all">${esc(t('download_all'))}</button></div>`;
+        ${previousControl('proposal')}
+        <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
+        <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(t('download_all'))}</button></div>`;
     root.querySelectorAll('[data-sec]').forEach(tx => tx.oninput = () => { p.sections[+tx.dataset.sec].text = tx.value; save(); });
+    const regenLang = root.querySelector('[data-regen-lang=proposal]');
+    if (regenLang) regenLang.onclick = e => generateProposal(e.target, state.lang);
+    const reviewed = root.querySelector('#proposal-reviewed');
+    if (reviewed) reviewed.onclick = () => {
+      const sc = sourceAssessment();
+      if (!sc) return toast(t('stale_assessment_missing'));
+      p.deps = CW.proposalDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, plan: state.plan, profile: state.profile, financing: state.financing });
+      save(); render();
+    };
     root.querySelector('#dl-word').onclick = async e => {
+      const why = exportBlockedReason();
+      if (why) return toast(why);
       busy(e.target, true, t('download_word'));
       try { download(await api('/api/export/docx', exportState(), true), 'proposal.docx'); }
       catch (err) { toast(t('error') + ': ' + err.message); }
@@ -482,7 +681,7 @@
     const pending = document.createElement('div'); pending.className = 'msg bot'; pending.innerHTML = `<span class="spin"></span> ${esc(t('thinking'))}`;
     log.appendChild(pending); log.scrollTop = log.scrollHeight;
     try {
-      const sc = Scenarios[state.ui.view.startsWith('assess') ? state.current : state.selectedAssessment] || Global;
+      const sc = (state.ui.view.startsWith('assess') ? Global : sourceAssessment()) || Global;
       const res = await api('/api/chat', {
         messages: state.chat.filter(m => !m.local).map(({ role, content }) => ({ role, content })),
         lang: state.lang, stage: state.ui.view, focus: focus || '',
@@ -500,11 +699,19 @@
 
   // ---------------------------------------------------------------- events
   document.addEventListener('click', e => {
+    const restore = e.target.closest('[data-restore]');
+    if (restore) {
+      const what = restore.dataset.restore;
+      if (!confirm(t('confirm_restore_' + what))) return;
+      if (CW.restoreVersion(state, what)) { state.ui.genError = null; toast(persist() ? t('restored') : t('not_saved_kept_in_page')); render(); }
+      return;
+    }
+    if (e.target.closest('[data-dismiss-error]')) { state.ui.genError = null; save(); return render(); }
     const g = e.target.closest('[data-go]');
     if (g) { e.preventDefault(); return go(g.dataset.go); }
     const tab = e.target.closest('[data-tab]');
     if (tab) {
-      const map = { assess: 'assess:choose', actions: state.actionResult ? 'actions:compare' : 'actions:select', plan: 'plan', finance: state.proposal ? 'finance:draft' : 'finance' };
+      const map = { assess: 'assess:choose', actions: state.actionResult && !state.actionResult.legacy ? 'actions:compare' : 'actions:select', plan: 'plan', finance: state.proposal ? 'finance:draft' : 'finance' };
       return go(map[tab.dataset.tab]);
     }
     const lang = e.target.closest('[data-lang]');
@@ -535,14 +742,17 @@
     ]);
     LANGS = { en, id };
     Scenarios.length = 0;
-    (state.assessments || []).forEach(o => { try { Scenarios.push(Ecam.from(o)); } catch (e) { console.warn('skip assessment', e); } });
+    (state.assessments || []).forEach((o, i) => {
+      try { const sc = Ecam.from(o); attachMeta(sc, state.assessmentMeta?.[i]); Scenarios.push(sc); }
+      catch (e) { console.warn('skip assessment', e); }
+    });
     const sel = state.ui.sel;
     if (!Scenarios.length) newScenario();
     setCurrent(Math.min(state.current || 0, Scenarios.length - 1));
     state.ui.sel = sel || { kind: 'general' };
     setGwp(state.gwpIndex || 0);
     render();
-    $('#save-status').textContent = t('saved');
+    renderStorageAlert();
     api('/api/health').then(h => { META = h; }).catch(() => {});
   }
   boot();

@@ -17,7 +17,7 @@ function buildPlan(actions, lang = 'en') {
       const weeks = FRAMEWORK.category_weeks[a.category]?.[p.key] ?? p.weeks;
       const id = 'T' + String(n++).padStart(2, '0');
       tasks.push({
-        id, action_id: a.id, action: L(a.title), phase: p.key,
+        id, action_id: a.id, action_key: a.key || null, action: L(a.title), phase: p.key,
         name: `${L(p)}${p.key === 'confirm' && a.condition ? ': ' + L(a.condition) : ''}`,
         owner: L(p.owner), start_week: start, weeks, depends_on: prev ? [prev] : [],
       });

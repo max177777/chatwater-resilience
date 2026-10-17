@@ -12,6 +12,8 @@ const knowledge = require('./engine/knowledge');
 const { callClaude, aiEnabled, MODEL } = require('./engine/ai');
 const P = require('./engine/proposal');
 const X = require('./engine/export');
+const CW = require('./public/js/cw-core');
+const I = require('./engine/integrity');
 
 const app = express();
 app.disable('x-powered-by');
@@ -30,8 +32,8 @@ function limitAI(req, res, next) {
   arr.push(now); hits.set(key, arr); next();
 }
 const wrap = fn => (req, res) => Promise.resolve(fn(req, res)).catch(e => {
-  console.error(e);
-  res.status(e.code === 'NO_KEY' ? 503 : 400).json({ error: e.message });
+  if (e.status !== 409) console.error(e);
+  res.status(e.status || (e.code === 'NO_KEY' ? 503 : 400)).json({ error: e.message, issues: e.issues });
 });
 
 // Results are always recomputed on the server from the ECAM inputs, so AI
@@ -59,10 +61,15 @@ app.post('/api/calculate', wrap((req, res) => {
   res.json({ results: engine.calculate(assessments, { gwpIndex }) });
 }));
 
+// meta = { id, substages } — ChatWater IDs for the assessment and its substages (kept outside the ECAM JSON)
 app.post('/api/actions', wrap((req, res) => {
-  const { assessment, gwpIndex } = req.body;
+  const { assessment, meta, gwpIndex = 0 } = req.body;
   const r = resultsFor(assessment, gwpIndex);
-  res.json({ results: r, ...suggestActions(r, assessment, engine, gwpIndex || 0) });
+  const { options, assumptions } = suggestActions(r, assessment, engine, gwpIndex);
+  res.json({
+    results: r, assumptions, options: CW.withKeys(options, meta),
+    basis: { assessmentId: meta?.id || null, revision: CW.revision(assessment), gwpIndex },
+  });
 }));
 
 app.post('/api/actions/explain', limitAI, wrap(async (req, res) => {
@@ -79,10 +86,12 @@ app.post('/api/actions/explain', limitAI, wrap(async (req, res) => {
 }));
 
 app.post('/api/plan', limitAI, wrap(async (req, res) => {
-  const { actions = [], assessment, gwpIndex, profile, lang = 'en' } = req.body;
+  const { actions = [], actionSet, assessment, meta, gwpIndex = 0, profile, lang = 'en' } = req.body;
+  I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet });
   const plan = buildPlan(actions, lang);
   const summary = await P.planSummary({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, lang });
-  res.json({ ...plan, summary: summary.text, sources: summary.sources || [], ai: summary.ai });
+  const deps = CW.planDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, profile });
+  res.json({ ...plan, summary: summary.text, sources: summary.sources || [], ai: summary.ai, lang, deps });
 }));
 
 app.post('/api/guide/parse', limitAI, wrap(async (req, res) => {
@@ -99,11 +108,15 @@ app.post('/api/guide/parse', limitAI, wrap(async (req, res) => {
 }));
 
 app.post('/api/proposal', limitAI, wrap(async (req, res) => {
-  const { route = 'general', customFramework, guideText, actions, plan, profile, assessment, gwpIndex, lang = 'en' } = req.body;
+  const { route = 'general', customFramework, guideText, actions = [], actionSet, plan, profile, assessment, meta, gwpIndex = 0, lang = 'en' } = req.body;
   const fw = route === 'custom' && customFramework ? customFramework
     : P.financingFrameworks().find(f => f.id === route);
   if (!fw) throw new Error('Unknown financing route ' + route);
-  res.json(await P.draftProposal({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, lang }, fw, guideText));
+  I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet });
+  I.requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile });
+  const proposal = await P.draftProposal({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, lang }, fw, guideText);
+  const deps = CW.proposalDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, plan, profile, financing: { route, customFramework } });
+  res.json({ ...proposal, lang, deps });
 }));
 
 app.post('/api/chat', limitAI, wrap(async (req, res) => {
@@ -126,9 +139,13 @@ app.post('/api/chat', limitAI, wrap(async (req, res) => {
   res.json({ reply, sources: cited.map(s => `[${s.id}] ${s.title}${s.heading ? ' — ' + s.heading : ''}`) });
 }));
 
+// Documents are written in the language the outputs were generated in, not the current interface language.
+const outputLang = s => s.proposal?.lang || s.plan?.lang || s.lang || 'en';
+
+// Exports are rejected (409) unless actions, plan and proposal match the assessment they came from.
 app.post('/api/export', wrap(async (req, res) => {
-  const state = req.body;
-  const assessment = (state.assessments || [])[state.selectedAssessment || 0];
+  const state = { ...req.body, lang: outputLang(req.body) };
+  const { assessment } = I.exportContext(state);
   const results = (state.assessments || []).map(a => engine.calculateOne(a, state.gwpIndex || 0));
   const docx = state.proposal ? await X.buildProposalDocx({
     lang: state.lang, proposal: state.proposal, results: assessment ? engine.calculateOne(assessment, state.gwpIndex || 0) : null,
@@ -142,9 +159,9 @@ app.post('/api/export', wrap(async (req, res) => {
 
 app.post('/api/export/docx', wrap(async (req, res) => {
   const state = req.body;
-  const assessment = (state.assessments || [])[state.selectedAssessment || 0];
+  const { assessment } = I.exportContext(state, { requireProposal: true });
   const buf = await X.buildProposalDocx({
-    lang: state.lang, proposal: state.proposal, results: assessment ? engine.calculateOne(assessment, state.gwpIndex || 0) : null,
+    lang: outputLang(state), proposal: state.proposal, results: assessment ? engine.calculateOne(assessment, state.gwpIndex || 0) : null,
     actions: state.selectedActions, plan: state.plan, profile: state.profile,
   });
   res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': 'attachment; filename="proposal.docx"' });
