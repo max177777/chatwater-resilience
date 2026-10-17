@@ -97,23 +97,23 @@
   };
 
   // ---------------------------------------------------------------- ECAM scenarios
-  /** Record that the user entered a value for a tracked input (called by the Stage 1 form). */
-  function markEntered(prefix, stage, code) {
+  /** Record how the Stage 1 form set a tracked input: 'manual', 'estimate' (ECAM estimate) or 'typical' (typical value). */
+  function markEntered(prefix, stage, code, origin = 'manual') {
     if (!Global || !CW.isTracked(prefix, code)) return;
-    CW.setInputStatus(state.inputStatus, idOf(Global), idOf(stage, 's'), code, 'entered', stage[code]);
+    CW.setInputOrigin(state.inputStatus, idOf(Global), idOf(stage, 's'), code, origin, stage[code]);
   }
   function substageById(sc, sid) {
     for (const [, lv, sl] of CW.STAGE_KEYS) { const ss = sc?.[lv]?.[sl]?.find(x => idOf(x, 's') === sid); if (ss) return ss; }
     return null;
   }
-  /** Entry status of a tracked input, compared with its current value in the assessment. */
+  /** Origin and confirmation of a tracked input, compared with its current value in the assessment. */
   function inputStatusOf(aid, sid, code, fallback) {
     const ss = substageById(byId(aid), sid);
-    return CW.inputStatus(state.inputStatus[aid], sid, code, ss ? ss[code] : fallback);
+    return CW.inputState(state.inputStatus[aid], sid, code, ss ? ss[code] : fallback);
   }
   function confirmInput(aid, sid, code) {
     const ss = substageById(byId(aid), sid);
-    if (ss) CW.setInputStatus(state.inputStatus, aid, sid, code, 'confirmed', ss[code]);
+    if (ss) CW.confirmInputValue(state.inputStatus, aid, sid, code, ss[code]);
   }
 
   function setGwp(i) {
@@ -483,7 +483,7 @@
     return {
       t, L, esc, fmt,
       labelOf: code => rich(tE(code + '_descr') || tE(code) || code),
-      unitOf: code => (code === 'conv_kwh_co2' ? 'kgCO₂/kWh' : (Info[code]?.unit || '').replace(/\bm3\b/g, 'm³')),
+      unitView: code => CW.unitView(Units, Info, byId(aid) || Global, code),
       status: (sid, code, value) => inputStatusOf(aid, sid, code, value),
     };
   }
@@ -520,7 +520,7 @@
     root.querySelectorAll('[data-confirm-check]').forEach(b => b.onclick = () => {
       const [check, sid] = b.dataset.confirmCheck.split('|');
       const c = r.checks.find(x => x.check === check && x.sid === sid);
-      for (const i of c?.inputs || []) if (DC.NEEDS_CONFIRM.includes(inputStatusOf(r.assessmentId, sid, i.code, i.value))) confirmInput(r.assessmentId, sid, i.code);
+      for (const i of c?.inputs || []) if (DC.needsConfirm(inputStatusOf(r.assessmentId, sid, i.code, i.value))) confirmInput(r.assessmentId, sid, i.code);
       save(); render();
     });
     root.querySelectorAll('[data-pick]').forEach(cb => cb.onchange = () => {

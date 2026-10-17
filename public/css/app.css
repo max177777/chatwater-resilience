@@ -142,8 +142,8 @@ table.data input[type=text], table.data input[type=number] { padding: 4px 6px; }
 .dc-dl dd { margin: 0; }
 .dc-values, .dc-inputs { margin: 4px 0; padding-left: 18px; font-size: 13px; }
 .in-st, .ck-st { font-size: 12px; font-weight: 600; border-radius: 6px; padding: 1px 6px; background: #E8ECEE; color: #3D4B50; }
-.in-entered, .in-confirmed, .ck-triggered { background: var(--teal-soft); color: var(--teal-dark); }
-.in-unconfirmed, .in-default, .ck-not_assessed { background: #FDE7C7; color: #8A4B08; }
+.in-manual, .in-confirmed, .ck-triggered { background: var(--teal-soft); color: var(--teal-dark); }
+.in-unknown:not(.in-confirmed), .in-default:not(.in-confirmed), .in-estimate:not(.in-confirmed), .in-typical:not(.in-confirmed), .ck-not_assessed { background: #FDE7C7; color: #8A4B08; }
 table.checks td { font-size: 13px; }
 .ai-text { white-space: pre-wrap; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-top: 8px; }
 .result-list label { display: flex; gap: 10px; align-items: flex-start; padding: 10px; border-radius: 8px; cursor: pointer; }

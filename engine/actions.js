@@ -27,6 +27,13 @@ const NRW_TRIGGER = 0.15;      // non-revenue water share above which NRW reduct
 
 function substages(r, prefix) { return r.substages.filter(s => s.prefix === prefix); }
 
+// Review flag for display only; it never changes which options are offered or their figures.
+// ECAM's pump saving is nrg_cons − (efficiency / expected efficiency) × nrg_pump.
+function pumpReview(s) {
+  const i = s.inputs || {}, pump = i[s.prefix + '_nrg_pump'] || 0, total = i[s.prefix + '_nrg_cons'] || 0;
+  return pump === 0 || pump !== total ? ['pump_energy_basis'] : [];
+}
+
 // trigger(match, r): the rule's own condition in words, with the assessment values it read.
 // values: { code } = ECAM variable (labelled from ECAM's dictionary) or { label } = interface key.
 const RULES = [
@@ -49,7 +56,10 @@ const RULES = [
           { code: p + '_KPI_nrg_elec_eff', value: o[p + '_KPI_nrg_elec_eff'], unit: '%' },
           { code: p + '_pmp_exff', value: s.inputs?.[p + '_pmp_exff'], unit: '%' },
           { code: p + '_KPI_nrg_estm_sav', value: o[p + '_KPI_nrg_estm_sav'], unit: 'kWh' },
+          { code: p + '_nrg_pump', value: s.inputs?.[p + '_nrg_pump'] ?? null, unit: 'kWh' },
+          { code: p + '_nrg_cons', value: s.inputs?.[p + '_nrg_cons'] ?? null, unit: 'kWh' },
         ],
+        review: pumpReview(s),
       };
     },
     build: (s) => {
@@ -339,22 +349,26 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
  * Requirements beyond the existing conditions are not enforced here; they are listed
  * for domain review in docs/decision-support-review.md.
  */
+// untracked: inputs the rule or its estimate is known to read (from the ECAM formulas and the
+// rule code) without input-status tracking. Known dependencies only, not a complete list.
 const PUMP_KEYS = ['flow', 'head', 'volt', 'amps', 'pf'];
 const CHECKS = [
   {
     id: 'pump_efficiency', rules: ['pump_upgrade', 'pump_audit'], prefixes: ['wsa', 'wsd', 'wwc'],
     inputs: p => [...PUMP_KEYS, 'exff'].map(k => `${p}_pmp_${k}`),
+    untracked: p => [`${p}_nrg_pump`, `${p}_nrg_cons`, ...(p === 'wwc' ? ['wwc_vol_pump'] : []), `${p}_conv_kwh`],
     evaluate: s => {
       const p = s.prefix, i = s.inputs || {};
       const eff = s.outputs[p + '_KPI_nrg_elec_eff'], sav = s.outputs[p + '_KPI_nrg_estm_sav'];
       if (!(eff > 0)) return { status: 'not_assessed', reason: 'no_efficiency', missing: PUMP_KEYS.map(k => `${p}_pmp_${k}`).filter(c => !(i[c] > 0)) };
       if (!(i[p + '_pmp_exff'] > 0) || sav == null) return { status: 'not_assessed', reason: 'no_expected_efficiency', missing: [p + '_pmp_exff'] };
-      return sav > 0 ? { status: 'triggered' } : { status: 'not_triggered', reason: 'saving_not_positive' };
+      return sav > 0 ? { status: 'triggered', review: pumpReview(s) } : { status: 'not_triggered', reason: 'saving_not_positive' };
     },
   },
   {
     id: 'nrw', rules: ['nrw_reduction'], prefixes: ['wsd'],
     inputs: () => ['wsd_vol_dist', 'wsd_auth_con'],
+    untracked: () => ['wsa_nrg_cons', 'wst_nrg_cons', 'wsd_nrg_cons', 'conv_kwh_co2'],
     evaluate: s => {
       const i = s.inputs || {};
       const missing = ['wsd_vol_dist', 'wsd_auth_con'].filter(c => !(i[c] > 0));
@@ -365,6 +379,7 @@ const CHECKS = [
   {
     id: 'desludging', rules: ['septic_desludging'], prefixes: ['wwo'],
     inputs: () => ['wwo_cont_emp'],
+    untracked: () => ['wwo_bod_cont', 'wwo_bod_rmvd', 'wwo_ch4_efac_con'],
     evaluate: s => {
       if (!((s.outputs.wwo_KPI_GHG_containment?.total || 0) > 0)) return { status: 'not_assessed', reason: 'no_containment_emissions', missing: [] };
       return (s.inputs?.wwo_cont_emp || 0) < ASSUMPTIONS.desludging_emptied_pct ? { status: 'triggered' } : { status: 'not_triggered', reason: 'emptying_at_or_above_scenario', limit: ASSUMPTIONS.desludging_emptied_pct };
@@ -380,7 +395,7 @@ function ruleChecks(results, where) {
       out.push({
         check: c.id, rules: c.rules, substage: where.get(s), name: s.name,
         inputs: c.inputs(s.prefix).map(code => ({ code, value: s.inputs?.[code] ?? null })),
-        missing: [], reason: null, ...c.evaluate(s),
+        untracked: c.untracked(s.prefix), missing: [], reason: null, review: [], ...c.evaluate(s),
       });
     }
   }

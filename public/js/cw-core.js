@@ -12,7 +12,7 @@
  *   regenerate / restoreVersion   keep one recoverable previous plan and proposal
  *   loadSession / writeSession    browser storage that never overwrites a session it could not back up
  *   unitView(...)         display unit and multiplier for an ECAM input
- *   inputStatus(...)      entry status of the inputs read by the covered rule checks
+ *   inputState(...)       origin and confirmation of the inputs read by the covered rule checks
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -290,8 +290,10 @@
 
   // ------------------------------------------------------------ input status
   // Entry status is kept for the inputs read by the covered rule checks only. It lives in
-  // state.inputStatus[assessmentId] = { origin: 'new' | …, s: { substageId: { code: { st, v } } } },
-  // never in the ECAM JSON. A record only holds while the value is unchanged since it was made.
+  // state.inputStatus[assessmentId] = { origin: 'new' | …, s: { substageId: { code: { o, c, v } } } },
+  // never in the ECAM JSON. o = how Stage 1 set the value (INPUT_ORIGINS), c = confirmed in Stage 2.
+  // Origin and confirmation are independent: confirming an ECAM estimate keeps it an estimate.
+  // A record only holds while the value is unchanged since it was made.
   const PUMP_INPUTS = p => ['flow', 'head', 'volt', 'amps', 'pf', 'exff'].map(k => `${p}_pmp_${k}`);
   const TRACKED_INPUTS = {
     wsa: PUMP_INPUTS('wsa'), wwc: PUMP_INPUTS('wwc'),
@@ -299,17 +301,41 @@
     wwo: ['wwo_cont_emp'],
   };
   const isTracked = (prefix, code) => !!(TRACKED_INPUTS[prefix] && TRACKED_INPUTS[prefix].includes(code));
-  /** 'entered' | 'confirmed' | 'default' (untouched, assessment created here) | 'unconfirmed' (imported or older session). */
-  function inputStatus(record, sid, code, value) {
-    const r = record && record.s && record.s[sid] && record.s[sid][code];
-    if (r && (r.v === value || (r.v == null && value == null))) return r.st;
-    return record && record.origin === 'new' && !r ? 'default' : 'unconfirmed';
+  const INPUT_ORIGINS = ['manual', 'estimate', 'typical'];
+  const sameValue = (r, value) => r.v === value || (r.v == null && value == null);
+  const recordOf = (record, sid, code) => record && record.s && record.s[sid] && record.s[sid][code];
+  /**
+   * { origin, confirmed }. origin: 'manual' | 'estimate' | 'typical' (set in Stage 1),
+   * 'default' (untouched, assessment created here) or 'unknown' (imported, older session, or changed since recorded).
+   * Records saved as { st: 'entered' | 'confirmed' } before origins were split are read as manual / confirmed.
+   */
+  function inputState(record, sid, code, value) {
+    const r = recordOf(record, sid, code);
+    const untouched = record && record.origin === 'new' ? 'default' : 'unknown';
+    if (r && sameValue(r, value)) {
+      const o = r.o || (r.st === 'entered' ? 'manual' : null);
+      return { origin: INPUT_ORIGINS.includes(o) ? o : untouched, confirmed: !!(r.c || r.st === 'confirmed') };
+    }
+    return { origin: r ? 'unknown' : untouched, confirmed: false };
   }
-  /** Record an entry or confirmation. sid = ChatWater substage ID. */
-  function setInputStatus(map, assessmentId, sid, code, st, value) {
+  /** A manual entry is the user's own value; anything else needs a confirmation. */
+  const needsConfirm = s => !s.confirmed && s.origin !== 'manual';
+  const ensureRecord = (map, assessmentId, sid) => {
     const rec = map[assessmentId] = map[assessmentId] || { origin: 'unknown', s: {} };
     rec.s = rec.s || {};
-    (rec.s[sid] = rec.s[sid] || {})[code] = { st, v: value };
+    return (rec.s[sid] = rec.s[sid] || {});
+  };
+  /** Record how Stage 1 set a value. A new value starts unconfirmed. sid = ChatWater substage ID. */
+  function setInputOrigin(map, assessmentId, sid, code, origin, value) {
+    ensureRecord(map, assessmentId, sid)[code] = { o: INPUT_ORIGINS.includes(origin) ? origin : null, c: false, v: value };
+    return map;
+  }
+  /** Confirm the current value, keeping its recorded origin when the value is unchanged. */
+  function confirmInputValue(map, assessmentId, sid, code, value) {
+    const subs = ensureRecord(map, assessmentId, sid);
+    const r = subs[code];
+    const o = r && sameValue(r, value) ? (r.o || (r.st === 'entered' ? 'manual' : null)) : null;
+    subs[code] = { o, c: true, v: value };
     return map;
   }
 
@@ -329,6 +355,6 @@
     SCHEMA, STAGE_KEYS, canonical, hash, fp, revision, actionKey, substageId, withKeys, withCheckIds, assignLabels, mapLegacy,
     actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, migrate, unitView,
     commitVersion, regenerate, restoreVersion, loadSession, writeSession, isQuota,
-    TRACKED_INPUTS, isTracked, inputStatus, setInputStatus,
+    TRACKED_INPUTS, INPUT_ORIGINS, isTracked, inputState, needsConfirm, setInputOrigin, confirmInputValue,
   };
 });
