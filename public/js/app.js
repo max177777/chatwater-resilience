@@ -33,6 +33,7 @@
     actionSet: null, selectedActions: [],
     plan: null, financing: { route: 'general' }, proposal: null,
     chat: [], checkpoints: [], explanations: {},
+    inputStatus: {}, // assessment ID -> entry status of the inputs read by the covered rule checks (see CW.inputStatus)
     ui: { tab: 'assess', view: 'assess:choose', sel: { kind: 'general' }, chatOpen: true },
   });
   // storageLock: the saved session could not be read or backed up, so it must not be written over
@@ -96,6 +97,25 @@
   };
 
   // ---------------------------------------------------------------- ECAM scenarios
+  /** Record that the user entered a value for a tracked input (called by the Stage 1 form). */
+  function markEntered(prefix, stage, code) {
+    if (!Global || !CW.isTracked(prefix, code)) return;
+    CW.setInputStatus(state.inputStatus, idOf(Global), idOf(stage, 's'), code, 'entered', stage[code]);
+  }
+  function substageById(sc, sid) {
+    for (const [, lv, sl] of CW.STAGE_KEYS) { const ss = sc?.[lv]?.[sl]?.find(x => idOf(x, 's') === sid); if (ss) return ss; }
+    return null;
+  }
+  /** Entry status of a tracked input, compared with its current value in the assessment. */
+  function inputStatusOf(aid, sid, code, fallback) {
+    const ss = substageById(byId(aid), sid);
+    return CW.inputStatus(state.inputStatus[aid], sid, code, ss ? ss[code] : fallback);
+  }
+  function confirmInput(aid, sid, code) {
+    const ss = substageById(byId(aid), sid);
+    if (ss) CW.setInputStatus(state.inputStatus, aid, sid, code, 'confirmed', ss[code]);
+  }
+
   function setGwp(i) {
     state.gwpIndex = i;
     Configuration.gwp_reports_index = i;
@@ -119,6 +139,8 @@
       if (c) Object.assign(s.General, { Country: country, Currency: c.currency, conv_kwh_co2: c.conv_kwh_co2, prot_con: c.prot_con, bod_pday: c.bod_pday });
     }
     if (state.profile?.population) { s.Water.ws_resi_pop = +state.profile.population || 0; s.Waste.ww_resi_pop = +state.profile.population || 0; }
+    // untouched inputs of an assessment started here are defaults; imported ones stay unconfirmed
+    state.inputStatus[idOf(s)] = { origin: 'new', s: {} };
     Scenarios.push(s);
     setCurrent(Scenarios.length - 1);
     return s;
@@ -447,18 +469,23 @@
         }
         state.selectedKeys = base.filter(k => offered.has(k));
         state.actionReview = review;
-        state.actionResult = { assessmentId: aid, assessmentName: sc.General.Name, basis: res.basis, options: res.options, assumptions: res.assumptions };
+        state.actionResult = { assessmentId: aid, assessmentName: sc.General.Name, basis: res.basis, options: res.options, assumptions: res.assumptions, checks: res.checks || [] };
         go('actions:compare');
       } catch (err) { toast(t('error') + ': ' + err.message); busy(e.target, false); }
     };
   }
 
-  function expectedCell(o) {
-    const parts = [];
-    if (o.expected_kgco2) parts.push(`${fmt(o.expected_kgco2 / 1000, 0)} tCO₂eq`);
-    if (o.expected_kwh) parts.push(`${fmt(o.expected_kwh)} kWh`);
-    if (!parts.length) return esc(L(o.expected_text) || '–');
-    return esc(parts.join(' · ')) + (o.scenario ? ` <span class="muted small">(${state.lang === 'id' ? 'skenario' : 'scenario'})</span>` : '');
+  const expectedCell = o => DC.benefit(o, { t, L, esc, fmt });
+
+  // Cards whose details the user opened in this page session (not saved)
+  const openCards = new Set();
+  function cardCtx(aid) {
+    return {
+      t, L, esc, fmt,
+      labelOf: code => rich(tE(code + '_descr') || tE(code) || code),
+      unitOf: code => (code === 'conv_kwh_co2' ? 'kgCO₂/kWh' : (Info[code]?.unit || '').replace(/\bm3\b/g, 'm³')),
+      status: (sid, code, value) => inputStatusOf(aid, sid, code, value),
+    };
   }
 
   function viewActionsCompare(root) {
@@ -467,33 +494,39 @@
     const f = freshness();
     const optionsStale = f.options.length > 0;
     const showDetails = !!state.ui.showDetails;
-    const rows = r.options.map(o => {
-      const k = o.key;
-      const sel = state.selectedKeys.includes(k);
-      const detail = showDetails ? `<tr class="detail"><td colspan="4"><dl>
-          <dt>${esc(t('evidence'))}</dt><dd>${esc(L(o.evidence))}</dd>
-          ${o.scenario ? `<dt>${esc(t('scenario'))}</dt><dd>${esc(L(o.scenario))}</dd>` : ''}
-          <dt>${esc(t('basis'))}</dt><dd><code>${esc(o.basis)}</code></dd></dl>
-          <textarea class="field small" data-note="${esc(k)}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(state.actionNotes[k] || '')}</textarea>
-          ${o.rule !== 'baseline' ? `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(k)}" ${META.ai ? '' : `disabled title="${esc(t('ai_off_short'))}"`}>${esc(t('explain_ai'))}</button>${META.ai ? '' : ` <span class="small muted">${esc(t('ai_off_short'))}</span>`}</div>` : ''}
-          ${state.explanations[k] ? `<div class="ai-text">${esc(state.explanations[k])}${sourcesHtml(state.explanationSources?.[k])}</div>` : ''}
-        </td></tr>` : '';
-      return `<tr class="${sel ? 'sel' : ''}"><td><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${esc(k)}" ${sel ? 'checked' : ''} ${o.rule === 'baseline' ? 'disabled' : ''}> <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label></td>
-        <td>${expectedCell(o)}</td><td>${esc(L(o.condition))}</td></tr>${detail}`;
-    }).join('');
+    const ctx = cardCtx(r.assessmentId);
+    const explainHtml = o => o.rule === 'baseline' ? '' : `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(o.key)}" ${META.ai ? '' : `disabled title="${esc(t('ai_off_short'))}"`}>${esc(t('explain_ai'))}</button>${META.ai ? '' : ` <span class="small muted">${esc(t('ai_off_short'))}</span>`}</div>
+      ${state.explanations[o.key] ? `<div class="ai-text">${esc(state.explanations[o.key])}${sourcesHtml(state.explanationSources?.[o.key])}</div>` : ''}`;
+    const cards = r.options.map(o => DC.card(o, ctx, {
+      selected: state.selectedKeys.includes(o.key), note: state.actionNotes[o.key] || '',
+      open: showDetails || openCards.has(o.key), checks: r.checks, explainHtml: explainHtml(o),
+    })).join('');
     const review = state.actionReview || [];
     root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(byId(r.assessmentId)?.General.Name || r.assessmentName)}</b></p></div>
       ${staleNotice(f.options, 'options')}
       ${review.length ? `<div class="notice warn"><b>${esc(t('review_selection'))}</b><ul>${review.map(x => `<li>${esc(L(x))}</li>`).join('')}</ul></div>` : ''}
-      <div class="card" style="padding:0;overflow:auto"><table class="data"><thead><tr><th>${esc(t('option'))}</th><th>${esc(t('expected'))}</th><th>${esc(t('condition'))}</th></tr></thead><tbody>${rows}</tbody></table></div>
-      <button class="btn primary" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button>
-      ${showDetails ? `<div class="notice small" style="margin-top:12px"><b>${esc(t('assumptions_title'))}:</b> ${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div>` : ''}
+      ${r.checks ? DC.panel(r.checks, r.options, ctx, { open: openCards.has('__checks') }) : ''}
+      <div class="row" style="margin-bottom:10px"><span class="grow small muted">${esc(t('cards_hint'))}</span>
+        <button class="btn sm" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button></div>
+      <div class="dcards">${cards}</div>
+      <div class="notice small" style="margin-top:12px"><b>${esc(t('assumptions_title'))}:</b> ${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div>
       <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions" ${optionsStale ? 'disabled' : ''}>${esc(t('save_actions'))}</button></div>`;
-    root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; save(); render(); };
+    root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; if (showDetails) openCards.clear(); save(); render(); };
+    root.querySelectorAll('details[data-details]').forEach(d => d.ontoggle = () => { d.open ? openCards.add(d.dataset.details) : openCards.delete(d.dataset.details); });
+    root.querySelectorAll('[data-confirm]').forEach(b => b.onclick = () => {
+      const [sid, code] = b.dataset.confirm.split('|');
+      confirmInput(r.assessmentId, sid, code); save(); render();
+    });
+    root.querySelectorAll('[data-confirm-check]').forEach(b => b.onclick = () => {
+      const [check, sid] = b.dataset.confirmCheck.split('|');
+      const c = r.checks.find(x => x.check === check && x.sid === sid);
+      for (const i of c?.inputs || []) if (DC.NEEDS_CONFIRM.includes(inputStatusOf(r.assessmentId, sid, i.code, i.value))) confirmInput(r.assessmentId, sid, i.code);
+      save(); render();
+    });
     root.querySelectorAll('[data-pick]').forEach(cb => cb.onchange = () => {
       const k = cb.dataset.pick;
       state.selectedKeys = cb.checked ? [...new Set([...state.selectedKeys, k])] : state.selectedKeys.filter(x => x !== k);
-      cb.closest('tr').classList.toggle('sel', cb.checked); save();
+      cb.closest('.dcard').classList.toggle('sel', cb.checked); save();
     });
     root.querySelectorAll('[data-note]').forEach(tx => tx.oninput = () => { state.actionNotes[tx.dataset.note] = tx.value; save(); });
     root.querySelectorAll('[data-explain]').forEach(b => b.onclick = async () => {
@@ -752,7 +785,7 @@
   // ---------------------------------------------------------------- boot
   window.App = {
     get state() { return state; }, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
-    setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, render, finishAssessment,
+    setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, render, finishAssessment, markEntered,
   };
 
   async function boot() {

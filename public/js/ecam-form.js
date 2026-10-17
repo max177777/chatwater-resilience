@@ -241,6 +241,7 @@ const CWForm = (() => {
   function bindEntry(root, sel) {
     const app = A();
     const stage = sel.obj;
+    const entered = code => { if (sel.kind === 'ss') app.markEntered(sel.struct.prefix, stage, code); };
     root.onchange = root.oninput = null;
 
     root.addEventListener('input', e => {
@@ -248,6 +249,7 @@ const CWForm = (() => {
       if (el.dataset.kind === 'num' && stage) {
         const v = parseFloat(el.value);
         stage[el.dataset.code] = Number.isFinite(v) ? v * mult(el.dataset.code) : 0;
+        entered(el.dataset.code);
         refreshLive(sel);
       } else if (el.dataset.gen && el.tagName !== 'SELECT') {
         const k = el.dataset.gen;
@@ -275,9 +277,10 @@ const CWForm = (() => {
         app.save(); return app.render();
       }
       if ((el.dataset.gen === 'AssessmentPeriodStart' || el.dataset.gen === 'AssessmentPeriodEnd')) { app.save(); return app.render(); }
-      if (el.dataset.kind === 'option') { stage[el.dataset.code] = parseInt(el.value, 10); return refreshLive(sel); }
+      if (el.dataset.kind === 'option') { stage[el.dataset.code] = parseInt(el.value, 10); entered(el.dataset.code); return refreshLive(sel); }
       if (el.dataset.kind === 'exception' && el.value !== '') {
         stage[el.dataset.code] = parseFloat(el.value);
+        entered(el.dataset.code);
         app.save(); return app.render();
       }
       if (el.dataset.q) { setQuestion(stage, el.dataset.q, el.value === '1'); app.save(); return app.render(); }
@@ -294,7 +297,7 @@ const CWForm = (() => {
       if (b.dataset.add) return addSubstage(b.dataset.add);
       if (b.dataset.help) { const h = document.getElementById('help_' + b.dataset.help); h.hidden = !h.hidden; return; }
       if (b.dataset.ask) return app.askChat(`${app.t('ask_chat')}: ${labelOf(b.dataset.ask)} (${b.dataset.ask})`, b.dataset.ask);
-      if (b.dataset.est) { stage[b.dataset.code] = parseFloat(b.dataset.est); app.save(); return app.render(); }
+      if (b.dataset.est) { stage[b.dataset.code] = parseFloat(b.dataset.est); entered(b.dataset.code); app.save(); return app.render(); }
       const act = b.dataset.act;
       if (act === 'new-sc') { app.newScenario(); return app.render(); }
       if (act === 'dup-sc') { app.duplicateScenario(); return app.render(); }

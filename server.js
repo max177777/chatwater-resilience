@@ -65,9 +65,9 @@ app.post('/api/calculate', wrap((req, res) => {
 app.post('/api/actions', wrap((req, res) => {
   const { assessment, meta, gwpIndex = 0 } = req.body;
   const r = resultsFor(assessment, gwpIndex);
-  const { options, assumptions } = suggestActions(r, assessment, engine, gwpIndex);
+  const { options, assumptions, checks } = suggestActions(r, assessment, engine, gwpIndex);
   res.json({
-    results: r, assumptions, options: CW.withKeys(options, meta),
+    results: r, assumptions, options: CW.withKeys(options, meta), checks: CW.withCheckIds(checks, meta),
     basis: { assessmentId: meta?.id || null, revision: CW.revision(assessment), gwpIndex },
   });
 }));

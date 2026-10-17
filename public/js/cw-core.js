@@ -12,6 +12,7 @@
  *   regenerate / restoreVersion   keep one recoverable previous plan and proposal
  *   loadSession / writeSession    browser storage that never overwrites a session it could not back up
  *   unitView(...)         display unit and multiplier for an ECAM input
+ *   inputStatus(...)      entry status of the inputs read by the covered rule checks
  */
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
@@ -63,13 +64,17 @@
   function actionKey(assessmentId, rule, substageId) {
     return `${assessmentId || '?'}|${rule}|${substageId || 'utility'}`;
   }
+  /** ChatWater substage ID for { prefix, index }, from meta aligned with the ECAM arrays. */
+  function substageId(meta, s) {
+    return s ? ((meta && meta.substages && meta.substages[s.prefix] && meta.substages[s.prefix][s.index]) || `${s.prefix}#${s.index}`) : null;
+  }
   /** Attach a stable key to each option. meta = { id, substages: { wsa: [id, …], … } } aligned with the ECAM arrays. */
   function withKeys(options, meta) {
-    return options.map(o => {
-      const s = o.substage;
-      const sid = s ? ((meta && meta.substages && meta.substages[s.prefix] && meta.substages[s.prefix][s.index]) || `${s.prefix}#${s.index}`) : null;
-      return { ...o, key: actionKey(meta && meta.id, o.rule, sid) };
-    });
+    return options.map(o => ({ ...o, key: actionKey(meta && meta.id, o.rule, substageId(meta, o.substage)) }));
+  }
+  /** Attach the substage ID to each rule check, so it can be matched to options and input status. */
+  function withCheckIds(checks, meta) {
+    return (checks || []).map(c => ({ ...c, sid: substageId(meta, c.substage) }));
   }
   /** Display labels (A01, A02 …) that stay with an action across re-runs. Returns the updated label map. */
   function assignLabels(options, labels) {
@@ -283,6 +288,31 @@
     try { storage.setItem(key, text); return { ok: true }; } catch (e) { return { ok: false, error: e, quota: isQuota(e) }; }
   }
 
+  // ------------------------------------------------------------ input status
+  // Entry status is kept for the inputs read by the covered rule checks only. It lives in
+  // state.inputStatus[assessmentId] = { origin: 'new' | …, s: { substageId: { code: { st, v } } } },
+  // never in the ECAM JSON. A record only holds while the value is unchanged since it was made.
+  const PUMP_INPUTS = p => ['flow', 'head', 'volt', 'amps', 'pf', 'exff'].map(k => `${p}_pmp_${k}`);
+  const TRACKED_INPUTS = {
+    wsa: PUMP_INPUTS('wsa'), wwc: PUMP_INPUTS('wwc'),
+    wsd: [...PUMP_INPUTS('wsd'), 'wsd_vol_dist', 'wsd_auth_con'],
+    wwo: ['wwo_cont_emp'],
+  };
+  const isTracked = (prefix, code) => !!(TRACKED_INPUTS[prefix] && TRACKED_INPUTS[prefix].includes(code));
+  /** 'entered' | 'confirmed' | 'default' (untouched, assessment created here) | 'unconfirmed' (imported or older session). */
+  function inputStatus(record, sid, code, value) {
+    const r = record && record.s && record.s[sid] && record.s[sid][code];
+    if (r && (r.v === value || (r.v == null && value == null))) return r.st;
+    return record && record.origin === 'new' && !r ? 'default' : 'unconfirmed';
+  }
+  /** Record an entry or confirmation. sid = ChatWater substage ID. */
+  function setInputStatus(map, assessmentId, sid, code, st, value) {
+    const rec = map[assessmentId] = map[assessmentId] || { origin: 'unknown', s: {} };
+    rec.s = rec.s || {};
+    (rec.s[sid] = rec.s[sid] || {})[code] = { st, v: value };
+    return map;
+  }
+
   // ------------------------------------------------------------ units
   /** Unit label and multiplier for an ECAM input, honouring the assessment's unit preference (same rule as ECAM's Units.multiplier). */
   function unitView(Units, Info, scenario, code) {
@@ -296,8 +326,9 @@
   }
 
   return {
-    SCHEMA, STAGE_KEYS, canonical, hash, fp, revision, actionKey, withKeys, assignLabels, mapLegacy,
+    SCHEMA, STAGE_KEYS, canonical, hash, fp, revision, actionKey, substageId, withKeys, withCheckIds, assignLabels, mapLegacy,
     actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, migrate, unitView,
     commitVersion, regenerate, restoreVersion, loadSession, writeSession, isQuota,
+    TRACKED_INPUTS, isTracked, inputStatus, setInputStatus,
   };
 });

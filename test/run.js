@@ -2,7 +2,7 @@
 const { spawnSync } = require('child_process');
 const path = require('path');
 
-const FILES = ['engine', 'knowledge', 'api', 'integrity', 'ai-offline'].map(f => path.join(__dirname, `${f}.test.js`));
+const FILES = ['engine', 'knowledge', 'api', 'integrity', 'decision-support', 'ai-offline'].map(f => path.join(__dirname, `${f}.test.js`));
 const guard = path.join(__dirname, 'helpers', 'offline.js');
 
 for (const file of FILES) {
