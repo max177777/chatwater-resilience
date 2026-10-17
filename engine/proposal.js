@@ -112,7 +112,7 @@ async function draftProposal(input, framework, guideText) {
   const lang = input.lang || 'en';
   const f = facts(input);
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : o;
-  const sections = [];
+  const sections = [], failed = [];
   const useAI = aiEnabled();
   const system = fill(prompt('system-base'), { LANGUAGE: LANG_NAME[lang] });
   const data = JSON.stringify(f, null, 1);
@@ -122,7 +122,7 @@ async function draftProposal(input, framework, guideText) {
     // baseline-type sections may also cite the ECAM method notes
     const topics = ['baseline', 'rationale', 'logframe', 'mrv'].includes(sec.key) ? [...FINANCE_TOPICS, 'ecam'] : FINANCE_TOPICS;
     const src = retrieve(f, `${sec.en || title} ${sec.guidance || ''} ${L(framework.name)}`, topics);
-    let text, sources = [];
+    let text, sources = [], ai = false;
     if (useAI) {
       const content = fill(prompt('proposal-section'), {
         SECTION: title, ROUTE: L(framework.name), GUIDANCE: sec.guidance, LANGUAGE: LANG_NAME[lang],
@@ -131,14 +131,22 @@ async function draftProposal(input, framework, guideText) {
       try {
         text = await callClaude({ system, max_tokens: 900, messages: [{ role: 'user', content }] });
         sources = knowledge.citedSources(text, src.list);
-      } catch (e) { text = templateSection(sec, f, lang) + `\n\n[AI error: ${e.message}]`; }
+        ai = true;
+      } catch (e) {
+        // the error stays out of the document text; the section is marked as template
+        text = templateSection(sec, f, lang);
+        failed.push({ key: sec.key, title, error: e.message });
+      }
     } else {
       text = templateSection(sec, f, lang);
       sources = src.list;
     }
-    sections.push({ key: sec.key, title, guidance: sec.guidance, text, sources });
+    sections.push({ key: sec.key, title, guidance: sec.guidance, text, sources, ai });
   }
-  return { route: framework.id, title: `${L(framework.name)} — ${f.utility_profile?.name || f.ecam_results?.assessment || ''}`.trim(), sections, ai: useAI };
+  return {
+    route: framework.id, title: `${L(framework.name)} — ${f.utility_profile?.name || f.ecam_results?.assessment || ''}`.trim(), sections,
+    ai: useAI && !failed.length, ...(failed.length ? { ai_failed: failed } : {}),
+  };
 }
 
 /** Turn an uploaded funding guide into a section framework (AI), or a generic one. */

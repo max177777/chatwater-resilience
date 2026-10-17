@@ -638,8 +638,9 @@
       ${onlyLegacy(fr.proposal) && !fr.actions.length && !fr.plan.length ? `<div class="actions-row" style="margin-top:0"><button class="btn" id="proposal-reviewed">${esc(t('mark_reviewed'))}</button></div>` : ''}
       ${outputLangNotice(p, 'proposal')}
       ${p.lang && state.plan?.lang && p.lang !== state.plan.lang ? `<div class="notice small warn" data-mixed-lang>${esc(t('mixed_lang').replaceAll('{proposal}', langName(p.lang)).replaceAll('{plan}', langName(state.plan.lang)))}</div>` : ''}
-      ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
-      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${sourcesHtml(s.sources)}</div>`).join('')}
+      ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}</li>`).join('')}</ul></div>`
+        : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
+      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${sourcesHtml(s.sources)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
         <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
