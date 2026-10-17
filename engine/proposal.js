@@ -55,7 +55,7 @@ function facts({ results, actions, plan, profile, lang = 'en' }) {
       calculation_basis: a.basis, decision_condition: L(a.condition),
       user_notes: a.notes || null,
     })),
-    plan: plan?.tasks ? { total_weeks: plan.total_weeks, tasks: plan.tasks.map(t => `${t.id} [${t.action}] ${t.name} — ${t.owner}, week ${t.start_week}+${t.weeks}`) } : null,
+    plan: plan?.tasks ? { total_weeks: plan.total_weeks, summary: plan.summary || null, tasks: plan.tasks.map(t => `${t.id} [${t.action}] ${t.name} — ${t.owner}, week ${t.start_week}+${t.weeks}`) } : null,
   };
 }
 
@@ -81,8 +81,9 @@ async function planSummary(input) {
   const lang = input.lang || 'en';
   const f = facts(input);
   const src = retrieve(f, 'project implementation plan phases procurement permits regulation utility', PLAN_TOPICS);
+  // template text cites nothing: retrieved passages are offered as related reading, not as sources
   if (!aiEnabled()) {
-    return { text: templatePlanSummary(f, lang), sources: src.list, ai: false };
+    return { text: templatePlanSummary(f, lang), sources: [], related: src.list, ai: false };
   }
   const system = fill(prompt('system-base'), { LANGUAGE: LANG_NAME[lang] });
   const text = await callClaude({ system, max_tokens: 900, messages: [{ role: 'user',
@@ -95,12 +96,12 @@ async function planSummary(input) {
 function templateSection(sec, f, lang) {
   const r = f.ecam_results;
   const todo = lang === 'id' ? `[Perlu dilengkapi: ${sec.guidance}]` : `[To be completed: ${sec.guidance}]`;
-  if (['summary'].includes(sec.key)) return templatePlanSummary(f, lang) + '\n\n' + todo;
+  if (['summary'].includes(sec.key)) return (f.plan?.summary || templatePlanSummary(f, lang)) + '\n\n' + todo;
   if (['baseline', 'rationale'].includes(sec.key) && r) return lang === 'id'
     ? `Total emisi ${fmt(r.total_tco2eq)} tCO2eq (CO2 ${fmt(r.by_gas_tco2eq.co2)}, CH4 ${fmt(r.by_gas_tco2eq.ch4)}, N2O ${fmt(r.by_gas_tco2eq.n2o)}) dihitung dengan ECAM v3, ${r.gwp_report}, faktor listrik ${r.grid_factor_kgco2_per_kwh} kgCO2/kWh.`
     : `Total emissions are ${fmt(r.total_tco2eq)} tCO2eq (CO2 ${fmt(r.by_gas_tco2eq.co2)}, CH4 ${fmt(r.by_gas_tco2eq.ch4)}, N2O ${fmt(r.by_gas_tco2eq.n2o)}), calculated with ECAM v3, ${r.gwp_report}, grid factor ${r.grid_factor_kgco2_per_kwh} kgCO2/kWh.`;
   if (['actions', 'impact'].includes(sec.key)) return f.selected_actions.filter(a => a.id !== 'A00')
-    .map(a => `- ${a.id} ${a.title}: ${a.expected}. ${a.evidence}${a.scenario_assumption ? ' ' + a.scenario_assumption + '.' : ''}`).join('\n');
+    .map(a => `- ${a.id} ${a.title}: ${a.expected}. ${a.evidence}${a.scenario_assumption ? ' ' + a.scenario_assumption.replace(/[.!?]?\s*$/, '.') : ''}`).join('\n');
   return todo;
 }
 
@@ -122,7 +123,7 @@ async function draftProposal(input, framework, guideText) {
     // baseline-type sections may also cite the ECAM method notes
     const topics = ['baseline', 'rationale', 'logframe', 'mrv'].includes(sec.key) ? [...FINANCE_TOPICS, 'ecam'] : FINANCE_TOPICS;
     const src = retrieve(f, `${sec.en || title} ${sec.guidance || ''} ${L(framework.name)}`, topics);
-    let text, sources = [], ai = false;
+    let text, sources = [], related, ai = false;
     if (useAI) {
       const content = fill(prompt('proposal-section'), {
         SECTION: title, ROUTE: L(framework.name), GUIDANCE: sec.guidance, LANGUAGE: LANG_NAME[lang],
@@ -135,13 +136,14 @@ async function draftProposal(input, framework, guideText) {
       } catch (e) {
         // the error stays out of the document text; the section is marked as template
         text = templateSection(sec, f, lang);
+        related = src.list;
         failed.push({ key: sec.key, title, error: e.message });
       }
     } else {
       text = templateSection(sec, f, lang);
-      sources = src.list;
+      related = src.list;
     }
-    sections.push({ key: sec.key, title, guidance: sec.guidance, text, sources, ai });
+    sections.push({ key: sec.key, title, guidance: sec.guidance, text, sources, ...(related ? { related } : {}), ai });
   }
   return {
     route: framework.id, title: `${L(framework.name)} — ${f.utility_profile?.name || f.ecam_results?.assessment || ''}`.trim(), sections,

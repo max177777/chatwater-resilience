@@ -86,6 +86,9 @@
   // Citation list shown under AI drafts: [S1] Title, publisher year — heading ↗
   const sourcesHtml = list => list?.length ? `<div class="sources"><b>${esc(t('sources'))}</b><ol>${list.map(x =>
     `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${esc(x.cite)}` : ''}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}</li>`).join('')}</ol></div>` : '';
+  // Passages retrieved for template text, which cites none of them
+  const relatedHtml = list => list?.length ? `<div class="sources related"><b>${esc(t('related_reading'))}</b><ul>${list.map(x =>
+    `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}</li>`).join('')}</ul></div>` : '';
   const busy = (btn, on, label) => {
     if (!btn) return;
     if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label || '')}`; }
@@ -225,6 +228,17 @@
     return line + `<div class="notice small" data-lang-differs="${what}">${esc(t('lang_differs_' + what).replaceAll('{out}', langName(out.lang)))}
       <div class="row" style="margin-top:6px"><button class="btn sm" data-regen-lang="${what}">${esc(t('regenerate_in').replace('{lang}', langName(state.lang)))}</button></div></div>`;
   }
+  // Knowledge-base topics drafts rely on for funders, context and planning; empty ones are named, not implied.
+  const EVIDENCE_TOPICS = ['financing', 'indonesia', 'plan'];
+  function evidenceNotice() {
+    const by = META.knowledge?.byTopic;
+    if (!by) return '';
+    const missing = EVIDENCE_TOPICS.filter(k => !by[k]);
+    if (!missing.length) return '';
+    const names = missing.map(k => t('topic_' + k));
+    const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t('or')} ${names[names.length - 1]}` : names[0];
+    return `<div class="notice small" data-evidence><b>${esc(t('evidence_title'))}</b> ${esc(t('evidence_body').replace('{topics}', list))}</div>`;
+  }
   const genErrorNotice = what => state.ui.genError?.what === what
     ? `<div class="notice error" data-gen-error="${what}"><b>${esc(t('gen_failed_' + what))}</b> ${esc(state.ui.genError.message)}<br>${esc(t('gen_failed_kept'))}
       <button class="link" data-dismiss-error>${esc(t('dismiss'))}</button></div>` : '';
@@ -273,6 +287,8 @@
     const f = freshness();
     const staleTab = { actions: f.options.length || f.actions.length, plan: f.plan.length, finance: f.proposal.length };
     document.querySelectorAll('[data-tab]').forEach(b => { b.classList.toggle('stale', !!staleTab[b.dataset.tab]); b.title = staleTab[b.dataset.tab] ? t('tab_outdated') : ''; });
+    $('#ai-chip').textContent = t(META.ai ? 'ai_chip_on' : 'ai_chip_off');
+    $('#ai-chip').classList.toggle('off', !META.ai);
     $('#profile-chip').textContent = state.profile?.name ? `${state.profile.name}${state.profile.location ? ' · ' + state.profile.location : ''}` : '';
     $('#chat-input').placeholder = t('chat_placeholder');
     $('#chat').classList.toggle('collapsed', !state.ui.chatOpen);
@@ -459,7 +475,7 @@
           ${o.scenario ? `<dt>${esc(t('scenario'))}</dt><dd>${esc(L(o.scenario))}</dd>` : ''}
           <dt>${esc(t('basis'))}</dt><dd><code>${esc(o.basis)}</code></dd></dl>
           <textarea class="field small" data-note="${esc(k)}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(state.actionNotes[k] || '')}</textarea>
-          ${o.rule !== 'baseline' ? `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(k)}">${esc(t('explain_ai'))}</button></div>` : ''}
+          ${o.rule !== 'baseline' ? `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(k)}" ${META.ai ? '' : `disabled title="${esc(t('ai_off_short'))}"`}>${esc(t('explain_ai'))}</button>${META.ai ? '' : ` <span class="small muted">${esc(t('ai_off_short'))}</span>`}</div>` : ''}
           ${state.explanations[k] ? `<div class="ai-text">${esc(state.explanations[k])}${sourcesHtml(state.explanationSources?.[k])}</div>` : ''}
         </td></tr>` : '';
       return `<tr class="${sel ? 'sel' : ''}"><td><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${esc(k)}" ${sel ? 'checked' : ''} ${o.rule === 'baseline' ? 'disabled' : ''}> <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label></td>
@@ -524,7 +540,7 @@
       const max = p.total_weeks || 1;
       body = `<div class="card"><h2>${esc(t('project_summary'))}</h2>
           ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
-          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${sourcesHtml(p.sources)}</div>
+          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${p.ai === false ? relatedHtml(p.related || p.sources) : sourcesHtml(p.sources)}</div>
         <div class="card" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
           <table class="data"><thead><tr><th>ID</th><th>${esc(t('task'))}</th><th>${esc(t('owner'))}</th><th class="num">${esc(t('start_week'))}</th><th class="num">${esc(t('weeks'))}</th><th>${esc(t('depends'))}</th></tr></thead><tbody>
           ${p.tasks.map((k, i) => `<tr><td>${esc(k.id)}</td><td><span class="muted small">${esc(k.action_id)} · ${esc(k.action)}</span><br>${esc(k.name)}
@@ -539,6 +555,7 @@
       ${genErrorNotice('plan')}
       ${p && onlyLegacy(fr.plan) && !fr.actions.length ? `<div class="actions-row" style="margin-top:0"><button class="btn" id="plan-reviewed">${esc(t('mark_reviewed'))}</button></div>` : ''}
       ${outputLangNotice(p, 'plan')}
+      ${evidenceNotice()}
       <div class="card"><ul style="margin:0;padding-left:18px">${acts}</ul></div>
       ${body}
       <div class="actions-row">
@@ -575,6 +592,7 @@
     root.innerHTML = `<div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
       ${!state.plan ? `<div class="notice warn">${esc(t('no_plan'))}</div>` : ''}
       ${staleNotice(fr.actions, 'actions')}${staleNotice(fr.plan, 'plan')}${staleNotice(fr.proposal, 'proposal')}${genErrorNotice('proposal')}
+      ${META.ai ? '' : `<div class="notice small">${esc(t('ai_off_note'))}</div>`}${evidenceNotice()}
       ${card('general', t('general_proposal'), t('general_desc'), `<button class="btn ${f.route === 'general' ? 'primary' : ''}">${esc(t('use_general'))}</button>`)}
       ${card('custom', t('tailor'), t('tailor_desc'), `<label class="btn ${f.route === 'custom' ? 'primary' : ''}">${esc(t('add_guide'))}<input type="file" id="guide-file" accept=".pdf,.docx,.txt,.md" hidden></label>
         ${f.guideName ? `<span class="small muted" style="margin-left:8px">${esc(t('guide_loaded'))}: ${esc(f.guideName)}</span>` : ''}
@@ -640,7 +658,8 @@
       ${p.lang && state.plan?.lang && p.lang !== state.plan.lang ? `<div class="notice small warn" data-mixed-lang>${esc(t('mixed_lang').replaceAll('{proposal}', langName(p.lang)).replaceAll('{plan}', langName(state.plan.lang)))}</div>` : ''}
       ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}</li>`).join('')}</ul></div>`
         : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
-      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${sourcesHtml(s.sources)}</div>`).join('')}
+      ${evidenceNotice()}
+      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
         <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
@@ -737,11 +756,13 @@
   };
 
   async function boot() {
-    const [en, id] = await Promise.all([
+    const [en, id, health] = await Promise.all([
       fetch('/ecam/languages/en.json').then(r => r.json()),
       fetch('/i18n/ecam.id.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+      api('/api/health').catch(() => null),
     ]);
     LANGS = { en, id };
+    if (health) META = health;
     Scenarios.length = 0;
     (state.assessments || []).forEach((o, i) => {
       try { const sc = Ecam.from(o); attachMeta(sc, state.assessmentMeta?.[i]); Scenarios.push(sc); }
@@ -754,7 +775,6 @@
     setGwp(state.gwpIndex || 0);
     render();
     renderStorageAlert();
-    api('/api/health').then(h => { META = h; }).catch(() => {});
   }
   boot();
 })();

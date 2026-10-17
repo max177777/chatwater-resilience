@@ -91,7 +91,7 @@ app.post('/api/plan', limitAI, wrap(async (req, res) => {
   const plan = buildPlan(actions, lang);
   const summary = await P.planSummary({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, lang });
   const deps = CW.planDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, profile });
-  res.json({ ...plan, summary: summary.text, sources: summary.sources || [], ai: summary.ai, lang, deps });
+  res.json({ ...plan, summary: summary.text, sources: summary.sources || [], ...(summary.related ? { related: summary.related } : {}), ai: summary.ai, lang, deps });
 }));
 
 app.post('/api/guide/parse', limitAI, wrap(async (req, res) => {

@@ -27,6 +27,8 @@ p { margin: 0 0 10px; }
 .seg button { border: 0; background: transparent; padding: 5px 10px; cursor: pointer; font-size: 13px; }
 .seg button.on { background: var(--teal); color: #fff; }
 .chip { font-size: 13px; color: var(--ink-2); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ai-chip { border-radius: 10px; padding: 2px 8px; background: var(--teal-faint); }
+.ai-chip.off { background: #E8ECEE; color: #3D4B50; }
 .tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px 24px; background: var(--teal-soft); }
 .tabs button { border: 0; background: transparent; padding: 9px 6px; border-radius: 8px; cursor: pointer; font-weight: 500; color: var(--ink); }
 .tabs button.on { background: var(--teal); color: #fff; box-shadow: var(--shadow); }

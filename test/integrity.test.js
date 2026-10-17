@@ -282,6 +282,18 @@ test('switching interface language does not invalidate calculations or outputs; 
   } finally { server.close(); }
 });
 
+test('template proposal carries the edited plan summary and the Word file says it is a template', async () => {
+  const s = await project();
+  const summary = s.proposal.sections.find(x => x.key === 'summary');
+  assert.ok(summary.text.startsWith('User-edited summary.'), 'edited plan summary used in the proposal');
+  assert.ok(!s.proposal.sections.some(x => /\.\.(\s|$)/.test(x.text)), 'no doubled full stops');
+  const text = await docxText(await require('../engine/export').buildProposalDocx({ lang: 'en', proposal: s.proposal, actions: s.selectedActions, plan: s.plan, profile: s.profile }));
+  assert.ok(text.includes('AI drafting was off'), 'template status stated in the Word file');
+  const partial = await docxText(await require('../engine/export').buildProposalDocx({ lang: 'en',
+    proposal: { ...s.proposal, ai: false, ai_failed: [{ key: 'risks', title: 'Risks and mitigation', error: 'x' }] }, plan: s.plan, profile: s.profile }));
+  assert.ok(partial.includes('AI drafting failed for some sections') && partial.includes('Risks and mitigation') && !partial.includes('AI drafting was off'));
+});
+
 // ------------------------------------------------------------------ browser storage
 function fakeStorage(init = {}, failOn = () => false) {
   const data = { ...init };
