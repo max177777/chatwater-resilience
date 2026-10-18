@@ -7,6 +7,7 @@ const path = require('path');
 const { callClaude, aiEnabled } = require('./ai');
 const { expectedText } = require('./export');
 const knowledge = require('./knowledge');
+const AS = require('../public/js/action-sources');
 
 // Topics each kind of draft prefers when retrieving (first folder under /knowledge)
 const PLAN_TOPICS = ['plan', 'indonesia', 'general'];
@@ -50,29 +51,42 @@ function facts({ results, actions, plan, profile, lang = 'en' }) {
     selected_actions: (actions || []).map(a => ({
       id: a.id, title: L(a.title), expected: expectedText(a, lang),
       expected_tco2eq: a.expected_kgco2 ? +(a.expected_kgco2 / 1000).toFixed(1) : null,
-      expected_kwh: a.expected_kwh ? Math.round(a.expected_kwh) : null,
+      expected_kwh: a.expected_kwh && AS.isQuantified(a, 'kwh') ? Math.round(a.expected_kwh) : null,
+      energy_benefit: AS.benefitStatus(a, 'kwh') === 'quantified' ? 'quantified' : 'not quantified',
       scenario_assumption: L(a.scenario) || null, evidence: L(a.evidence),
       calculation_basis: a.basis, decision_condition: L(a.condition),
       user_notes: a.notes || null,
     })),
+    combined_savings: (actions || []).filter(a => a.id !== 'A00' && a.rule !== 'baseline').length > 1
+      ? 'not assessed: each estimate is for one action on its own; actions may overlap, so do not add them up' : null,
     plan: plan?.tasks ? { total_weeks: plan.total_weeks, summary: plan.summary || null, tasks: plan.tasks.map(t => `${t.id} [${t.action}] ${t.name} — ${t.owner}, week ${t.start_week}+${t.weeks}`) } : null,
   };
 }
 
+// Estimates are per action; their interactions are not modelled, so no text adds them up.
+const COMBINED_NOT_ASSESSED = {
+  en: 'Combined savings have not been assessed because actions may overlap.',
+  id: 'Penghematan gabungan belum dinilai karena kegiatan dapat saling tumpang tindih.',
+};
+const estimated = a => a.expected_tco2eq != null || a.expected_kwh != null;
+
 function templatePlanSummary(f, lang) {
   const r = f.ecam_results;
   const acts = f.selected_actions.filter(a => a.id !== 'A00');
-  const totalT = acts.reduce((p, a) => p + (a.expected_tco2eq || 0), 0);
+  const each = acts.filter(estimated).map(a => `${a.id} ${a.expected}`).join('; ');
+  const combined = acts.length > 1 ? COMBINED_NOT_ASSESSED[lang] || COMBINED_NOT_ASSESSED.en : '';
   if (lang === 'id') return [
     r ? `Penilaian ECAM untuk ${r.assessment} (${r.period.start} – ${r.period.end}) menunjukkan emisi ${fmt(r.total_tco2eq)} tCO2eq dan konsumsi listrik ${fmt(r.energy_kwh)} kWh.` : '',
     acts.length ? `Rencana ini mencakup ${acts.length} kegiatan: ${acts.map(a => a.title).join('; ')}.` : '',
-    totalT ? `Pengurangan yang telah dihitung sekitar ${fmt(totalT)} tCO2eq per periode (sebagian berupa skenario, lihat asumsi).` : '',
+    each ? `Perkiraan per kegiatan, masing-masing per periode penilaian (sebagian berupa skenario, lihat asumsi): ${each}.` : '',
+    combined,
     f.plan ? `Durasi keseluruhan sekitar ${f.plan.total_weeks} minggu. Setiap kegiatan diawali konfirmasi data dan syarat keputusan.` : '',
   ].filter(Boolean).join(' ');
   return [
     r ? `The ECAM assessment for ${r.assessment} (${r.period.start} – ${r.period.end}) shows ${fmt(r.total_tco2eq)} tCO2eq and ${fmt(r.energy_kwh)} kWh of grid electricity.` : '',
     acts.length ? `The plan covers ${acts.length} action(s): ${acts.map(a => a.title).join('; ')}.` : '',
-    totalT ? `Calculated reductions add up to about ${fmt(totalT)} tCO2eq per assessment period (some are scenarios — see assumptions).` : '',
+    each ? `Estimates for each action on its own, per assessment period (some are scenarios — see assumptions): ${each}.` : '',
+    combined,
     f.plan ? `Overall duration is about ${f.plan.total_weeks} weeks. Each action starts by confirming its data and decision condition.` : '',
   ].filter(Boolean).join(' ');
 }
@@ -100,8 +114,11 @@ function templateSection(sec, f, lang) {
   if (['baseline', 'rationale'].includes(sec.key) && r) return lang === 'id'
     ? `Total emisi ${fmt(r.total_tco2eq)} tCO2eq (CO2 ${fmt(r.by_gas_tco2eq.co2)}, CH4 ${fmt(r.by_gas_tco2eq.ch4)}, N2O ${fmt(r.by_gas_tco2eq.n2o)}) dihitung dengan ECAM v3, ${r.gwp_report}, faktor listrik ${r.grid_factor_kgco2_per_kwh} kgCO2/kWh.`
     : `Total emissions are ${fmt(r.total_tco2eq)} tCO2eq (CO2 ${fmt(r.by_gas_tco2eq.co2)}, CH4 ${fmt(r.by_gas_tco2eq.ch4)}, N2O ${fmt(r.by_gas_tco2eq.n2o)}), calculated with ECAM v3, ${r.gwp_report}, grid factor ${r.grid_factor_kgco2_per_kwh} kgCO2/kWh.`;
-  if (['actions', 'impact'].includes(sec.key)) return f.selected_actions.filter(a => a.id !== 'A00')
-    .map(a => `- ${a.id} ${a.title}: ${a.expected}. ${a.evidence}${a.scenario_assumption ? ' ' + a.scenario_assumption.replace(/[.!?]?\s*$/, '.') : ''}`).join('\n');
+  if (['actions', 'impact'].includes(sec.key)) {
+    const acts = f.selected_actions.filter(a => a.id !== 'A00');
+    return acts.map(a => `- ${a.id} ${a.title}: ${a.expected}. ${a.evidence}${a.scenario_assumption ? ' ' + a.scenario_assumption.replace(/[.!?]?\s*$/, '.') : ''}`).join('\n')
+      + (acts.length > 1 ? '\n\n' + (COMBINED_NOT_ASSESSED[lang] || COMBINED_NOT_ASSESSED.en) : '');
+  }
   return todo;
 }
 

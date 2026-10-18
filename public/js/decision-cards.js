@@ -3,13 +3,15 @@
  * Shared by the browser (global DC) and the tests. Everything shown comes from the
  * option and check objects produced by engine/actions.js; nothing is inferred here.
  *
- * ctx: { t, L, esc, fmt, labelOf(code), unitView(code) -> { unit, mult }, status(sid, code, value) -> CW.inputState }
+ * ctx: { t, L, esc, fmt, labelOf(code), unitView(code) -> { unit, mult }, status(sid, code, value) -> CW.inputState,
+ *        stageLabel(prefix)?, substageName(sid)? }
  * Input values arrive in ECAM base units; unitView is the Stage 1 conversion (shown = stored / mult).
+ * What an action addresses and its emission classification come from action-sources.js (AS).
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./cw-core'));
-  else root.DC = factory(root.CW);
-})(typeof self !== 'undefined' ? self : this, function (CW) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./cw-core'), require('./action-sources'));
+  else root.DC = factory(root.CW, root.AS);
+})(typeof self !== 'undefined' ? self : this, function (CW, AS) {
   const { needsConfirm } = CW;
   const COVERED_RULES = ['pump_upgrade', 'pump_audit', 'nrw_reduction', 'septic_desludging'];
   const OTHER_RULES = ['cso_reduction', 'biogas_capture', 'fuel_switch', 'solar_pv'];
@@ -21,10 +23,11 @@
   function benefit(o, ctx) {
     const { t, L, esc, fmt } = ctx;
     const parts = [];
-    if (o.expected_kgco2) parts.push(`${fmt(o.expected_kgco2 / 1000, 0)} tCO₂eq`);
-    if (o.expected_kwh) parts.push(`${fmt(o.expected_kwh)} kWh`);
+    if (o.expected_kgco2 && AS.isQuantified(o, 'ghg')) parts.push(`${fmt(o.expected_kgco2 / 1000, 0)} tCO₂eq`);
+    if (o.expected_kwh && AS.isQuantified(o, 'kwh')) parts.push(`${fmt(o.expected_kwh)} kWh`);
     if (!parts.length) return esc(L(o.expected_text) || '–');
-    return esc(parts.join(' · ')) + (o.scenario ? ` <span class="muted small">(${esc(t('scenario_short'))})</span>` : '');
+    return esc(parts.join(' · ')) + (o.scenario ? ` <span class="muted small">(${esc(t('scenario_short'))})</span>` : '')
+      + (o.rule !== 'baseline' && !AS.isQuantified(o, 'kwh') ? ` <span class="muted small" data-kwh-status="not_quantified">· ${esc(t('energy_not_quantified'))}</span>` : '');
   }
 
   function valueLabel(v, ctx) { return v.code ? ctx.labelOf(v.code) : ctx.t('tv_' + v.label); }
@@ -87,8 +90,79 @@
   }
   const reviewNotices = (list, ctx) => (list || []).map(r => `<p class="small dc-flag" data-review="${ctx.esc(r)}">${ctx.esc(ctx.t('rv_' + r))}</p>`).join('');
 
+  // ------------------------------------------------------------ sources and classification
+  const stageName = (p, ctx) => ctx.stageLabel ? ctx.stageLabel(p) : p;
+  /** Classification as text; the colour only repeats it. null = pending review. */
+  function classChip(c, ctx) {
+    const k = c || 'pending';
+    return `<span class="cls cls-${k}" data-classification="${k}" title="${ctx.esc(ctx.t('cls_review_pending'))}">${ctx.esc(ctx.t('cls_' + k))}</span>`;
+  }
+  function locationText(loc, ctx) {
+    const { t, esc } = ctx;
+    if (!loc) return '';
+    if (loc.at === 'utility') return `<span class="loc">${esc(t('loc_utility'))}</span>`;
+    if (loc.at === 'stages') return `<span class="loc">${loc.stages.map(p => `<i class="sw sw-${esc(p)}" aria-hidden="true"></i>${esc(stageName(p, ctx))}`).join(', ')}</span>`;
+    const name = loc.sid && ctx.substageName ? ctx.substageName(loc.sid) : null;
+    return `<span class="loc"><i class="sw sw-${esc(loc.prefix)}" aria-hidden="true"></i>${esc(stageName(loc.prefix, ctx))}${name ? ` › ${esc(name)}` : ''}</span>`;
+  }
+  function sourceLabel(s, ctx) {
+    return `<span class="src" data-source="${ctx.esc(s.source)}">${classChip(s.classification, ctx)} ${ctx.esc(ctx.t('src_' + s.source))}${s.location.at !== 'substage' ? ` · ${locationText(s.location, ctx)}` : ''}</span>`;
+  }
+  function addressesLine(o, ctx) {
+    const { t, esc } = ctx;
+    const d = AS.describe(o);
+    if (!d) return '';
+    const loc = locationText(d.location, ctx);
+    const sources = d.mapped ? d.sources.map(s => sourceLabel(s, ctx)).join(' ') : classChip(null, ctx);
+    return `<p class="small dc-line" data-addresses="${esc(d.problem || 'unmapped')}"><span class="muted">${esc(t('addresses'))}:</span> ${esc(t(d.mapped ? 'pb_' + d.problem : 'pb_unmapped'))}${loc ? ` · ${loc}` : ''}</p>
+      <p class="small dc-line dc-sources" data-sources>${sources}</p>`;
+  }
+  function sourceDetails(o, ctx) {
+    const { t, esc } = ctx;
+    const d = AS.describe(o);
+    if (!d) return '';
+    const items = d.mapped ? d.sources.map(s => `<div class="small" data-source-detail="${esc(s.source)}">${sourceLabel(s, ctx)}
+        <div class="muted">${esc(t('clsb_' + s.source))} ${esc(t('cls_review_' + s.review))}</div></div>`).join('')
+      : `<div class="small" data-source-detail="unmapped">${classChip(null, ctx)} ${esc(t('pb_unmapped'))}</div>`;
+    const canLink = d.assessmentId && d.location && (d.location.at === 'utility' || d.location.sid);
+    return `<dt>${esc(t('emission_source'))}</dt><dd>${items}
+      ${canLink ? `<button class="link small" data-goto-source="${esc(o.key)}">${esc(t('show_in_assessment'))}</button>` : ''}</dd>`;
+  }
+  /** The selected sorting measure for one card, with the qualifiers that belong to that estimate. */
+  function measureLine(o, measure, ctx) {
+    const { t, L, esc, fmt } = ctx;
+    const field = AS.MEASURES[measure];
+    if (!field || o.rule === 'baseline') return '';
+    const v = o[field];
+    const has = AS.isQuantified(o, measure);
+    const value = !has ? t(measure === 'kwh' ? 'energy_not_quantified' : 'ghg_not_quantified') : measure === 'ghg' ? `${fmt(v / 1000, 0)} tCO₂eq` : `${fmt(v, 0)} kWh`;
+    // expected_text qualifies the GHG figure when there is one (e.g. "Up to …"), so it is not attached to energy
+    const textFits = o.expected_text && (measure === 'ghg' || !AS.isQuantified(o, 'ghg'));
+    const notes = [has && o.scenario ? t('scenario_short') : null, textFits ? L(o.expected_text) : null].filter(Boolean);
+    return `<p class="small dc-line" data-sort-measure="${esc(measure)}" data-quantified="${has}"><span class="muted">${esc(t('measure_' + measure))}:</span> <b>${esc(value)}</b>${notes.length ? ` <span class="muted">(${esc(notes.join(' · '))})</span>` : ''}</p>`;
+  }
+
+  /** One row of the results breakdown: an ECAM component with its source label and classification. */
+  function componentLabel(prefix, component, ctx) {
+    const src = AS.sourceOfOutput(prefix, component);
+    const label = src ? ctx.t('src_' + src) : ctx.labelOf(`${prefix}_KPI_GHG_${component}`);
+    return `${classChip(src ? AS.SOURCES[src].classification : null, ctx)} <span data-component="${ctx.esc(prefix + '_' + component)}">${src ? ctx.esc(label) : label}</span>`;
+  }
+  /** Largest assessed contributor (AS.largestContributor result), or why it cannot be shown. */
+  function contributor(r, ctx) {
+    const { t, esc, fmt } = ctx;
+    const head = `<b>${esc(t('largest_contributor'))}</b>`;
+    if (!r || r.status !== 'ok') {
+      return `<div class="notice small" data-contributor="${esc(r ? r.status : 'none')}">${head}: ${esc(t('contrib_' + (r ? r.status : 'zero_total')))}</div>`;
+    }
+    const rows = r.top.map(x => `<li data-contributor-row="${esc(x.prefix + '_' + x.component)}">${componentLabel(x.prefix, x.component, ctx)} · ${locationText({ at: 'substage', prefix: x.prefix, sid: x.sid }, ctx)}
+      · <b>${esc(fmt(x.kg / 1000, 0))} tCO₂eq</b> · ${esc(t('contrib_share').replace('{p}', fmt(100 * x.share, 1)))}</li>`).join('');
+    return `<div class="notice small" data-contributor="ok" data-tied="${r.top.length > 1}">${head}${r.top.length > 1 ? ` (${esc(t('contrib_tie'))})` : ''}:
+      <ul class="contrib">${rows}</ul><div class="muted">${esc(t('contrib_note'))}${r.unavailable ? ' ' + esc(t('contrib_unavailable').replace('{n}', r.unavailable)) : ''}</div></div>`;
+  }
+
   /**
-   * opts: { selected, note, open, checks, explainHtml }
+   * opts: { selected, note, open, checks, explainHtml, measure ('ghg' | 'kwh' when the cards are sorted by it) }
    */
   function card(o, ctx, opts) {
     const { t, L, esc } = ctx;
@@ -100,6 +174,8 @@
       <div class="dc-head"><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${esc(k)}" ${opts.selected ? 'checked' : ''} ${base ? 'disabled' : ''}>
         <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label>
         <span class="dc-benefit" data-benefit>${benefit(o, ctx)}</span></div>
+      ${addressesLine(o, ctx)}
+      ${measureLine(o, opts.measure, ctx)}
       <p class="small dc-line" data-why><span class="muted">${esc(t('why_appeared'))}:</span> ${esc(why)}</p>
       <p class="small dc-line"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</p>
       ${pending ? `<p class="small dc-flag" data-pending="${pending}">${esc(t('inputs_need_confirm').replace('{n}', pending))}</p>` : ''}
@@ -111,6 +187,7 @@
           <dt>${esc(t('est_benefit'))}</dt><dd>${benefit(o, ctx)}
             ${o.scenario ? `<div class="small"><span class="muted">${esc(t('scenario'))}:</span> ${esc(L(o.scenario))}</div>` : ''}
             <div class="small"><span class="muted">${esc(t('basis'))}:</span> <code>${esc(o.basis)}</code></div></dd>
+          ${sourceDetails(o, ctx)}
           ${base ? '' : `<dt>${esc(t('supporting_doc'))}</dt><dd data-support>${esc(t('no_supporting_doc'))}</dd>
           <dt>${esc(t('before_deciding'))}</dt><dd><div class="small"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</div>
             ${check ? `<div class="small muted">${esc(t('input_status'))}</div>${completeness(check, ctx)}<div class="small">${zeroNotes(check, ctx)}</div>${inputRows(check, ctx)}${untrackedList(check, ctx)}` : `<div class="small muted" data-not-tracked>${esc(t('not_tracked'))}</div>`}</dd>`}
@@ -153,5 +230,5 @@
     </div>`;
   }
 
-  return { card, panel, benefit, checkFor, optionSid, shown, needsConfirm, COVERED_RULES, OTHER_RULES };
+  return { card, panel, benefit, checkFor, optionSid, shown, needsConfirm, COVERED_RULES, OTHER_RULES, classChip, componentLabel, contributor, locationText };
 });

@@ -74,6 +74,16 @@ function requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, pl
     gwpIndex, actionSet, selectedActions: actions, plan, profile,
   });
   if (f.plan.length) throw conflict('Regenerate or review the project plan first. ' + describe('plan', f.plan), [describe('plan', f.plan)]);
+  if (CW.summedClaims({ plan }).plan) throw conflict(SUMMED.plan, [SUMMED.plan]);
+}
+
+const SUMMED = {
+  plan: 'Project plan: the summary adds the actions\' reductions together (sentence from an earlier version). Combined savings have not been assessed because actions may overlap. Delete or rewrite that sentence, or regenerate the plan.',
+  proposal: titles => `Proposal: ${titles.join(', ')} adds the actions' reductions together (sentence from an earlier version). Combined savings have not been assessed because actions may overlap. Delete or rewrite that sentence, or regenerate the proposal.`,
+};
+function summedIssues(body) {
+  const s = CW.summedClaims({ plan: body.plan, proposal: body.proposal });
+  return [s.plan ? SUMMED.plan : null, s.proposal.length ? SUMMED.proposal(s.proposal) : null].filter(Boolean);
 }
 
 /**
@@ -105,8 +115,9 @@ function exportContext(body, { requireProposal = false } = {}) {
     });
     for (const stage of ['plan', 'proposal']) if (f[stage].length) issues.push(describe(stage, f[stage]));
   }
+  issues.push(...summedIssues(body));
   if (issues.length) throw conflict('Export blocked. ' + issues.join(' '), issues);
   return { assessment, meta };
 }
 
-module.exports = { actionIssues, requireCurrentActions, requireCurrentPlan, exportContext, optionsFor, describe, MESSAGES };
+module.exports = { actionIssues, requireCurrentActions, requireCurrentPlan, exportContext, summedIssues, optionsFor, describe, MESSAGES };

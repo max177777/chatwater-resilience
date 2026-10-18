@@ -172,6 +172,8 @@ const RULES = [
         category: 'sanitation',
         title: { en: `Scheduled desludging – ${s.name}`, id: `Layanan lumpur tinja terjadwal (LLTT) – ${s.name}` },
         expected_kwh: 0, expected_kgco2: run.delta_kgco2,
+        // expected_kwh stays 0 for compatibility; no energy change (trucks, sludge treatment) is calculated.
+        benefit_status: { kwh: 'not_quantified' },
         scenario: {
           en: `ECAM re-run: ${ASSUMPTIONS.desludging_emptied_pct}% of faecal sludge emptied per year (now ${s.inputs?.wwo_cont_emp || 0}%). Emissions from treating the emptied sludge are not yet included.`,
           id: `Hitung ulang ECAM: ${ASSUMPTIONS.desludging_emptied_pct}% lumpur tinja dikuras per tahun (saat ini ${s.inputs?.wwo_cont_emp || 0}%). Emisi pengolahan lumpur yang dikuras belum termasuk.`,
@@ -332,6 +334,10 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
     }
   }
   const checks = ruleChecks(results, where);
+  const status = v => (typeof v === 'number' && Number.isFinite(v) ? 'quantified' : 'not_quantified');
+  options.forEach(o => {
+    o.benefit_status = { kgco2: status(o.expected_kgco2), kwh: status(o.expected_kwh), ...o.benefit_status };
+  });
   options.forEach((o, k) => { if (!o.id) o.id = 'A' + String(k).padStart(2, '0'); });
   // largest calculated reductions first, keeping the baseline on top
   const [base, ...rest] = options;

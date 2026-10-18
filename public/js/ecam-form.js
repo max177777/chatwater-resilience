@@ -266,7 +266,7 @@ const CWForm = (() => {
       const el = e.target;
       if (el.id === 'sc-select') { app.setCurrent(+el.value); return app.render(); }
       if (el.id === 'gwp-select') { app.setGwp(+el.value); return refreshLive(sel); }
-      if (el.id === 'load-ecam') return loadEcamFile(el.files[0]);
+      if (el.id === 'load-ecam') return loadEcamFile(el);
       if (el.dataset.gen === 'Country') {
         const c = Countries[el.value];
         Global.General.Country = el.value;
@@ -329,21 +329,12 @@ const CWForm = (() => {
     app.save(); app.render();
   }
 
-  function loadEcamFile(file) {
+  function loadEcamFile(input) {
     const app = A();
+    const file = input.files[0];
+    input.value = ''; // the same file can be chosen again, including after a failed import
     if (!file) return;
-    const r = new FileReader();
-    r.onload = () => {
-      try {
-        let data = JSON.parse(r.result);
-        if (!Array.isArray(data)) data = [data];
-        data.forEach(o => Scenarios.push(Ecam.from(o)));
-        app.setCurrent(Scenarios.length - data.length);
-        app.state.ui.sel = { kind: 'general' };
-        app.save(); app.toast(app.t('file_loaded')); app.render();
-      } catch (e) { alert(app.t('error') + ': ' + e.message); }
-    };
-    r.readAsText(file);
+    file.text().then(text => app.importEcamText(text), () => app.toast(app.t('import_not_json')));
   }
 
   // --- results view ---------------------------------------------------------
@@ -363,6 +354,13 @@ const CWForm = (() => {
     const subs = STAGES().flatMap(s => Global[s.level][s.sublevel].map(ss => ({ s, ss, ghg: safeNum(() => ss[s.prefix + '_KPI_GHG']().total) || 0 })));
     subs.sort((a, b) => b.ghg - a.ghg);
     const gp = GWP_reports[A().state.gwpIndex] || GWP_reports[0];
+    const ctx = A().cardCtx(A().idOf(Global));
+    const related = A().relatedActions(Global);
+    const sourcesCell = x => AS.COMPONENTS[x.s.prefix]
+      .map(c => ({ c, kg: safeNum(() => x.ss[`${x.s.prefix}_KPI_GHG_${c}`]().total) }))
+      .filter(v => v.kg)
+      .map(v => `<div>${DC.componentLabel(x.s.prefix, v.c, ctx)} ${fmt(v.kg / 1000)}</div>`).join('') || '–';
+    const relatedCell = x => esc((related.bySid[A().idOf(x.ss, 's')] || []).join(', ') || '–');
     root.innerHTML = `
       <div class="page-head"><h1>${esc(t('results_title'))} · ${esc(Global.General.Name)}</h1>
         <p class="muted">${esc(t('results_sub'))} ${esc(Global.General.AssessmentPeriodStart)} – ${esc(Global.General.AssessmentPeriodEnd)} · ${esc(gp.report)} · ${Global.General.conv_kwh_co2} kgCO₂/kWh</p></div>
@@ -375,9 +373,12 @@ const CWForm = (() => {
         ${rows.map(r => `<tr><td>${esc(A().stageLabel(r.prefix))} <span class="muted small">(${r.n})</span></td><td class="num">${fmt(r.total / 1000)}</td><td class="num">${fmt(r.co2 / 1000)}</td><td class="num">${fmt(r.ch4 / 1000)}</td><td class="num">${fmt(r.n2o / 1000)}</td><td class="num">${fmt(r.kwh)}</td><td class="num">${g.total ? fmt(100 * r.total / g.total, 1) + '%' : '–'}</td></tr>`).join('')}
         <tr style="font-weight:700"><td>Total</td><td class="num">${fmt(g.total / 1000)}</td><td class="num">${fmt(g.co2 / 1000)}</td><td class="num">${fmt(g.ch4 / 1000)}</td><td class="num">${fmt(g.n2o / 1000)}</td><td class="num">${fmt(e)}</td><td class="num">100%</td></tr>
       </tbody></table></div>
-      <div class="card"><h2>${esc(t('substage'))}</h2><table class="data"><thead><tr><th>${esc(t('substage'))}</th><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">${esc(t('share'))}</th></tr></thead><tbody>
-        ${subs.map(x => `<tr><td>${esc(x.ss.name)}</td><td>${esc(A().stageLabel(x.s.prefix))}</td><td class="num">${fmt(x.ghg / 1000)}</td><td class="num">${g.total ? fmt(100 * x.ghg / g.total, 1) + '%' : '–'}</td></tr>`).join('')}
-      </tbody></table></div>
+      ${DC.contributor(A().contributorOf(Global), ctx)}
+      <div class="card"><h2>${esc(t('substage'))}</h2><table class="data"><thead><tr><th>${esc(t('substage'))}</th><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">${esc(t('share'))}</th><th>${esc(t('sources_col'))} (tCO₂eq)</th><th>${esc(t('related_actions_col'))}</th></tr></thead><tbody>
+        ${subs.map(x => `<tr data-substage="${esc(A().idOf(x.ss, 's'))}"><td>${esc(x.ss.name)}</td><td><i class="sw sw-${x.s.prefix}" aria-hidden="true"></i>${esc(A().stageLabel(x.s.prefix))}</td><td class="num">${fmt(x.ghg / 1000)}</td><td class="num">${g.total ? fmt(100 * x.ghg / g.total, 1) + '%' : '–'}</td>
+          <td class="small">${sourcesCell(x)}</td><td class="small" data-related>${relatedCell(x)}</td></tr>`).join('')}
+      </tbody></table>
+      ${related.status === 'outdated' ? `<p class="small muted">${esc(t('related_outdated'))}</p>` : ''}</div>
       <div class="actions-row"><button class="btn" data-go="assess:entry">${esc(t('back_to_data'))}</button><button class="btn primary" data-act="finish">${esc(t('finish_assessment'))}</button></div>`;
     drawChart(rows);
     root.querySelector('[data-act=finish]').onclick = () => A().finishAssessment();

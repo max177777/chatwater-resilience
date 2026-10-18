@@ -196,6 +196,17 @@
     return out;
   }
 
+  // Sentences that earlier template versions used to add the selected actions' reductions together.
+  const SUMMED_CLAIMS = [/Calculated reductions add up to about/i, /Pengurangan yang telah dihitung sekitar/i];
+  const hasSummedClaim = text => typeof text === 'string' && SUMMED_CLAIMS.some(re => re.test(text));
+  /** Which saved outputs still contain such a sentence: { plan: bool, proposal: [section titles] }. */
+  function summedClaims({ plan, proposal } = {}) {
+    return {
+      plan: !!(plan && hasSummedClaim(plan.summary)),
+      proposal: ((proposal && proposal.sections) || []).filter(s => hasSummedClaim(s.text)).map(s => s.title || s.key),
+    };
+  }
+
   // ------------------------------------------------------------ migration
   function newMeta(assessment, newId) {
     return {
@@ -351,10 +362,46 @@
     return { unit: unit || '', mult: table[unit] || 1 };
   }
 
+  // ------------------------------------------------------------ file imports
+  const PROFILE_KEYS = ['name', 'location', 'country', 'service_type', 'population', 'served', 'connections', 'volume', 'staff', 'contact', 'notes'];
+  const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
+  const isEcamAssessment = o => isObj(o) && isObj(o.General) && STAGE_KEYS.every(([, lv, sl]) => isObj(o[lv]) && Array.isArray(o[lv][sl]));
+  const looksLikeEcam = d => Array.isArray(d) ? d.some(o => isObj(o) && ('General' in o || 'Water' in o)) : isObj(d) && ('General' in d || 'Water' in d);
+  /**
+   * Check an ECAM file before anything is added: every assessment must be complete, or none is imported.
+   * { ok: true, assessments } | { ok: false, reason: 'not_json' | 'profile_file' | 'empty' | 'not_ecam' }
+   */
+  function parseEcamFile(text) {
+    let data;
+    try { data = JSON.parse(text); } catch { return { ok: false, reason: 'not_json' }; }
+    if (isObj(data) && !looksLikeEcam(data) && PROFILE_KEYS.some(k => k in data)) return { ok: false, reason: 'profile_file' };
+    const list = Array.isArray(data) ? data : [data];
+    if (!list.length) return { ok: false, reason: 'empty' };
+    if (!list.every(isEcamAssessment)) return { ok: false, reason: 'not_ecam' };
+    return { ok: true, assessments: list };
+  }
+  /** Profile fields from a JSON profile file. { ok: true, profile } | { ok: false, reason: 'not_json' | 'ecam_file' | 'no_profile_fields' } */
+  function parseProfileJson(text) {
+    let data;
+    try { data = JSON.parse(text); } catch { return { ok: false, reason: 'not_json' }; }
+    if (looksLikeEcam(data)) return { ok: false, reason: 'ecam_file' };
+    if (!isObj(data) || !PROFILE_KEYS.some(k => data[k] != null)) return { ok: false, reason: 'no_profile_fields' };
+    return { ok: true, profile: Object.fromEntries(PROFILE_KEYS.filter(k => data[k] != null).map(k => [k, data[k]])) };
+  }
+  /** "Name", or "Name (2)", "Name (3)" … when the name is already used, so imported copies can be told apart. */
+  function uniqueName(name, taken) {
+    const used = new Set(taken);
+    if (!used.has(name)) return name;
+    let n = 2;
+    while (used.has(`${name} (${n})`)) n++;
+    return `${name} (${n})`;
+  }
+
   return {
     SCHEMA, STAGE_KEYS, canonical, hash, fp, revision, actionKey, substageId, withKeys, withCheckIds, assignLabels, mapLegacy,
-    actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, migrate, unitView,
+    actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, hasSummedClaim, summedClaims, migrate, unitView,
     commitVersion, regenerate, restoreVersion, loadSession, writeSession, isQuota,
     TRACKED_INPUTS, INPUT_ORIGINS, isTracked, inputState, needsConfirm, setInputOrigin, confirmInputValue,
+    parseEcamFile, parseProfileJson, uniqueName,
   };
 });

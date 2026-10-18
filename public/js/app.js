@@ -34,7 +34,7 @@
     plan: null, financing: { route: 'general' }, proposal: null,
     chat: [], checkpoints: [], explanations: {},
     inputStatus: {}, // assessment ID -> entry status of the inputs read by the covered rule checks (see CW.inputStatus)
-    ui: { tab: 'assess', view: 'assess:choose', sel: { kind: 'general' }, chatOpen: true },
+    ui: { tab: 'assess', view: 'assess:choose', sel: { kind: 'general' }, chatOpen: true, actionSort: 'original' },
   });
   // storageLock: the saved session could not be read or backed up, so it must not be written over
   // until the user chooses to. storageFail: the last write failed (the previous save is still in place).
@@ -154,11 +154,31 @@
     if (Scenarios.length < 2) return;
     Scenarios.splice(state.current, 1); setCurrent(0);
   }
+  /** Add checked ECAM assessments (CW.parseEcamFile), renaming copies whose name is already used. Returns the names as loaded. */
+  function addAssessments(list) {
+    const built = list.map(o => Ecam.from(o)); // throws before anything is added
+    const names = [];
+    for (const s of built) {
+      s.General.Name = CW.uniqueName(s.General.Name || 'Assessment', Scenarios.map(x => x.General.Name));
+      Scenarios.push(s); names.push(s.General.Name);
+    }
+    setCurrent(Scenarios.length - built.length);
+    return names;
+  }
+  /** Shared by Load sample utility and Load ECAM file: all assessments in the file are added, or none. */
+  function importEcamText(text) {
+    const r = CW.parseEcamFile(text);
+    if (!r.ok) { toast(t('import_' + r.reason)); return false; }
+    let names;
+    try { names = addAssessments(r.assessments); } catch { toast(t('import_not_ecam')); return false; }
+    save(); toast(t('file_loaded_as').replace('{names}', names.join(', '))); render();
+    return true;
+  }
   async function loadSample() {
-    const data = await fetch('/samples/utility-a-indonesia.json').then(r => r.json());
-    data.forEach(o => Scenarios.push(Ecam.from(o)));
-    setCurrent(Scenarios.length - 1);
-    toast(t('file_loaded')); render();
+    let text;
+    try { text = await fetch('/samples/utility-a-indonesia.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
+    catch { return toast(t('sample_unavailable')); }
+    importEcamText(text);
   }
 
   // ---------------------------------------------------------------- persistence
@@ -240,6 +260,21 @@
   }
   // Only schema-1 outputs can be confirmed as-is; anything outdated by a change must be regenerated.
   const onlyLegacy = codes => codes.length === 1 && codes[0] === 'legacy';
+  // Saved text with an earlier version's summed-reduction sentence is flagged, never rewritten.
+  const summed = () => CW.summedClaims({ plan: state.plan, proposal: state.proposal });
+  const summedIn = (s, what) => what === 'plan' ? s.plan : s.proposal.length > 0;
+  function summedNotice(what) {
+    const s = summed();
+    return `<div class="notice warn" data-summed="${what}"${summedIn(s, what) ? '' : ' hidden'}><b>${esc(t('legacy_sum_title'))}</b>
+      ${what === 'proposal' ? `<span data-summed-where>${esc(s.proposal.join(', '))}.</span> ` : ''}${esc(t('legacy_sum_body'))}</div>`;
+  }
+  /** Re-check after an edit without re-rendering (keeps the cursor in the textarea). */
+  function refreshSummed(root, what) {
+    const s = summed(), el = root.querySelector(`[data-summed="${what}"]`);
+    if (el) el.hidden = !summedIn(s, what);
+    const where = el && el.querySelector('[data-summed-where]');
+    if (where) where.textContent = s.proposal.join(', ') + '.';
+  }
 
   // Generated text keeps the language it was written in; switching the interface never rewrites it.
   const langName = l => (l ? t('lang_' + l) : t('lang_unknown'));
@@ -283,6 +318,7 @@
   async function generateProposal(btn, lang) {
     const now = freshness();
     if (now.actions.length || now.plan.length) return toast(t(now.actions.length ? 'outdated_hint_actions' : 'outdated_hint_plan'));
+    if (summed().plan) return toast(t('legacy_sum_title') + ' ' + t('legacy_sum_body'));
     const sc = sourceAssessment() || Global;
     const f = state.financing;
     if (state.proposal && !confirm(t('confirm_replace_proposal'))) return;
@@ -386,17 +422,24 @@
     $('#profile-cancel').onclick = () => (m.hidden = true);
     $('#profile-template').onclick = () => download('field,value\n' + PROFILE_FIELDS.map(([k]) => `${k},`).join('\n') + '\n', 'utility-profile-template.csv', 'text/csv');
     $('#profile-file').onchange = e => {
-      const f = e.target.files[0]; if (!f) return;
+      const f = e.target.files[0];
+      e.target.value = ''; // the same file can be chosen again
+      if (!f) return;
       f.text().then(txt => {
         let data = {};
-        if (/\.json$/i.test(f.name)) data = JSON.parse(txt);
-        else txt.split(/\r?\n/).slice(1).forEach(line => {
+        if (/\.json$/i.test(f.name)) {
+          const r = CW.parseProfileJson(txt);
+          if (!r.ok) return toast(t('profile_' + r.reason));
+          data = r.profile;
+        } else txt.split(/\r?\n/).slice(1).forEach(line => {
           const i = line.indexOf(','); if (i < 0) return;
           data[line.slice(0, i).trim()] = line.slice(i + 1).trim().replace(/^"|"$/g, '');
         });
         const form = $('#profile-form');
-        for (const [k] of PROFILE_FIELDS) if (data[k] != null && form.elements[k]) form.elements[k].value = data[k];
-      }).catch(err => alert(t('error') + ': ' + err.message));
+        let filled = 0;
+        for (const [k] of PROFILE_FIELDS) if (data[k] != null && form.elements[k]) { form.elements[k].value = data[k]; filled++; }
+        toast(t(filled ? 'profile_filled' : 'profile_no_profile_fields'));
+      }).catch(() => toast(t('profile_not_json')));
     };
     $('#profile-form').onsubmit = e => {
       e.preventDefault();
@@ -481,11 +524,54 @@
   const openCards = new Set();
   function cardCtx(aid) {
     return {
-      t, L, esc, fmt,
+      t, L, esc, fmt, stageLabel,
       labelOf: code => rich(tE(code + '_descr') || tE(code) || code),
       unitView: code => CW.unitView(Units, Info, byId(aid) || Global, code),
       status: (sid, code, value) => inputStatusOf(aid, sid, code, value),
+      substageName: sid => substageById(byId(aid), sid)?.name || null,
     };
+  }
+  const safeKg = fn => { try { const v = fn(); return Number.isFinite(v) ? v : null; } catch { return null; } };
+  /** Largest assessed contributor of one assessment, from ECAM's first-level source outputs (AS.COMPONENTS). */
+  function contributorOf(sc) {
+    if (!sc) return null;
+    const rows = [], subTotals = [];
+    for (const [p, lv, sl] of CW.STAGE_KEYS) for (const ss of sc[lv][sl]) {
+      const sid = idOf(ss, 's');
+      subTotals.push({ sid, kg: safeKg(() => ss[p + '_KPI_GHG']().total) });
+      for (const c of AS.COMPONENTS[p]) rows.push({ prefix: p, sid, name: ss.name, component: c, kg: safeKg(() => ss[`${p}_KPI_GHG_${c}`]().total) });
+    }
+    return AS.largestContributor(rows, subTotals, safeKg(() => sc.TotalGHG().total));
+  }
+  /** Action labels per substage ID, only while the stored options are current for this assessment. */
+  function relatedActions(sc) {
+    const r = state.actionResult;
+    if (!sc || !r || r.legacy || r.assessmentId !== idOf(sc)) return { status: 'none', bySid: {} };
+    if (freshness().options.length) return { status: 'outdated', bySid: {} };
+    const bySid = {};
+    for (const o of r.options) {
+      const sid = DC.optionSid(o);
+      if (o.rule !== 'baseline' && sid && sid !== 'utility') (bySid[sid] = bySid[sid] || []).push(o.id);
+    }
+    return { status: 'ok', bySid };
+  }
+  /** Open the Stage 1 section an option refers to, in the assessment the option came from. */
+  function gotoSource(key) {
+    const o = state.actionResult?.options.find(x => x.key === key);
+    const d = o && AS.describe(o);
+    const sc = byId(d?.assessmentId);
+    if (!sc) return toast(t('goto_missing_assessment'));
+    let sel = null;
+    if (d.location?.sid) {
+      const [, lv, sl] = CW.STAGE_KEYS.find(([p]) => p === d.location.prefix) || [];
+      const index = lv ? sc[lv][sl].findIndex(ss => idOf(ss, 's') === d.location.sid) : -1;
+      if (index < 0) return toast(t('goto_missing_substage'));
+      sel = { kind: 'ss', prefix: d.location.prefix, index };
+    }
+    if (Scenarios.indexOf(sc) !== state.current) setCurrent(Scenarios.indexOf(sc));
+    if (sel) state.ui.sel = sel;
+    toast(t('goto_shown').replace('{name}', sc.General.Name));
+    go(sel ? 'assess:entry' : 'assess:results');
   }
 
   function viewActionsCompare(root) {
@@ -497,21 +583,33 @@
     const ctx = cardCtx(r.assessmentId);
     const explainHtml = o => o.rule === 'baseline' ? '' : `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(o.key)}" ${META.ai ? '' : `disabled title="${esc(t('ai_off_short'))}"`}>${esc(t('explain_ai'))}</button>${META.ai ? '' : ` <span class="small muted">${esc(t('ai_off_short'))}</span>`}</div>
       ${state.explanations[o.key] ? `<div class="ai-text">${esc(state.explanations[o.key])}${sourcesHtml(state.explanationSources?.[o.key])}</div>` : ''}`;
-    const cards = r.options.map(o => DC.card(o, ctx, {
+    const sort = AS.MEASURES[state.ui.actionSort] ? state.ui.actionSort : 'original';
+    const cards = AS.sortOptions(r.options, sort).map(o => DC.card(o, ctx, {
       selected: state.selectedKeys.includes(o.key), note: state.actionNotes[o.key] || '',
       open: showDetails || openCards.has(o.key), checks: r.checks, explainHtml: explainHtml(o),
+      measure: sort === 'original' ? null : sort,
     })).join('');
     const review = state.actionReview || [];
-    root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(byId(r.assessmentId)?.General.Name || r.assessmentName)}</b></p></div>
+    const source = byId(r.assessmentId);
+    // the source assessment's current figures; while options are outdated they may no longer match the cards
+    const contrib = source && !optionsStale ? DC.contributor(contributorOf(source), ctx) : '';
+    const days = source ? source.Days() : null;
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(source?.General.Name || r.assessmentName)}</b></p></div>
       ${staleNotice(f.options, 'options')}
       ${review.length ? `<div class="notice warn"><b>${esc(t('review_selection'))}</b><ul>${review.map(x => `<li>${esc(L(x))}</li>`).join('')}</ul></div>` : ''}
+      ${contrib}
       ${r.checks ? DC.panel(r.checks, r.options, ctx, { open: openCards.has('__checks') }) : ''}
       <div class="row" style="margin-bottom:10px"><span class="grow small muted">${esc(t('cards_hint'))}</span>
+        <label class="small row" style="gap:6px">${esc(t('sort_label'))}
+          <select id="action-sort" style="width:auto">${['original', 'ghg', 'kwh'].map(k => `<option value="${k}" ${k === sort ? 'selected' : ''}>${esc(t('sort_' + k))}</option>`).join('')}</select></label>
         <button class="btn sm" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button></div>
+      ${sort === 'original' ? '' : `<p class="small muted" data-sort-note="${sort}">${esc(t('sort_note').replace('{days}', fmt(days, 0)))}</p>`}
       <div class="dcards">${cards}</div>
       <div class="notice small" style="margin-top:12px"><b>${esc(t('assumptions_title'))}:</b> ${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div>
       <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions" ${optionsStale ? 'disabled' : ''}>${esc(t('save_actions'))}</button></div>`;
     root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; if (showDetails) openCards.clear(); save(); render(); };
+    root.querySelector('#action-sort').onchange = e => { state.ui.actionSort = e.target.value; save(); render(); };
+    root.querySelectorAll('[data-goto-source]').forEach(b => b.onclick = () => gotoSource(b.dataset.gotoSource));
     root.querySelectorAll('details[data-details]').forEach(d => d.ontoggle = () => { d.open ? openCards.add(d.dataset.details) : openCards.delete(d.dataset.details); });
     root.querySelectorAll('[data-confirm]').forEach(b => b.onclick = () => {
       const [sid, code] = b.dataset.confirm.split('|');
@@ -585,6 +683,7 @@
     root.innerHTML = `<div class="page-head"><h1>${esc(t('plan_title'))}</h1><p class="muted">${esc(t('plan_sub'))}</p></div>
       ${staleNotice(fr.actions, 'actions')}
       ${staleNotice(fr.plan, 'plan')}
+      ${p ? summedNotice('plan') : ''}
       ${genErrorNotice('plan')}
       ${p && onlyLegacy(fr.plan) && !fr.actions.length ? `<div class="actions-row" style="margin-top:0"><button class="btn" id="plan-reviewed">${esc(t('mark_reviewed'))}</button></div>` : ''}
       ${outputLangNotice(p, 'plan')}
@@ -608,7 +707,7 @@
       p.deps = CW.planDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, profile: state.profile });
       save(); render();
     };
-    root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); };
+    root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); refreshSummed(root, 'plan'); };
     root.querySelectorAll('[data-owner]').forEach(i => i.oninput = () => { p.tasks[+i.dataset.owner].owner = i.value; save(); });
     root.querySelectorAll('[data-weeks]').forEach(i => i.onchange = () => { p.tasks[+i.dataset.weeks].weeks = Math.max(0, parseInt(i.value, 10) || 0); recomputeSchedule(p); save(); render(); });
     root.querySelector('#plan-details').onclick = () => { state.ui.planDetails = !state.ui.planDetails; save(); render(); };
@@ -620,11 +719,13 @@
     const f = state.financing;
     const fr = freshness();
     const upstreamStale = fr.actions.length > 0 || fr.plan.length > 0;
-    const exportBlocked = upstreamStale || fr.proposal.length > 0;
+    const sums = summed();
+    const exportBlocked = upstreamStale || fr.proposal.length > 0 || sums.plan || sums.proposal.length > 0;
     const card = (route, title, desc, btn) => `<div class="card pick ${f.route === route ? 'on' : ''}" data-route="${route}"><h2>${esc(title)}</h2><p>${esc(desc)}</p>${btn}</div>`;
     root.innerHTML = `<div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
       ${!state.plan ? `<div class="notice warn">${esc(t('no_plan'))}</div>` : ''}
       ${staleNotice(fr.actions, 'actions')}${staleNotice(fr.plan, 'plan')}${staleNotice(fr.proposal, 'proposal')}${genErrorNotice('proposal')}
+      ${state.plan ? summedNotice('plan') : ''}${state.proposal ? summedNotice('proposal') : ''}
       ${META.ai ? '' : `<div class="notice small">${esc(t('ai_off_note'))}</div>`}${evidenceNotice()}
       ${card('general', t('general_proposal'), t('general_desc'), `<button class="btn ${f.route === 'general' ? 'primary' : ''}">${esc(t('use_general'))}</button>`)}
       ${card('custom', t('tailor'), t('tailor_desc'), `<label class="btn ${f.route === 'custom' ? 'primary' : ''}">${esc(t('add_guide'))}<input type="file" id="guide-file" accept=".pdf,.docx,.txt,.md" hidden></label>
@@ -665,6 +766,8 @@
   function exportBlockedReason() {
     const f = freshness();
     for (const [k, what] of [['actions', 'actions'], ['plan', 'plan'], ['proposal', 'proposal']]) if (f[k].length) return t('outdated_hint_' + what);
+    const s = summed();
+    if (s.plan || s.proposal.length) return t('legacy_sum_title') + ' ' + t('legacy_sum_body');
     return '';
   }
   async function downloadAll(btn) {
@@ -682,9 +785,13 @@
     const p = state.proposal;
     if (!p) return go('finance');
     const fr = freshness();
-    const blocked = fr.actions.length || fr.plan.length || fr.proposal.length;
+    const outdated = fr.actions.length || fr.plan.length || fr.proposal.length;
+    const sums = () => { const s = summed(); return s.plan || s.proposal.length > 0; };
+    const blocked = outdated || sums();
     root.innerHTML = `<div class="page-head"><h1>${esc(t('proposal_title'))}${fr.proposal.length ? ` <span class="badge-outdated">${esc(t('outdated_badge'))}</span>` : ''}</h1><p class="muted">${esc(p.title)}</p></div>
       ${staleNotice(fr.proposal, 'proposal')}
+      ${summedNotice('proposal')}
+      ${state.plan ? summedNotice('plan') : ''}
       ${genErrorNotice('proposal')}
       ${onlyLegacy(fr.proposal) && !fr.actions.length && !fr.plan.length ? `<div class="actions-row" style="margin-top:0"><button class="btn" id="proposal-reviewed">${esc(t('mark_reviewed'))}</button></div>` : ''}
       ${outputLangNotice(p, 'proposal')}
@@ -697,7 +804,12 @@
         ${previousControl('proposal')}
         <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
         <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(t('download_all'))}</button></div>`;
-    root.querySelectorAll('[data-sec]').forEach(tx => tx.oninput = () => { p.sections[+tx.dataset.sec].text = tx.value; save(); });
+    root.querySelectorAll('[data-sec]').forEach(tx => tx.oninput = () => {
+      p.sections[+tx.dataset.sec].text = tx.value; save();
+      refreshSummed(root, 'proposal');
+      const off = !!(outdated || sums());
+      root.querySelectorAll('#dl-word, #dl-all').forEach(b => { b.disabled = off; });
+    });
     const regenLang = root.querySelector('[data-regen-lang=proposal]');
     if (regenLang) regenLang.onclick = e => generateProposal(e.target, state.lang);
     const reviewed = root.querySelector('#proposal-reviewed');
@@ -785,7 +897,8 @@
   // ---------------------------------------------------------------- boot
   window.App = {
     get state() { return state; }, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
-    setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, render, finishAssessment, markEntered,
+    idOf, cardCtx, contributorOf, relatedActions,
+    setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
   };
 
   async function boot() {

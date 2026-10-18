@@ -6,6 +6,14 @@ const {
   WidthType, AlignmentType, BorderStyle, ShadingType,
 } = require('docx');
 const JSZip = require('jszip');
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
+const AS = require('../public/js/action-sources');
+
+// Interface labels for what an action addresses, so exports and cards use the same words.
+const { UI, STAGE_LABELS } = vm.runInNewContext(
+  fs.readFileSync(path.join(__dirname, '../public/js/i18n.js'), 'utf8') + ';({ UI, STAGE_LABELS })');
 
 const fmt = (n, d = 0) => (n == null || !Number.isFinite(n)) ? '–'
   : n.toLocaleString('en-US', { maximumFractionDigits: d });
@@ -45,10 +53,11 @@ function table(headers, rows, widths) {
     borders, width: { size: widths[i], type: WidthType.DXA },
     shading: head ? { fill: '1F6F78', type: ShadingType.CLEAR, color: 'auto' } : undefined,
     margins: { top: 60, bottom: 60, left: 100, right: 100 },
-    children: [new Paragraph({
-      alignment: (!head && i > 0 && /^[\d,.–-]+$/.test(String(text))) ? AlignmentType.RIGHT : AlignmentType.LEFT,
-      children: [new TextRun({ text: String(text ?? ''), bold: head, color: head ? 'FFFFFF' : undefined, size: 19 })],
-    })],
+    // an array is one main line followed by smaller notes
+    children: (Array.isArray(text) ? text : [text]).map((line, n) => new Paragraph({
+      alignment: (!head && i > 0 && /^[\d,.–-]+$/.test(String(line))) ? AlignmentType.RIGHT : AlignmentType.LEFT,
+      children: [new TextRun({ text: String(line ?? ''), bold: head, color: head ? 'FFFFFF' : n ? '555555' : undefined, size: n ? 16 : 19 })],
+    })),
   });
   return new Table({
     width: { size: total, type: WidthType.DXA }, columnWidths: widths,
@@ -112,7 +121,8 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
     return [
       new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun(t.selected)] }),
       table([t.option, t.expected, t.condition], sel.map(a => [
-        `${a.id} · ${L(a.title)}`, expectedText(a, lang), L(a.condition)]), [3600, 2800, 2600]),
+        [`${a.id} · ${L(a.title)}`, addressesText(a, lang)].filter(Boolean), expectedText(a, lang), L(a.condition)]), [3600, 2800, 2600]),
+      ...(sel.length > 1 ? [new Paragraph({ spacing: { before: 120 }, children: [new TextRun({ size: 18, color: '555555', text: uiText('combined_not_assessed', lang) })] })] : []),
       new Paragraph({ text: '' }),
     ];
   }
@@ -142,10 +152,28 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
 function expectedText(a, lang) {
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : (o || '');
   const parts = [];
-  if (a.expected_kgco2) parts.push(`${fmt(a.expected_kgco2 / 1000, 0)} tCO2eq`);
-  if (a.expected_kwh) parts.push(`${fmt(a.expected_kwh)} kWh`);
+  if (a.expected_kgco2 && AS.isQuantified(a, 'ghg')) parts.push(`${fmt(a.expected_kgco2 / 1000, 0)} tCO2eq`);
+  if (a.expected_kwh && AS.isQuantified(a, 'kwh')) parts.push(`${fmt(a.expected_kwh)} kWh`);
   if (!parts.length) return L(a.expected_text) || '–';
-  return parts.join(' · ') + (a.scenario ? ` (${lang === 'id' ? 'skenario' : 'scenario'})` : '');
+  return parts.join(' · ') + (a.scenario ? ` (${lang === 'id' ? 'skenario' : 'scenario'})` : '')
+    + (a.rule !== 'baseline' && !AS.isQuantified(a, 'kwh') ? ` · ${uiText('energy_not_quantified', lang)}` : '');
+}
+
+const uiText = (k, lang) => (UI[lang] && UI[lang][k]) ?? UI.en[k] ?? k;
+const benefitStatus = a => ({ kgco2: AS.benefitStatus(a, 'ghg'), kwh: AS.benefitStatus(a, 'kwh') });
+
+/** "Addresses: problem — location. Source: classification" in the output language, from action-sources.js. */
+function addressesText(a, lang) {
+  const d = AS.describe(a);
+  if (!d) return '';
+  const u = k => uiText(k, lang);
+  const stage = p => (STAGE_LABELS[lang] || STAGE_LABELS.en)[p] || p;
+  const loc = l => !l ? '' : l.at === 'utility' ? u('loc_utility') : l.at === 'stages' ? l.stages.map(stage).join(', ') : stage(l.prefix);
+  const sources = d.mapped
+    ? d.sources.map(s => `${u('src_' + s.source)}${s.location.at !== 'substage' ? ` (${loc(s.location)})` : ''}: ${u('cls_' + (s.classification || 'pending'))}`)
+    : [u('cls_pending')];
+  const where = loc(d.location);
+  return `${u('addresses')}: ${u(d.mapped ? 'pb_' + d.problem : 'pb_unmapped')}${where ? ` — ${where}` : ''}. ${sources.join('; ')}`;
 }
 
 function csv(rows) {
@@ -167,7 +195,7 @@ async function buildZip(state, docxBuffer) {
       rows.push([r.name, `${s.level}/${s.sublevel}`, s.name, s.ghg?.total, s.ghg?.co2, s.ghg?.ch4, s.ghg?.n2o, s.energy_kwh]);
     zip.file('ecam/results-by-substage.csv', csv(rows));
   }
-  zip.file('actions/selected-actions.json', JSON.stringify(state.selectedActions || [], null, 2));
+  zip.file('actions/selected-actions.json', JSON.stringify((state.selectedActions || []).map(a => ({ ...a, benefit_status: benefitStatus(a), addresses: AS.describe(a) })), null, 2));
   if (state.plan?.tasks) {
     zip.file('plan/project-plan.csv', csv([['id', 'action', 'task', 'owner', 'start_week', 'weeks', 'depends_on'],
       ...state.plan.tasks.map(k => [k.id, k.action, k.name, k.owner, k.start_week, k.weeks, k.depends_on.join(' ')])]));
@@ -182,7 +210,8 @@ async function buildZip(state, docxBuffer) {
     'ecam/assessments-ecam-format.json  Load this file in ECAM (climatesmartwater.org/ecam) via "Load and save file"',
     'ecam/results.json                  All ECAM outputs calculated by the app',
     'ecam/results-by-substage.csv       Emissions and energy per substage',
-    'actions/selected-actions.json      Options chosen in stage 2, with calculation basis',
+    'actions/selected-actions.json      Options chosen in stage 2, with calculation basis, benefit status and what each addresses',
+    '                                   Each estimate is separate; combined savings have not been assessed because actions may overlap.',
     'plan/project-plan.csv              Tasks, owners and timing from stage 3',
     '',
     `Language: ${lang}. Calculations: ECAM v3 by ICRA, IWA and GIZ (CC BY-SA 4.0).`,
@@ -190,4 +219,4 @@ async function buildZip(state, docxBuffer) {
   return zip.generateAsync({ type: 'nodebuffer' });
 }
 
-module.exports = { buildProposalDocx, buildZip, expectedText };
+module.exports = { buildProposalDocx, buildZip, expectedText, addressesText };
