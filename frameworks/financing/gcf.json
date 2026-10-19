@@ -5,7 +5,7 @@
   "sections": [
     {"key": "summary",       "en": "A. Project summary", "id": "A. Ringkasan proyek", "guidance": "Accredited entity, country (Indonesia), sector, mitigation/adaptation, size, request."},
     {"key": "rationale",     "en": "B. Climate rationale and context", "id": "B. Alasan iklim dan konteks", "guidance": "Climate rationale based on ECAM baseline and climate risks; baseline scenario without the project."},
-    {"key": "impact",        "en": "C1. Impact potential", "id": "C1. Potensi dampak", "guidance": "Expected tCO2eq reduced per year and over lifetime from ECAM-calculated options; beneficiaries."},
+    {"key": "impact",        "en": "C1. Impact potential", "id": "C1. Potensi dampak", "guidance": "Expected tCO2eq reduced per year and over lifetime for each ECAM-calculated option, stated separately (combined savings have not been assessed because actions may overlap, so do not add them up); beneficiaries."},
     {"key": "paradigm",      "en": "C2. Paradigm shift potential", "id": "C2. Potensi perubahan paradigma", "guidance": "Replication across Indonesian utilities (PDAM / PD PAL), knowledge, enabling environment."},
     {"key": "sustainable",   "en": "C3. Sustainable development potential", "id": "C3. Potensi pembangunan berkelanjutan", "guidance": "Co-benefits: service quality, public health, NRW, cost savings, gender."},
     {"key": "needs",         "en": "C4. Needs of the recipient", "id": "C4. Kebutuhan penerima", "guidance": "Vulnerability, financing gap, capacity."},

@@ -13,13 +13,14 @@ const CWForm = (() => {
   const STAGES = () => Structure.filter(s => s.sublevel);
 
   // --- value helpers ------------------------------------------------------
-  const mult = code => { try { return Units.multiplier(code) || 1; } catch { return 1; } };
-  function unitOf(code) {
+  // value shown = stored base value / mult, labelled with the same unit the multiplier came from
+  const mult = code => CW.unitView(Units, Info, Global, code).mult;
+  function unitOf(code, base = false) {
     const i = Info[code];
     if (!i) return '';
     if (i.magnitude === 'Currency') return Global.General.Currency;
     if (i.magnitude === 'Option') return '';
-    return i.unit || '';
+    return base ? (i.unit || '') : CW.unitView(Units, Info, Global, code).unit;
   }
   function labelOf(code) {
     return A().tE(code + '_descr') || A().tE(code) || code;
@@ -111,7 +112,7 @@ const CWForm = (() => {
       const v = safeNum(() => outputTotal(ss[eq]()));
       if (v === null || v === 0) return '';
       const isGHG = /_KPI_GHG/.test(eq);
-      const unit = isGHG ? 'kgCO₂eq' : unitOf(eq);
+      const unit = isGHG ? 'kgCO₂eq' : unitOf(eq, true);
       return `<tr${isGHG && eq === struct.prefix + '_KPI_GHG' ? ' style="font-weight:700"' : ''}><td>${A().rich(labelOf(eq))}</td><td class="num">${fmt(v)}</td><td class="unit small muted">${A().rich(unit)}</td></tr>`;
     }).join('');
     return rows ? `<table class="outputs"><tbody>${rows}</tbody></table>` : `<p class="muted small">–</p>`;
@@ -240,6 +241,7 @@ const CWForm = (() => {
   function bindEntry(root, sel) {
     const app = A();
     const stage = sel.obj;
+    const entered = (code, origin) => { if (sel.kind === 'ss') app.markEntered(sel.struct.prefix, stage, code, origin); };
     root.onchange = root.oninput = null;
 
     root.addEventListener('input', e => {
@@ -247,6 +249,7 @@ const CWForm = (() => {
       if (el.dataset.kind === 'num' && stage) {
         const v = parseFloat(el.value);
         stage[el.dataset.code] = Number.isFinite(v) ? v * mult(el.dataset.code) : 0;
+        entered(el.dataset.code);
         refreshLive(sel);
       } else if (el.dataset.gen && el.tagName !== 'SELECT') {
         const k = el.dataset.gen;
@@ -263,7 +266,7 @@ const CWForm = (() => {
       const el = e.target;
       if (el.id === 'sc-select') { app.setCurrent(+el.value); return app.render(); }
       if (el.id === 'gwp-select') { app.setGwp(+el.value); return refreshLive(sel); }
-      if (el.id === 'load-ecam') return loadEcamFile(el.files[0]);
+      if (el.id === 'load-ecam') return loadEcamFile(el);
       if (el.dataset.gen === 'Country') {
         const c = Countries[el.value];
         Global.General.Country = el.value;
@@ -274,9 +277,10 @@ const CWForm = (() => {
         app.save(); return app.render();
       }
       if ((el.dataset.gen === 'AssessmentPeriodStart' || el.dataset.gen === 'AssessmentPeriodEnd')) { app.save(); return app.render(); }
-      if (el.dataset.kind === 'option') { stage[el.dataset.code] = parseInt(el.value, 10); return refreshLive(sel); }
+      if (el.dataset.kind === 'option') { stage[el.dataset.code] = parseInt(el.value, 10); entered(el.dataset.code); return refreshLive(sel); }
       if (el.dataset.kind === 'exception' && el.value !== '') {
         stage[el.dataset.code] = parseFloat(el.value);
+        entered(el.dataset.code, 'typical');
         app.save(); return app.render();
       }
       if (el.dataset.q) { setQuestion(stage, el.dataset.q, el.value === '1'); app.save(); return app.render(); }
@@ -292,8 +296,11 @@ const CWForm = (() => {
       }
       if (b.dataset.add) return addSubstage(b.dataset.add);
       if (b.dataset.help) { const h = document.getElementById('help_' + b.dataset.help); h.hidden = !h.hidden; return; }
-      if (b.dataset.ask) return app.askChat(`${app.t('ask_chat')}: ${labelOf(b.dataset.ask)} (${b.dataset.ask})`, b.dataset.ask);
-      if (b.dataset.est) { stage[b.dataset.code] = parseFloat(b.dataset.est); app.save(); return app.render(); }
+      if (b.dataset.ask) {
+        const sid = app.state.ui.sel?.kind === 'ss' ? app.idOf(stage, 's') : null;
+        return app.askChat(`${app.t('ask_chat')}: ${labelOf(b.dataset.ask)} (${b.dataset.ask})`, { kind: 'input', code: b.dataset.ask, sid, label: `${b.dataset.ask} · ${String(labelOf(b.dataset.ask)).replace(/<[^>]+>/g, '')}` });
+      }
+      if (b.dataset.est) { stage[b.dataset.code] = parseFloat(b.dataset.est); entered(b.dataset.code, 'estimate'); app.save(); return app.render(); }
       const act = b.dataset.act;
       if (act === 'new-sc') { app.newScenario(); return app.render(); }
       if (act === 'dup-sc') { app.duplicateScenario(); return app.render(); }
@@ -325,21 +332,12 @@ const CWForm = (() => {
     app.save(); app.render();
   }
 
-  function loadEcamFile(file) {
+  function loadEcamFile(input) {
     const app = A();
+    const file = input.files[0];
+    input.value = ''; // the same file can be chosen again, including after a failed import
     if (!file) return;
-    const r = new FileReader();
-    r.onload = () => {
-      try {
-        let data = JSON.parse(r.result);
-        if (!Array.isArray(data)) data = [data];
-        data.forEach(o => Scenarios.push(Ecam.from(o)));
-        app.setCurrent(Scenarios.length - data.length);
-        app.state.ui.sel = { kind: 'general' };
-        app.save(); app.toast(app.t('file_loaded')); app.render();
-      } catch (e) { alert(app.t('error') + ': ' + e.message); }
-    };
-    r.readAsText(file);
+    file.text().then(text => app.importEcamText(text), () => app.toast(app.t('import_not_json')));
   }
 
   // --- results view ---------------------------------------------------------
@@ -359,9 +357,17 @@ const CWForm = (() => {
     const subs = STAGES().flatMap(s => Global[s.level][s.sublevel].map(ss => ({ s, ss, ghg: safeNum(() => ss[s.prefix + '_KPI_GHG']().total) || 0 })));
     subs.sort((a, b) => b.ghg - a.ghg);
     const gp = GWP_reports[A().state.gwpIndex] || GWP_reports[0];
+    const ctx = A().cardCtx(A().idOf(Global));
+    const related = A().relatedActions(Global);
+    const sourcesCell = x => AS.COMPONENTS[x.s.prefix]
+      .map(c => ({ c, kg: safeNum(() => x.ss[`${x.s.prefix}_KPI_GHG_${c}`]().total) }))
+      .filter(v => v.kg)
+      .map(v => `<div>${DC.componentLabel(x.s.prefix, v.c, ctx)} ${fmt(v.kg / 1000)}</div>`).join('') || '–';
+    const relatedCell = x => esc((related.bySid[A().idOf(x.ss, 's')] || []).join(', ') || '–');
     root.innerHTML = `
       <div class="page-head"><h1>${esc(t('results_title'))} · ${esc(Global.General.Name)}</h1>
-        <p class="muted">${esc(t('results_sub'))} ${esc(Global.General.AssessmentPeriodStart)} – ${esc(Global.General.AssessmentPeriodEnd)} · ${esc(gp.report)} · ${Global.General.conv_kwh_co2} kgCO₂/kWh</p></div>
+        <p class="muted">${esc(t('results_sub'))} ${esc(Global.General.AssessmentPeriodStart)} – ${esc(Global.General.AssessmentPeriodEnd)} · ${esc(gp.report)} · ${Global.General.conv_kwh_co2} kgCO₂/kWh</p>
+        <div class="chat-entry"><button type="button" class="btn sm" data-chat="result">${esc(t('chat_btn_results'))}</button><button type="button" class="btn sm" data-chat="missing">${esc(t('chat_btn_missing'))}</button></div></div>
       <div class="kpis">${kpis()}</div>
       <div class="card"><h2>${esc(t('by_stage'))}</h2>
         <div class="chart-box"><canvas id="chart-stages" aria-label="${esc(t('by_stage'))}"></canvas></div>
@@ -371,9 +377,12 @@ const CWForm = (() => {
         ${rows.map(r => `<tr><td>${esc(A().stageLabel(r.prefix))} <span class="muted small">(${r.n})</span></td><td class="num">${fmt(r.total / 1000)}</td><td class="num">${fmt(r.co2 / 1000)}</td><td class="num">${fmt(r.ch4 / 1000)}</td><td class="num">${fmt(r.n2o / 1000)}</td><td class="num">${fmt(r.kwh)}</td><td class="num">${g.total ? fmt(100 * r.total / g.total, 1) + '%' : '–'}</td></tr>`).join('')}
         <tr style="font-weight:700"><td>Total</td><td class="num">${fmt(g.total / 1000)}</td><td class="num">${fmt(g.co2 / 1000)}</td><td class="num">${fmt(g.ch4 / 1000)}</td><td class="num">${fmt(g.n2o / 1000)}</td><td class="num">${fmt(e)}</td><td class="num">100%</td></tr>
       </tbody></table></div>
-      <div class="card"><h2>${esc(t('substage'))}</h2><table class="data"><thead><tr><th>${esc(t('substage'))}</th><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">${esc(t('share'))}</th></tr></thead><tbody>
-        ${subs.map(x => `<tr><td>${esc(x.ss.name)}</td><td>${esc(A().stageLabel(x.s.prefix))}</td><td class="num">${fmt(x.ghg / 1000)}</td><td class="num">${g.total ? fmt(100 * x.ghg / g.total, 1) + '%' : '–'}</td></tr>`).join('')}
-      </tbody></table></div>
+      ${DC.contributor(A().contributorOf(Global), ctx)}
+      <div class="card"><h2>${esc(t('substage'))}</h2><table class="data"><thead><tr><th>${esc(t('substage'))}</th><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">${esc(t('share'))}</th><th>${esc(t('sources_col'))} (tCO₂eq)</th><th>${esc(t('related_actions_col'))}</th></tr></thead><tbody>
+        ${subs.map(x => `<tr data-substage="${esc(A().idOf(x.ss, 's'))}"><td>${esc(x.ss.name)}<br><button type="button" class="link small" data-chat="result" data-sid="${esc(A().idOf(x.ss, 's'))}">${esc(t('chat_btn_result'))}</button></td><td><i class="sw sw-${x.s.prefix}" aria-hidden="true"></i>${esc(A().stageLabel(x.s.prefix))}</td><td class="num">${fmt(x.ghg / 1000)}</td><td class="num">${g.total ? fmt(100 * x.ghg / g.total, 1) + '%' : '–'}</td>
+          <td class="small">${sourcesCell(x)}</td><td class="small" data-related>${relatedCell(x)}</td></tr>`).join('')}
+      </tbody></table>
+      ${related.status === 'outdated' ? `<p class="small muted">${esc(t('related_outdated'))}</p>` : ''}</div>
       <div class="actions-row"><button class="btn" data-go="assess:entry">${esc(t('back_to_data'))}</button><button class="btn primary" data-act="finish">${esc(t('finish_assessment'))}</button></div>`;
     drawChart(rows);
     root.querySelector('[data-act=finish]').onclick = () => A().finishAssessment();

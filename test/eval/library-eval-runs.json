@@ -1,0 +1,1871 @@
+{
+ "note": "Runs of test/eval/library-eval.json. Internal evaluation, not practitioner validation. Only the first run preceded tuning on this set; every later run is a development result.",
+ "runs": [
+  {
+   "label": "first run, before any tuning on this set",
+   "role": "before tuning",
+   "at": "2026-10-18T19:52:36.752Z",
+   "library_build": "lib-880dee035ada",
+   "metrics": {
+    "items": 25,
+    "en": 17,
+    "id": 8,
+    "hit_at_1": 16,
+    "hit_at_5": 20,
+    "supported": 22,
+    "mrr": 0.8,
+    "none_correct": 3,
+    "none_total": 3,
+    "by_kind": {
+     "paraphrase": {
+      "pass": 7,
+      "n": 9
+     },
+     "custom_action": {
+      "pass": 3,
+      "n": 3
+     },
+     "proposal_section": {
+      "pass": 6,
+      "n": 6
+     },
+     "missing_evidence": {
+      "pass": 3,
+      "n": 3
+     },
+     "qualified_guidance": {
+      "pass": 2,
+      "n": 2
+     },
+     "training_example": {
+      "pass": 2,
+      "n": 2
+     }
+    }
+   },
+   "rows": [
+    {
+     "id": "para-pump-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": false,
+     "rank": null,
+     "notes": [],
+     "query": "How do we work out whether our distribution pumps are wasting electricity?",
+     "top": [
+      "ecam-methodology-guide#p151-1",
+      "ecam-methodology-guide#p151-2",
+      "ee-synthesis-en#sec-3-3-field-measurements-for-pumps-1",
+      "ee-synthesis-en#sec-2-7-responses-proposed-in-the-presentation-2",
+      "ee-deck-02-konsep#s35-1"
+     ]
+    },
+    {
+     "id": "para-pump-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana cara mengetahui apakah pompa distribusi kami boros listrik?",
+     "top": [
+      "ee-deck-02-konsep#s31-1",
+      "ee-deck-02-konsep#s5-1"
+     ]
+    },
+    {
+     "id": "para-septic-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Which greenhouse gases come from household septic tanks and how are they estimated?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p17-1",
+      "ecam-methodology-guide#p173-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p15-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3"
+     ]
+    },
+    {
+     "id": "para-septic-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana emisi metana dari tangki septik rumah tangga diperkirakan?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p45-4"
+     ]
+    },
+    {
+     "id": "para-wsp-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "How can a water safety plan take climate variability into account?",
+     "top": [
+      "who-2017-climate-resilient-wsp#p1-1",
+      "who-2017-climate-resilient-wsp#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p16-3",
+      "wb-2021-indonesia-utility-resilience#p14-5",
+      "gcf-2024-water-guidelines-part3-sanitation#p25-1"
+     ]
+    },
+    {
+     "id": "para-wsp-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "none",
+     "pass": false,
+     "rank": null,
+     "query": "Bagaimana rencana pengamanan air minum memperhitungkan variabilitas iklim?",
+     "top": []
+    },
+    {
+     "id": "para-hazards-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "What flood and drought risks do Indonesian water utilities face?",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p26-2",
+      "wb-2021-indonesia-utility-resilience#p90-3",
+      "wb-2021-indonesia-utility-resilience#p12-1",
+      "id-gcf-country-programme-v2#p9-2",
+      "wb-2020-waste-to-resource-lac#p10-2"
+     ]
+    },
+    {
+     "id": "para-finance-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Apa saja sumber pendanaan iklim untuk proyek air minum di Indonesia?",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-id#p38-2",
+      "id-climate-finance-sectoral-guidelines-id#p41-1",
+      "id-climate-finance-sectoral-guidelines-en#p9-3",
+      "id-gcf-country-programme-v2#p68-1",
+      "id-climate-finance-sectoral-guidelines-en#p19-1"
+     ]
+    },
+    {
+     "id": "para-resource-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 3,
+     "notes": [],
+     "query": "Can wastewater sludge be turned into a resource such as biogas or reuse?",
+     "top": [
+      "ecam-methodology-guide#p26-1",
+      "ecam-methodology-guide#p161-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-4",
+      "wb-2020-waste-to-resource-lac#p13-4"
+     ]
+    },
+    {
+     "id": "custom-meters-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Smart meters for large customers · Install telemetry meters on the 50 largest commercial connections to detect under-registration and leaks.",
+     "top": [
+      "ee-deck-03-permasalahan#s40-1",
+      "ee-deck-03-permasalahan#s32-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-2",
+      "ee-synthesis-en#sec-3-2-functional-units-and-assessment-boundaries-2"
+     ]
+    },
+    {
+     "id": "custom-desludge-id",
+     "kind": "custom_action",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Program pengurasan tangki septik terjadwal · Kerja sama dengan operator truk tinja untuk penyedotan rutin setiap tiga tahun.",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p56-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3"
+     ]
+    },
+    {
+     "id": "custom-solar-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Rooftop solar at the treatment plant · Install solar PV panels on the treatment plant roof to reduce grid electricity use.",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-en#p67-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-3",
+      "id-climate-finance-sectoral-guidelines-en#p66-2",
+      "id-gcf-country-programme-v2#p18-2"
+     ]
+    },
+    {
+     "id": "section-context-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "utility service area climate hazards vulnerability",
+     "top": [
+      "cw-framework-stages-2-4#s3-area-2-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p36-1",
+      "wb-2021-indonesia-utility-resilience#p55-2",
+      "wb-2021-indonesia-utility-resilience#p45-1",
+      "who-2017-climate-resilient-wsp#p23-1"
+     ]
+    },
+    {
+     "id": "section-budget-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "project cost investment financing",
+     "top": [
+      "cw-framework-stages-2-4#s4-costs-1",
+      "id-climate-finance-sectoral-guidelines-id#p19-2",
+      "id-gcf-country-programme-v2#p50-4",
+      "id-climate-finance-sectoral-guidelines-id#p31-2",
+      "id-gcf-country-programme-v2#p63-1"
+     ]
+    },
+    {
+     "id": "section-mrv-general",
+     "kind": "proposal_section",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "monitoring indicators measurement verification · Peningkatan sistem pompa – River intake pumping",
+     "top": [
+      "ee-deck-02-konsep#s35-1",
+      "ee-deck-04-kinerja#s59-1",
+      "ee-synthesis-en#sec-1-3-the-energy-management-cycle-1",
+      "ee-deck-04-kinerja#s16-1",
+      "ee-synthesis-en#sec-3-10-instruments-and-data-systems-2"
+     ]
+    },
+    {
+     "id": "section-ownership-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 4,
+     "notes": [],
+     "query": "national climate policy alignment country programme",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p84-4",
+      "gcf-2024-water-guidelines-part3-copy#p22-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p21-3",
+      "id-gcf-country-programme-v2#p5-1",
+      "id-gcf-country-programme-v2#p51-1"
+     ]
+    },
+    {
+     "id": "section-risks-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "climate risks mitigation safeguards",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p81-3",
+      "who-2017-climate-resilient-wsp#p85-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p75-1",
+      "wb-2021-indonesia-utility-resilience#p82-2",
+      "wb-2021-indonesia-utility-resilience#p110-1"
+     ]
+    },
+    {
+     "id": "section-impact-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "emission reduction · Scheduled desludging – Household septic tanks · Upgrade pump system – River intake pumping",
+     "top": [
+      "ecam-methodology-guide#p155-1",
+      "cw-framework-stages-2-4#s2-c2-onsite-sanitation-and-faecal-sludge-service-performance-1",
+      "cw-framework-stages-2-4#s2-a-water-abstraction-electricity-indirect-1",
+      "ecam-methodology-guide#p145-1",
+      "ee-synthesis-en#sec-3-1-scope-and-policy-context-1"
+     ]
+    },
+    {
+     "id": "missing-tariff-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "What tariff increase did our regulator approve for Utility A last year?",
+     "top": []
+    },
+    {
+     "id": "missing-salary-id",
+     "kind": "missing_evidence",
+     "lang": "id",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Berapa gaji direktur utama perusahaan kami tahun ini?",
+     "top": []
+    },
+    {
+     "id": "missing-fx-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Which euro exchange rate does KfW apply to disbursements in 2026?",
+     "top": []
+    },
+    {
+     "id": "qualified-wiretowater-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Should we report motor efficiency or wire-to-water efficiency for our pumps?",
+     "top": [
+      "ee-synthesis-en#sec-a2-pump-efficiency-and-wire-to-water-efficiency-1",
+      "ee-synthesis-en#sec-3-5-motor-pump-and-wire-to-water-efficiency-1",
+      "cw-framework-stages-2-4#s2-c1-electromechanical-efficiency-of-pumps-1",
+      "ee-deck-02-konsep#s29-1",
+      "ee-deck-04-kinerja#s30-1"
+     ]
+    },
+    {
+     "id": "qualified-septic-boundary-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Are emissions from household septic tanks direct emissions of the utility?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p19-4",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p45-3",
+      "ecam-methodology-guide#p26-1"
+     ]
+    },
+    {
+     "id": "training-sec-en",
+     "kind": "training_example",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "3 training passage(s), all warned"
+     ],
+     "query": "What specific energy consumption did the PDAM in the training slides report?",
+     "top": [
+      "ee-synthesis-en#sec-2-1-establishing-the-facts-before-selecting-solu-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-1",
+      "ee-deck-04-kinerja#s41-1",
+      "ee-deck-03-permasalahan#s35-1",
+      "ee-deck-02-konsep#s33-1"
+     ]
+    },
+    {
+     "id": "training-savings-id",
+     "kind": "training_example",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "1 training passage(s), all warned"
+     ],
+     "query": "Berapa penghematan energi yang dicapai PDAM setelah mengganti pompa?",
+     "top": [
+      "ee-deck-02-konsep#s16-1"
+     ]
+    }
+   ]
+  },
+  {
+   "label": "after adding 3 EN/ID glossary groups (safety/pengamanan, variability/variabilitas, drinking/minum): tuned on this set",
+   "role": "development",
+   "at": "2026-10-18T19:54:46.915Z",
+   "library_build": "lib-880dee035ada",
+   "metrics": {
+    "items": 25,
+    "en": 17,
+    "id": 8,
+    "hit_at_1": 16,
+    "hit_at_5": 21,
+    "supported": 22,
+    "mrr": 0.81,
+    "none_correct": 3,
+    "none_total": 3,
+    "by_kind": {
+     "paraphrase": {
+      "pass": 8,
+      "n": 9
+     },
+     "custom_action": {
+      "pass": 3,
+      "n": 3
+     },
+     "proposal_section": {
+      "pass": 6,
+      "n": 6
+     },
+     "missing_evidence": {
+      "pass": 3,
+      "n": 3
+     },
+     "qualified_guidance": {
+      "pass": 2,
+      "n": 2
+     },
+     "training_example": {
+      "pass": 2,
+      "n": 2
+     }
+    }
+   },
+   "rows": [
+    {
+     "id": "para-pump-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": false,
+     "rank": null,
+     "notes": [],
+     "query": "How do we work out whether our distribution pumps are wasting electricity?",
+     "top": [
+      "ecam-methodology-guide#p151-1",
+      "ecam-methodology-guide#p151-2",
+      "ee-synthesis-en#sec-3-3-field-measurements-for-pumps-1",
+      "ee-synthesis-en#sec-2-7-responses-proposed-in-the-presentation-2",
+      "ee-deck-02-konsep#s35-1"
+     ]
+    },
+    {
+     "id": "para-pump-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana cara mengetahui apakah pompa distribusi kami boros listrik?",
+     "top": [
+      "ee-deck-02-konsep#s31-1",
+      "ee-deck-02-konsep#s5-1"
+     ]
+    },
+    {
+     "id": "para-septic-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Which greenhouse gases come from household septic tanks and how are they estimated?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p17-1",
+      "ecam-methodology-guide#p173-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p15-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3"
+     ]
+    },
+    {
+     "id": "para-septic-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana emisi metana dari tangki septik rumah tangga diperkirakan?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p45-4"
+     ]
+    },
+    {
+     "id": "para-wsp-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "How can a water safety plan take climate variability into account?",
+     "top": [
+      "who-2017-climate-resilient-wsp#p1-1",
+      "who-2017-climate-resilient-wsp#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p16-3",
+      "wb-2021-indonesia-utility-resilience#p14-5",
+      "gcf-2024-water-guidelines-part3-sanitation#p25-1"
+     ]
+    },
+    {
+     "id": "para-wsp-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 3,
+     "notes": [],
+     "query": "Bagaimana rencana pengamanan air minum memperhitungkan variabilitas iklim?",
+     "top": [
+      "wb-2021-indonesia-utility-resilience#p88-1",
+      "wb-2021-indonesia-utility-resilience#p10-1",
+      "who-2017-climate-resilient-wsp#p1-1",
+      "ee-deck-04-kinerja#s5-1",
+      "who-2017-climate-resilient-wsp#p9-1"
+     ]
+    },
+    {
+     "id": "para-hazards-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "What flood and drought risks do Indonesian water utilities face?",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p26-2",
+      "wb-2021-indonesia-utility-resilience#p90-3",
+      "wb-2021-indonesia-utility-resilience#p12-1",
+      "id-gcf-country-programme-v2#p9-2",
+      "wb-2020-waste-to-resource-lac#p10-2"
+     ]
+    },
+    {
+     "id": "para-finance-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Apa saja sumber pendanaan iklim untuk proyek air minum di Indonesia?",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-id#p38-2",
+      "id-climate-finance-sectoral-guidelines-id#p41-1",
+      "id-climate-finance-sectoral-guidelines-en#p40-4",
+      "id-climate-finance-sectoral-guidelines-en#p9-3",
+      "id-gcf-country-programme-v2#p68-1"
+     ]
+    },
+    {
+     "id": "para-resource-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 3,
+     "notes": [],
+     "query": "Can wastewater sludge be turned into a resource such as biogas or reuse?",
+     "top": [
+      "ecam-methodology-guide#p26-1",
+      "ecam-methodology-guide#p161-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-4",
+      "wb-2020-waste-to-resource-lac#p13-4"
+     ]
+    },
+    {
+     "id": "custom-meters-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Smart meters for large customers · Install telemetry meters on the 50 largest commercial connections to detect under-registration and leaks.",
+     "top": [
+      "ee-deck-03-permasalahan#s40-1",
+      "ee-deck-03-permasalahan#s32-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-2",
+      "ee-synthesis-en#sec-3-2-functional-units-and-assessment-boundaries-2"
+     ]
+    },
+    {
+     "id": "custom-desludge-id",
+     "kind": "custom_action",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Program pengurasan tangki septik terjadwal · Kerja sama dengan operator truk tinja untuk penyedotan rutin setiap tiga tahun.",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p56-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3"
+     ]
+    },
+    {
+     "id": "custom-solar-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Rooftop solar at the treatment plant · Install solar PV panels on the treatment plant roof to reduce grid electricity use.",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-en#p67-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-3",
+      "id-climate-finance-sectoral-guidelines-en#p66-2",
+      "id-gcf-country-programme-v2#p18-2"
+     ]
+    },
+    {
+     "id": "section-context-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "utility service area climate hazards vulnerability",
+     "top": [
+      "cw-framework-stages-2-4#s3-area-2-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p36-1",
+      "wb-2021-indonesia-utility-resilience#p55-2",
+      "wb-2021-indonesia-utility-resilience#p45-1",
+      "who-2017-climate-resilient-wsp#p23-1"
+     ]
+    },
+    {
+     "id": "section-budget-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "project cost investment financing",
+     "top": [
+      "cw-framework-stages-2-4#s4-costs-1",
+      "id-climate-finance-sectoral-guidelines-id#p19-2",
+      "id-gcf-country-programme-v2#p50-4",
+      "id-climate-finance-sectoral-guidelines-id#p31-2",
+      "id-gcf-country-programme-v2#p63-1"
+     ]
+    },
+    {
+     "id": "section-mrv-general",
+     "kind": "proposal_section",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "monitoring indicators measurement verification · Peningkatan sistem pompa – River intake pumping",
+     "top": [
+      "ee-deck-02-konsep#s35-1",
+      "ee-deck-04-kinerja#s59-1",
+      "ee-synthesis-en#sec-1-3-the-energy-management-cycle-1",
+      "ee-deck-04-kinerja#s16-1",
+      "ee-synthesis-en#sec-3-10-instruments-and-data-systems-2"
+     ]
+    },
+    {
+     "id": "section-ownership-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 4,
+     "notes": [],
+     "query": "national climate policy alignment country programme",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p84-4",
+      "gcf-2024-water-guidelines-part3-copy#p22-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p21-3",
+      "id-gcf-country-programme-v2#p5-1",
+      "id-gcf-country-programme-v2#p51-1"
+     ]
+    },
+    {
+     "id": "section-risks-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "climate risks mitigation safeguards",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p81-3",
+      "who-2017-climate-resilient-wsp#p85-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p75-1",
+      "wb-2021-indonesia-utility-resilience#p82-2",
+      "wb-2021-indonesia-utility-resilience#p110-1"
+     ]
+    },
+    {
+     "id": "section-impact-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "emission reduction · Scheduled desludging – Household septic tanks · Upgrade pump system – River intake pumping",
+     "top": [
+      "ecam-methodology-guide#p155-1",
+      "cw-framework-stages-2-4#s2-c2-onsite-sanitation-and-faecal-sludge-service-performance-1",
+      "cw-framework-stages-2-4#s2-a-water-abstraction-electricity-indirect-1",
+      "ecam-methodology-guide#p145-1",
+      "ee-synthesis-en#sec-3-1-scope-and-policy-context-1"
+     ]
+    },
+    {
+     "id": "missing-tariff-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "What tariff increase did our regulator approve for Utility A last year?",
+     "top": []
+    },
+    {
+     "id": "missing-salary-id",
+     "kind": "missing_evidence",
+     "lang": "id",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Berapa gaji direktur utama perusahaan kami tahun ini?",
+     "top": []
+    },
+    {
+     "id": "missing-fx-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Which euro exchange rate does KfW apply to disbursements in 2026?",
+     "top": []
+    },
+    {
+     "id": "qualified-wiretowater-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Should we report motor efficiency or wire-to-water efficiency for our pumps?",
+     "top": [
+      "ee-synthesis-en#sec-a2-pump-efficiency-and-wire-to-water-efficiency-1",
+      "ee-synthesis-en#sec-3-5-motor-pump-and-wire-to-water-efficiency-1",
+      "cw-framework-stages-2-4#s2-c1-electromechanical-efficiency-of-pumps-1",
+      "ee-deck-02-konsep#s29-1",
+      "ee-deck-04-kinerja#s30-1"
+     ]
+    },
+    {
+     "id": "qualified-septic-boundary-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Are emissions from household septic tanks direct emissions of the utility?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p19-4",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p45-3",
+      "ecam-methodology-guide#p26-1"
+     ]
+    },
+    {
+     "id": "training-sec-en",
+     "kind": "training_example",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "3 training passage(s), all warned"
+     ],
+     "query": "What specific energy consumption did the PDAM in the training slides report?",
+     "top": [
+      "ee-synthesis-en#sec-2-1-establishing-the-facts-before-selecting-solu-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-1",
+      "ee-deck-04-kinerja#s41-1",
+      "ee-deck-03-permasalahan#s35-1",
+      "ee-deck-02-konsep#s33-1"
+     ]
+    },
+    {
+     "id": "training-savings-id",
+     "kind": "training_example",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "1 training passage(s), all warned"
+     ],
+     "query": "Berapa penghematan energi yang dicapai PDAM setelah mengganti pompa?",
+     "top": [
+      "ee-deck-02-konsep#s16-1"
+     ]
+    }
+   ]
+  },
+  {
+   "label": "development result: build fixes heading detection (list items, contents entries, table values, caption span), generated queries scoped by sector and stage with a weak-match floor; original annotations",
+   "role": "development",
+   "at": "2026-10-18T20:06:31.894Z",
+   "library_build": "lib-4c319211a4b2",
+   "metrics": {
+    "items": 25,
+    "en": 17,
+    "id": 8,
+    "hit_at_1": 16,
+    "hit_at_5": 21,
+    "supported": 22,
+    "mrr": 0.83,
+    "none_correct": 3,
+    "none_total": 3,
+    "by_kind": {
+     "paraphrase": {
+      "pass": 8,
+      "n": 9
+     },
+     "custom_action": {
+      "pass": 3,
+      "n": 3
+     },
+     "proposal_section": {
+      "pass": 6,
+      "n": 6
+     },
+     "missing_evidence": {
+      "pass": 3,
+      "n": 3
+     },
+     "qualified_guidance": {
+      "pass": 2,
+      "n": 2
+     },
+     "training_example": {
+      "pass": 2,
+      "n": 2
+     }
+    },
+    "annotation_version": 1,
+    "corrected_items": []
+   },
+   "rows": [
+    {
+     "id": "para-pump-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": false,
+     "rank": null,
+     "notes": [],
+     "query": "How do we work out whether our distribution pumps are wasting electricity?",
+     "top": [
+      "ecam-methodology-guide#p151-1",
+      "ecam-methodology-guide#p151-2",
+      "ee-synthesis-en#sec-3-3-field-measurements-for-pumps-1",
+      "ee-synthesis-en#sec-2-7-responses-proposed-in-the-presentation-2",
+      "ee-deck-02-konsep#s35-1"
+     ]
+    },
+    {
+     "id": "para-pump-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana cara mengetahui apakah pompa distribusi kami boros listrik?",
+     "top": [
+      "ee-deck-02-konsep#s31-1",
+      "ee-deck-02-konsep#s5-1"
+     ]
+    },
+    {
+     "id": "para-septic-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Which greenhouse gases come from household septic tanks and how are they estimated?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p19-4",
+      "gcf-2024-water-guidelines-part3-sanitation#p15-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p38-1"
+     ]
+    },
+    {
+     "id": "para-septic-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana emisi metana dari tangki septik rumah tangga diperkirakan?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p45-4"
+     ]
+    },
+    {
+     "id": "para-wsp-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "How can a water safety plan take climate variability into account?",
+     "top": [
+      "who-2017-climate-resilient-wsp#p1-1",
+      "who-2017-climate-resilient-wsp#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p16-3",
+      "wb-2021-indonesia-utility-resilience#p14-5",
+      "gcf-2024-water-guidelines-part3-sanitation#p25-1"
+     ]
+    },
+    {
+     "id": "para-wsp-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 4,
+     "notes": [],
+     "query": "Bagaimana rencana pengamanan air minum memperhitungkan variabilitas iklim?",
+     "top": [
+      "wb-2021-indonesia-utility-resilience#p88-4",
+      "wb-2021-indonesia-utility-resilience#p88-1",
+      "ee-deck-04-kinerja#s5-1",
+      "who-2017-climate-resilient-wsp#p1-1",
+      "who-2017-climate-resilient-wsp#p9-1"
+     ]
+    },
+    {
+     "id": "para-hazards-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "What flood and drought risks do Indonesian water utilities face?",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p26-2",
+      "wb-2021-indonesia-utility-resilience#p90-3",
+      "wb-2021-indonesia-utility-resilience#p12-1",
+      "id-gcf-country-programme-v2#p9-2",
+      "wb-2020-waste-to-resource-lac#p10-2"
+     ]
+    },
+    {
+     "id": "para-finance-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Apa saja sumber pendanaan iklim untuk proyek air minum di Indonesia?",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-id#p38-2",
+      "id-climate-finance-sectoral-guidelines-id#p41-1",
+      "id-climate-finance-sectoral-guidelines-en#p40-4",
+      "id-climate-finance-sectoral-guidelines-en#p9-3",
+      "id-gcf-country-programme-v2#p35-2"
+     ]
+    },
+    {
+     "id": "para-resource-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "Can wastewater sludge be turned into a resource such as biogas or reuse?",
+     "top": [
+      "ecam-methodology-guide#p161-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-2",
+      "ecam-methodology-guide#p25-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-4",
+      "wb-2020-waste-to-resource-lac#p13-4"
+     ]
+    },
+    {
+     "id": "custom-meters-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Smart meters for large customers · Install telemetry meters on the 50 largest commercial connections to detect under-registration and leaks.",
+     "top": [
+      "ee-deck-03-permasalahan#s40-1",
+      "ee-deck-03-permasalahan#s32-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-2",
+      "ee-synthesis-en#sec-3-2-functional-units-and-assessment-boundaries-2"
+     ]
+    },
+    {
+     "id": "custom-desludge-id",
+     "kind": "custom_action",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Program pengurasan tangki septik terjadwal · Kerja sama dengan operator truk tinja untuk penyedotan rutin setiap tiga tahun.",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p56-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3"
+     ]
+    },
+    {
+     "id": "custom-solar-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Rooftop solar at the treatment plant · Install solar PV panels on the treatment plant roof to reduce grid electricity use.",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-en#p67-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-3",
+      "id-climate-finance-sectoral-guidelines-en#p66-2",
+      "id-gcf-country-programme-v2#p18-2"
+     ]
+    },
+    {
+     "id": "section-context-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "utility service area climate hazards vulnerability",
+     "top": [
+      "cw-framework-stages-2-4#s3-area-2-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p36-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p24-3",
+      "wb-2021-indonesia-utility-resilience#p45-1",
+      "wb-2021-indonesia-utility-resilience#p55-2"
+     ]
+    },
+    {
+     "id": "section-budget-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "project cost investment financing",
+     "top": [
+      "cw-framework-stages-2-4#s4-costs-1",
+      "id-climate-finance-sectoral-guidelines-id#p19-2",
+      "id-gcf-country-programme-v2#p50-4",
+      "id-climate-finance-sectoral-guidelines-id#p67-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p73-1"
+     ]
+    },
+    {
+     "id": "section-mrv-general",
+     "kind": "proposal_section",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "monitoring indicators measurement verification · Peningkatan sistem pompa – River intake pumping",
+     "top": [
+      "ee-deck-02-konsep#s35-1",
+      "ee-deck-04-kinerja#s59-1",
+      "ee-synthesis-en#sec-1-3-the-energy-management-cycle-1",
+      "ee-deck-04-kinerja#s16-1",
+      "ee-synthesis-en#sec-3-10-instruments-and-data-systems-2"
+     ]
+    },
+    {
+     "id": "section-ownership-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "national climate policy alignment country programme",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p84-4",
+      "id-gcf-country-programme-v2#p5-1",
+      "id-gcf-country-programme-v2#p51-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p70-2",
+      "id-climate-finance-sectoral-guidelines-en#p64-1"
+     ]
+    },
+    {
+     "id": "section-risks-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "climate risks mitigation safeguards",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p75-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p81-3",
+      "who-2017-climate-resilient-wsp#p85-2",
+      "wb-2021-indonesia-utility-resilience#p82-2",
+      "wb-2021-indonesia-utility-resilience#p110-1"
+     ]
+    },
+    {
+     "id": "section-impact-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "emission reduction · Scheduled desludging – Household septic tanks · Upgrade pump system – River intake pumping",
+     "top": [
+      "ecam-methodology-guide#p155-1",
+      "cw-framework-stages-2-4#s2-c2-onsite-sanitation-and-faecal-sludge-service-performance-1",
+      "cw-framework-stages-2-4#s2-a-water-abstraction-electricity-indirect-1",
+      "ecam-methodology-guide#p145-1",
+      "ee-synthesis-en#sec-3-1-scope-and-policy-context-1"
+     ]
+    },
+    {
+     "id": "missing-tariff-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "What tariff increase did our regulator approve for Utility A last year?",
+     "top": []
+    },
+    {
+     "id": "missing-salary-id",
+     "kind": "missing_evidence",
+     "lang": "id",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Berapa gaji direktur utama perusahaan kami tahun ini?",
+     "top": []
+    },
+    {
+     "id": "missing-fx-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Which euro exchange rate does KfW apply to disbursements in 2026?",
+     "top": []
+    },
+    {
+     "id": "qualified-wiretowater-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Should we report motor efficiency or wire-to-water efficiency for our pumps?",
+     "top": [
+      "ee-synthesis-en#sec-a2-pump-efficiency-and-wire-to-water-efficiency-1",
+      "ee-synthesis-en#sec-3-5-motor-pump-and-wire-to-water-efficiency-1",
+      "cw-framework-stages-2-4#s2-c1-electromechanical-efficiency-of-pumps-1",
+      "ee-deck-02-konsep#s29-1",
+      "ee-deck-04-kinerja#s30-1"
+     ]
+    },
+    {
+     "id": "qualified-septic-boundary-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Are emissions from household septic tanks direct emissions of the utility?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p19-4",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p65-1",
+      "ecam-methodology-guide#p173-2"
+     ]
+    },
+    {
+     "id": "training-sec-en",
+     "kind": "training_example",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "3 training passage(s), all warned"
+     ],
+     "query": "What specific energy consumption did the PDAM in the training slides report?",
+     "top": [
+      "ee-synthesis-en#sec-2-1-establishing-the-facts-before-selecting-solu-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-1",
+      "ee-deck-04-kinerja#s41-1",
+      "ee-deck-03-permasalahan#s35-1",
+      "ee-deck-02-konsep#s33-1"
+     ]
+    },
+    {
+     "id": "training-savings-id",
+     "kind": "training_example",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "1 training passage(s), all warned"
+     ],
+     "query": "Berapa penghematan energi yang dicapai PDAM setelah mengganti pompa?",
+     "top": [
+      "ee-deck-02-konsep#s16-1"
+     ]
+    }
+   ]
+  },
+  {
+   "label": "development result: same retrieval as the previous run; annotation version 2 (para-pump-en text_re corrected, see library-eval.json)",
+   "role": "development",
+   "at": "2026-10-18T20:06:42.386Z",
+   "library_build": "lib-4c319211a4b2",
+   "metrics": {
+    "items": 25,
+    "en": 17,
+    "id": 8,
+    "hit_at_1": 17,
+    "hit_at_5": 22,
+    "supported": 22,
+    "mrr": 0.88,
+    "none_correct": 3,
+    "none_total": 3,
+    "by_kind": {
+     "paraphrase": {
+      "pass": 9,
+      "n": 9
+     },
+     "custom_action": {
+      "pass": 3,
+      "n": 3
+     },
+     "proposal_section": {
+      "pass": 6,
+      "n": 6
+     },
+     "missing_evidence": {
+      "pass": 3,
+      "n": 3
+     },
+     "qualified_guidance": {
+      "pass": 2,
+      "n": 2
+     },
+     "training_example": {
+      "pass": 2,
+      "n": 2
+     }
+    },
+    "annotation_version": 2,
+    "corrected_items": [
+     {
+      "id": "para-pump-en",
+      "pass": true,
+      "pass_original_annotation": false
+     }
+    ]
+   },
+   "rows": [
+    {
+     "id": "para-pump-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "pass_original_annotation": false,
+     "query": "How do we work out whether our distribution pumps are wasting electricity?",
+     "top": [
+      "ecam-methodology-guide#p151-1",
+      "ecam-methodology-guide#p151-2",
+      "ee-synthesis-en#sec-3-3-field-measurements-for-pumps-1",
+      "ee-synthesis-en#sec-2-7-responses-proposed-in-the-presentation-2",
+      "ee-deck-02-konsep#s35-1"
+     ]
+    },
+    {
+     "id": "para-pump-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana cara mengetahui apakah pompa distribusi kami boros listrik?",
+     "top": [
+      "ee-deck-02-konsep#s31-1",
+      "ee-deck-02-konsep#s5-1"
+     ]
+    },
+    {
+     "id": "para-septic-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Which greenhouse gases come from household septic tanks and how are they estimated?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p19-4",
+      "gcf-2024-water-guidelines-part3-sanitation#p15-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p38-1"
+     ]
+    },
+    {
+     "id": "para-septic-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Bagaimana emisi metana dari tangki septik rumah tangga diperkirakan?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p45-4"
+     ]
+    },
+    {
+     "id": "para-wsp-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "How can a water safety plan take climate variability into account?",
+     "top": [
+      "who-2017-climate-resilient-wsp#p1-1",
+      "who-2017-climate-resilient-wsp#p10-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p16-3",
+      "wb-2021-indonesia-utility-resilience#p14-5",
+      "gcf-2024-water-guidelines-part3-sanitation#p25-1"
+     ]
+    },
+    {
+     "id": "para-wsp-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 4,
+     "notes": [],
+     "query": "Bagaimana rencana pengamanan air minum memperhitungkan variabilitas iklim?",
+     "top": [
+      "wb-2021-indonesia-utility-resilience#p88-4",
+      "wb-2021-indonesia-utility-resilience#p88-1",
+      "ee-deck-04-kinerja#s5-1",
+      "who-2017-climate-resilient-wsp#p1-1",
+      "who-2017-climate-resilient-wsp#p9-1"
+     ]
+    },
+    {
+     "id": "para-hazards-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "What flood and drought risks do Indonesian water utilities face?",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p26-2",
+      "wb-2021-indonesia-utility-resilience#p90-3",
+      "wb-2021-indonesia-utility-resilience#p12-1",
+      "id-gcf-country-programme-v2#p9-2",
+      "wb-2020-waste-to-resource-lac#p10-2"
+     ]
+    },
+    {
+     "id": "para-finance-id",
+     "kind": "paraphrase",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Apa saja sumber pendanaan iklim untuk proyek air minum di Indonesia?",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-id#p38-2",
+      "id-climate-finance-sectoral-guidelines-id#p41-1",
+      "id-climate-finance-sectoral-guidelines-en#p40-4",
+      "id-climate-finance-sectoral-guidelines-en#p9-3",
+      "id-gcf-country-programme-v2#p35-2"
+     ]
+    },
+    {
+     "id": "para-resource-en",
+     "kind": "paraphrase",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "Can wastewater sludge be turned into a resource such as biogas or reuse?",
+     "top": [
+      "ecam-methodology-guide#p161-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-2",
+      "ecam-methodology-guide#p25-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-4",
+      "wb-2020-waste-to-resource-lac#p13-4"
+     ]
+    },
+    {
+     "id": "custom-meters-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Smart meters for large customers · Install telemetry meters on the 50 largest commercial connections to detect under-registration and leaks.",
+     "top": [
+      "ee-deck-03-permasalahan#s40-1",
+      "ee-deck-03-permasalahan#s32-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-2",
+      "ee-synthesis-en#sec-3-2-functional-units-and-assessment-boundaries-2"
+     ]
+    },
+    {
+     "id": "custom-desludge-id",
+     "kind": "custom_action",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Program pengurasan tangki septik terjadwal · Kerja sama dengan operator truk tinja untuk penyedotan rutin setiap tiga tahun.",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p56-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3"
+     ]
+    },
+    {
+     "id": "custom-solar-en",
+     "kind": "custom_action",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Rooftop solar at the treatment plant · Install solar PV panels on the treatment plant roof to reduce grid electricity use.",
+     "top": [
+      "id-climate-finance-sectoral-guidelines-en#p67-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p61-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p60-3",
+      "id-climate-finance-sectoral-guidelines-en#p66-2",
+      "id-gcf-country-programme-v2#p18-2"
+     ]
+    },
+    {
+     "id": "section-context-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "utility service area climate hazards vulnerability",
+     "top": [
+      "cw-framework-stages-2-4#s3-area-2-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p36-2",
+      "gcf-2024-water-guidelines-part3-sanitation#p24-3",
+      "wb-2021-indonesia-utility-resilience#p45-1",
+      "wb-2021-indonesia-utility-resilience#p55-2"
+     ]
+    },
+    {
+     "id": "section-budget-general",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "project cost investment financing",
+     "top": [
+      "cw-framework-stages-2-4#s4-costs-1",
+      "id-climate-finance-sectoral-guidelines-id#p19-2",
+      "id-gcf-country-programme-v2#p50-4",
+      "id-climate-finance-sectoral-guidelines-id#p67-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p73-1"
+     ]
+    },
+    {
+     "id": "section-mrv-general",
+     "kind": "proposal_section",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "monitoring indicators measurement verification · Peningkatan sistem pompa – River intake pumping",
+     "top": [
+      "ee-deck-02-konsep#s35-1",
+      "ee-deck-04-kinerja#s59-1",
+      "ee-synthesis-en#sec-1-3-the-energy-management-cycle-1",
+      "ee-deck-04-kinerja#s16-1",
+      "ee-synthesis-en#sec-3-10-instruments-and-data-systems-2"
+     ]
+    },
+    {
+     "id": "section-ownership-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 2,
+     "notes": [],
+     "query": "national climate policy alignment country programme",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p84-4",
+      "id-gcf-country-programme-v2#p5-1",
+      "id-gcf-country-programme-v2#p51-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p70-2",
+      "id-climate-finance-sectoral-guidelines-en#p64-1"
+     ]
+    },
+    {
+     "id": "section-risks-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "climate risks mitigation safeguards",
+     "top": [
+      "gcf-2024-water-guidelines-part3-sanitation#p75-1",
+      "gcf-2024-water-guidelines-part3-sanitation#p81-3",
+      "who-2017-climate-resilient-wsp#p85-2",
+      "wb-2021-indonesia-utility-resilience#p82-2",
+      "wb-2021-indonesia-utility-resilience#p110-1"
+     ]
+    },
+    {
+     "id": "section-impact-gcf",
+     "kind": "proposal_section",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "emission reduction · Scheduled desludging – Household septic tanks · Upgrade pump system – River intake pumping",
+     "top": [
+      "ecam-methodology-guide#p155-1",
+      "cw-framework-stages-2-4#s2-c2-onsite-sanitation-and-faecal-sludge-service-performance-1",
+      "cw-framework-stages-2-4#s2-a-water-abstraction-electricity-indirect-1",
+      "ecam-methodology-guide#p145-1",
+      "ee-synthesis-en#sec-3-1-scope-and-policy-context-1"
+     ]
+    },
+    {
+     "id": "missing-tariff-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "What tariff increase did our regulator approve for Utility A last year?",
+     "top": []
+    },
+    {
+     "id": "missing-salary-id",
+     "kind": "missing_evidence",
+     "lang": "id",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Berapa gaji direktur utama perusahaan kami tahun ini?",
+     "top": []
+    },
+    {
+     "id": "missing-fx-en",
+     "kind": "missing_evidence",
+     "lang": "en",
+     "expect": "none",
+     "status": "none",
+     "pass": true,
+     "rank": null,
+     "query": "Which euro exchange rate does KfW apply to disbursements in 2026?",
+     "top": []
+    },
+    {
+     "id": "qualified-wiretowater-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Should we report motor efficiency or wire-to-water efficiency for our pumps?",
+     "top": [
+      "ee-synthesis-en#sec-a2-pump-efficiency-and-wire-to-water-efficiency-1",
+      "ee-synthesis-en#sec-3-5-motor-pump-and-wire-to-water-efficiency-1",
+      "cw-framework-stages-2-4#s2-c1-electromechanical-efficiency-of-pumps-1",
+      "ee-deck-02-konsep#s29-1",
+      "ee-deck-04-kinerja#s30-1"
+     ]
+    },
+    {
+     "id": "qualified-septic-boundary-en",
+     "kind": "qualified_guidance",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [],
+     "query": "Are emissions from household septic tanks direct emissions of the utility?",
+     "top": [
+      "ipcc-2019-wastewater-ch6#p20-3",
+      "ipcc-2019-wastewater-ch6#p19-4",
+      "gcf-2024-water-guidelines-part3-sanitation#p41-3",
+      "gcf-2024-water-guidelines-part3-sanitation#p65-1",
+      "ecam-methodology-guide#p173-2"
+     ]
+    },
+    {
+     "id": "training-sec-en",
+     "kind": "training_example",
+     "lang": "en",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "3 training passage(s), all warned"
+     ],
+     "query": "What specific energy consumption did the PDAM in the training slides report?",
+     "top": [
+      "ee-synthesis-en#sec-2-1-establishing-the-facts-before-selecting-solu-1",
+      "ee-synthesis-en#sec-2-3-non-revenue-water-and-energy-1",
+      "ee-deck-04-kinerja#s41-1",
+      "ee-deck-03-permasalahan#s35-1",
+      "ee-deck-02-konsep#s33-1"
+     ]
+    },
+    {
+     "id": "training-savings-id",
+     "kind": "training_example",
+     "lang": "id",
+     "expect": "found",
+     "status": "found",
+     "pass": true,
+     "rank": 1,
+     "notes": [
+      "1 training passage(s), all warned"
+     ],
+     "query": "Berapa penghematan energi yang dicapai PDAM setelah mengganti pompa?",
+     "top": [
+      "ee-deck-02-konsep#s16-1"
+     ]
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,879 @@
+{
+ "source": "cw-framework-stages-2-4",
+ "title": "Revised Framework Stages 2–4",
+ "version": "2026-10-17 (last modified, from document properties)",
+ "review_status": "Team working draft. Not externally reviewed. The links from Stage 2 rows to ECAM stages and emission sources were added by the ChatWater build and await team review.",
+ "links_note": "Added by ChatWater to connect framework rows to ECAM stages, emission sources and existing Stage 2 rules. Awaiting team review. They guide questions only; they do not create or change action rules.",
+ "stage2": [
+  {
+   "id": "s2-a-water-abstraction-electricity-indirect",
+   "group": "A",
+   "group_title": "Water supply: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Water abstraction — electricity (indirect)",
+   "questions": [
+    "Is energy use unusually high per unit of water abstracted?",
+    "Have falling groundwater levels, drought, changing river levels, or increased pumping head increased energy demand?",
+    "Are pumps operating efficiently?"
+   ],
+   "actions": [
+    "Pump efficiency audits",
+    "variable-speed drives",
+    "pump replacement or right-sizing",
+    "optimized pumping schedules",
+    "diversified or climate-resilient water sources",
+    "solar pumping where technically and financially suitable"
+   ],
+   "links": {
+    "stages": [
+     "wsa"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "pump_upgrade",
+     "pump_audit",
+     "solar_pv"
+    ]
+   }
+  },
+  {
+   "id": "s2-a-water-abstraction-fuel-engines",
+   "group": "A",
+   "group_title": "Water supply: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Water abstraction — fuel engines",
+   "questions": [
+    "Are diesel or petrol engines used for routine pumping or during grid outages?",
+    "How much fuel is consumed?",
+    "Are outages or climate hazards increasing dependence on backup engines?"
+   ],
+   "actions": [
+    "Improve engine maintenance",
+    "optimize engine loading",
+    "improve power reliability",
+    "assess solar-plus-storage or other suitable alternatives",
+    "establish fuel reserves and backup-power protocols for critical assets"
+   ],
+   "links": {
+    "stages": [
+     "wsa"
+    ],
+    "source": "fuel_engines",
+    "rules": [
+     "fuel_switch"
+    ]
+   }
+  },
+  {
+   "id": "s2-a-water-treatment-electricity-indirect",
+   "group": "A",
+   "group_title": "Water supply: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Water treatment — electricity (indirect)",
+   "questions": [
+    "Which treatment processes consume the most electricity?",
+    "Does raw-water quality deteriorate during floods, droughts, or algal blooms, requiring more intensive treatment?",
+    "Is equipment operating efficiently?"
+   ],
+   "actions": [
+    "Optimize treatment operations and chemical dosing",
+    "improve pump and mixer efficiency",
+    "optimize aeration where applicable",
+    "install energy monitoring",
+    "protect critical treatment equipment from flooding",
+    "evaluate renewable electricity"
+   ],
+   "links": {
+    "stages": [
+     "wst"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "solar_pv"
+    ]
+   }
+  },
+  {
+   "id": "s2-a-water-treatment-fuel-engines",
+   "group": "A",
+   "group_title": "Water supply: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Water treatment — fuel engines",
+   "questions": [
+    "Is fuel used for backup power, pumping, or other treatment operations?",
+    "Are extreme weather events causing more frequent generator use?"
+   ],
+   "actions": [
+    "Improve generator maintenance and loading",
+    "strengthen power resilience",
+    "evaluate lower-carbon backup systems",
+    "prioritize backup supply for essential treatment processes"
+   ],
+   "links": {
+    "stages": [
+     "wst"
+    ],
+    "source": "fuel_engines",
+    "rules": [
+     "fuel_switch"
+    ]
+   }
+  },
+  {
+   "id": "s2-a-water-distribution-electricity-indirect",
+   "group": "A",
+   "group_title": "Water supply: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Water distribution — electricity (indirect)",
+   "questions": [
+    "Which pumping stations have the highest energy intensity?",
+    "Are leakage, pressure-management problems, topography, or excessive pumping head increasing energy demand?",
+    "Are droughts or intermittent supply changing operating patterns?"
+   ],
+   "actions": [
+    "Leak detection and repair",
+    "pressure management",
+    "pump optimization",
+    "efficient network zoning",
+    "storage and gravity-fed distribution where feasible",
+    "renewable power at suitable pumping stations"
+   ],
+   "links": {
+    "stages": [
+     "wsd"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "pump_upgrade",
+     "pump_audit",
+     "nrw_reduction",
+     "solar_pv"
+    ]
+   }
+  },
+  {
+   "id": "s2-a-water-distribution-fuel-engines",
+   "group": "A",
+   "group_title": "Water supply: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Water distribution — fuel engines",
+   "questions": [
+    "Are engines used to maintain pressure or supply during outages?",
+    "Which distribution zones are most affected by power interruptions, flooding, or extreme heat?"
+   ],
+   "actions": [
+    "Reliable backup power",
+    "targeted solar-plus-storage systems",
+    "generator efficiency improvements",
+    "redundant pumping capacity",
+    "emergency distribution plans and critical-spares management"
+   ],
+   "links": {
+    "stages": [
+     "wsd"
+    ],
+    "source": "fuel_engines",
+    "rules": [
+     "fuel_switch"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-collection-electricity-indirect",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Collection — electricity (indirect)",
+   "questions": [
+    "Which lift stations or collection assets consume the most energy?",
+    "Is infiltration of stormwater or groundwater increasing the volume pumped?",
+    "Are pumps frequently clogged or overloaded?"
+   ],
+   "actions": [
+    "Sewer inspection and rehabilitation",
+    "infiltration and inflow reduction",
+    "pump optimization",
+    "preventive maintenance",
+    "flood protection for lift stations",
+    "backup power for critical pumping assets"
+   ],
+   "links": {
+    "stages": [
+     "wwc"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "pump_upgrade",
+     "pump_audit"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-collection-fuel-engines",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Collection — fuel engines",
+   "questions": [
+    "Are fuel engines used for wastewater pumping or backup power?",
+    "Do floods, power failures, or access problems increase their use?"
+   ],
+   "actions": [
+    "Improve generator efficiency",
+    "strengthen backup-power systems",
+    "maintain emergency fuel supplies",
+    "assess appropriate alternative power sources"
+   ],
+   "links": {
+    "stages": [
+     "wwc"
+    ],
+    "source": "fuel_engines",
+    "rules": [
+     "fuel_switch"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-collection-generation-in-sewers-ch-n-o",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Collection — generation in sewers (CH₄/N₂O)",
+   "questions": [
+    "Are long retention times, stagnant flows, warm conditions, or anaerobic zones contributing to methane generation?",
+    "Are sewer blockages or flooding creating operational problems?"
+   ],
+   "actions": [
+    "Reduce avoidable stagnation",
+    "maintain sewer conveyance capacity",
+    "improve flow management and hotspot monitoring",
+    "assess methane mitigation options where feasible. Avoid assuming that increasing aeration or flow is automatically the best solution"
+   ],
+   "links": {
+    "stages": [
+     "wwc"
+    ],
+    "source": "sewer_generation",
+    "rules": []
+   }
+  },
+  {
+   "id": "s2-b-collection-untreated-wastewater-discharge-where-included-in-",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Collection — untreated wastewater discharge, where included in the ECAM inventory",
+   "questions": [
+    "Is wastewater bypassing treatment or being discharged untreated?",
+    "Are heavy rainfall, sewer overflows, or inadequate capacity contributing?",
+    "Which communities and receiving waters are most exposed?"
+   ],
+   "actions": [
+    "Reduce inflow and infiltration",
+    "increase hydraulic capacity where justified",
+    "implement overflow monitoring and control",
+    "develop wet-weather operating plans",
+    "expand treatment coverage and protect receiving waters"
+   ],
+   "links": {
+    "stages": [
+     "wwc"
+    ],
+    "source": "untreated_discharge",
+    "rules": [
+     "cso_reduction"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-treatment-electricity-indirect",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Treatment — electricity (indirect)",
+   "questions": [
+    "Which processes—especially aeration, pumping, mixing, and sludge handling—use the most energy?",
+    "Does wet-weather inflow, changing wastewater strength, or poor equipment performance increase demand?"
+   ],
+   "actions": [
+    "Optimize aeration and process controls",
+    "upgrade inefficient equipment",
+    "reduce avoidable infiltration and inflow",
+    "improve energy monitoring",
+    "assess renewable electricity and resilient power supplies"
+   ],
+   "links": {
+    "stages": [
+     "wwt"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "solar_pv"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-treatment-fuel-engines",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Treatment — fuel engines",
+   "questions": [
+    "How much fuel is used by generators and other treatment-plant engines?",
+    "Are power interruptions compromising treatment continuity?"
+   ],
+   "actions": [
+    "Improve generator efficiency and maintenance",
+    "protect critical treatment operations",
+    "establish backup-power plans",
+    "assess hybrid or renewable backup systems"
+   ],
+   "links": {
+    "stages": [
+     "wwt"
+    ],
+    "source": "fuel_engines",
+    "rules": [
+     "fuel_switch"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-treatment-process-emissions-ch-n-o",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Treatment — process emissions (CH₄/N₂O)",
+   "questions": [
+    "Which treatment configurations and operating conditions contribute to emissions?",
+    "Are temperature, loading, aeration, or nitrogen-removal conditions influencing emissions?",
+    "Is treatment performance deteriorating during extreme weather?"
+   ],
+   "actions": [
+    "Optimize process operation and aeration control",
+    "improve nitrogen-removal process management",
+    "assess methane capture or treatment-process modifications where appropriate",
+    "monitor emissions and effluent performance"
+   ],
+   "links": {
+    "stages": [
+     "wwt"
+    ],
+    "source": "treatment_process",
+    "rules": [
+     "biogas_capture"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-treatment-biogas",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Treatment — biogas",
+   "questions": [
+    "Is biogas generated, used for energy, flared, sold, or lost through leakage?",
+    "Is anaerobic digestion operating reliably?",
+    "Are flood, heat, or power risks affecting gas handling?"
+   ],
+   "actions": [
+    "Detect and repair leaks",
+    "improve gas collection and safety systems",
+    "evaluate combined heat and power or direct energy recovery",
+    "optimize digestion",
+    "maintain appropriate flaring as a safety measure when recovery is unavailable"
+   ],
+   "links": {
+    "stages": [
+     "wwt"
+    ],
+    "source": "biogas",
+    "rules": [
+     "biogas_capture"
+    ]
+   }
+  },
+  {
+   "id": "s2-b-treatment-treated-wastewater-discharge",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Treatment — treated wastewater discharge",
+   "questions": [
+    "Is the effluent meeting applicable quality requirements?",
+    "Are receiving waters vulnerable to low flows, high temperatures, flooding, or reduced dilution?",
+    "Are discharge conditions worsening during extreme events?"
+   ],
+   "actions": [
+    "Improve process control and effluent monitoring",
+    "add or optimize treatment where justified",
+    "develop climate-responsive discharge management",
+    "consider safe reuse where appropriate and permitted",
+    "protect receiving-water quality"
+   ],
+   "links": {
+    "stages": [
+     "wwt"
+    ],
+    "source": "effluent_discharge",
+    "rules": []
+   }
+  },
+  {
+   "id": "s2-b-onsite-sanitation-process-emissions-and-biogas-where-include",
+   "group": "B",
+   "group_title": "Sanitation: emission outputs and potential actions",
+   "kind": "emission_output",
+   "output": "Onsite sanitation — process emissions and biogas, where included",
+   "questions": [
+    "Which containment or decentralized treatment systems contribute to emissions?",
+    "Are methane generation, leakage, emptying practices, or faecal-sludge treatment and disposal creating environmental risks?",
+    "Are floods or groundwater changes threatening containment integrity?"
+   ],
+   "actions": [
+    "Improve containment integrity",
+    "establish safe scheduled emptying",
+    "strengthen faecal-sludge collection and treatment",
+    "evaluate appropriate biogas recovery",
+    "protect vulnerable sanitation infrastructure from flooding and groundwater impacts"
+   ],
+   "links": {
+    "stages": [
+     "wwo"
+    ],
+    "source": "containment",
+    "rules": [
+     "septic_desludging"
+    ]
+   }
+  },
+  {
+   "id": "s2-c1-energy-consumption-per-unit-of-water-abstracted-treated-or-d",
+   "group": "C1",
+   "group_title": "Water supply indicators",
+   "kind": "indicator",
+   "output": "Energy consumption per unit of water abstracted, treated, or distributed",
+   "questions": [
+    "Which stage has the highest energy intensity?",
+    "Is performance worsening over time?",
+    "Is the difference explained by operating conditions or avoidable inefficiency?"
+   ],
+   "actions": [
+    "Stage-specific energy audits",
+    "process optimization",
+    "pump rehabilitation",
+    "energy monitoring and targets"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c1-energy-consumption-per-unit-of-pumped-water",
+   "group": "C1",
+   "group_title": "Water supply indicators",
+   "kind": "indicator",
+   "output": "Energy consumption per unit of pumped water",
+   "questions": [
+    "Are pumps operating near their design conditions?",
+    "Are head requirements, flow rates, or pump efficiency driving excessive energy consumption?"
+   ],
+   "actions": [
+    "Pump scheduling",
+    "right-sizing",
+    "variable-speed drives",
+    "impeller and motor upgrades",
+    "preventive maintenance"
+   ],
+   "links": {
+    "stages": [
+     "wsa",
+     "wsd"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "pump_upgrade",
+     "pump_audit"
+    ]
+   }
+  },
+  {
+   "id": "s2-c1-standardized-energy-consumption",
+   "group": "C1",
+   "group_title": "Water supply indicators",
+   "kind": "indicator",
+   "output": "Standardized energy consumption",
+   "questions": [
+    "Does performance remain poor after accounting for pump head, making the system more comparable with other installations?"
+   ],
+   "actions": [
+    "Detailed pump-system assessment",
+    "equipment replacement",
+    "hydraulic optimization",
+    "compare alternative technologies before investment"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c1-electromechanical-efficiency-of-pumps",
+   "group": "C1",
+   "group_title": "Water supply indicators",
+   "kind": "indicator",
+   "output": "Electromechanical efficiency of pumps",
+   "questions": [
+    "Is measured pump efficiency low?",
+    "Are worn components, poor motor performance, or incorrect sizing contributing?"
+   ],
+   "actions": [
+    "Pump and motor testing",
+    "overhaul or replacement",
+    "improved maintenance",
+    "installation of efficient motors"
+   ],
+   "links": {
+    "stages": [
+     "wsa",
+     "wsd"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "pump_upgrade",
+     "pump_audit"
+    ]
+   }
+  },
+  {
+   "id": "s2-c1-unit-head-loss-and-hydraulic-performance",
+   "group": "C1",
+   "group_title": "Water supply indicators",
+   "kind": "indicator",
+   "output": "Unit head loss and hydraulic performance",
+   "questions": [
+    "Are friction losses, pipe restrictions, undersized pipes, or deteriorating infrastructure increasing pumping requirements?"
+   ],
+   "actions": [
+    "Pipe inspection",
+    "targeted rehabilitation",
+    "blockage removal",
+    "hydraulic modeling",
+    "appropriate pipe upgrades"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c1-water-losses-and-distribution-performance-where-available-in",
+   "group": "C1",
+   "group_title": "Water supply indicators",
+   "kind": "indicator",
+   "output": "Water losses and distribution performance, where available in the assessment",
+   "questions": [
+    "Are leaks, pressure problems, or intermittent supply contributing to energy waste or service disruption?"
+   ],
+   "actions": [
+    "Active leakage control",
+    "pressure management",
+    "district-metered areas",
+    "improved metering and asset management"
+   ],
+   "links": {
+    "stages": [
+     "wsd"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "nrw_reduction"
+    ]
+   }
+  },
+  {
+   "id": "s2-c1-water-treatment-performance-and-service-coverage",
+   "group": "C1",
+   "group_title": "Water supply indicators",
+   "kind": "indicator",
+   "output": "Water treatment performance and service coverage",
+   "questions": [
+    "Is treatment capacity adequate during source-water deterioration or extreme rainfall?",
+    "Is the utility providing reliable, safe water to its intended population?"
+   ],
+   "actions": [
+    "Treatment-process optimization",
+    "resilient chemical supply",
+    "source-water protection",
+    "contingency treatment plans",
+    "capacity improvements where justified"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c2-energy-consumption-per-unit-of-wastewater-collected-or-treat",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Energy consumption per unit of wastewater collected or treated",
+   "questions": [
+    "Are pumping requirements, infiltration, equipment efficiency, or treatment processes driving high energy demand?"
+   ],
+   "actions": [
+    "Sewer rehabilitation",
+    "infiltration control",
+    "pump optimization",
+    "aeration control",
+    "energy audits"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c2-electromechanical-efficiency-and-standardized-pumping-energy",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Electromechanical efficiency and standardized pumping energy",
+   "questions": [
+    "Are wastewater pumps inefficient, clogged, overloaded, or operating under unfavorable hydraulic conditions?"
+   ],
+   "actions": [
+    "Pump maintenance",
+    "improved solids handling",
+    "pump replacement",
+    "operational optimization"
+   ],
+   "links": {
+    "stages": [
+     "wwc"
+    ],
+    "source": "grid_electricity",
+    "rules": [
+     "pump_upgrade",
+     "pump_audit"
+    ]
+   }
+  },
+  {
+   "id": "s2-c2-treatment-performance-and-effluent-quality",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Treatment performance and effluent quality",
+   "questions": [
+    "Are treatment processes meeting applicable performance requirements under normal and extreme weather conditions?"
+   ],
+   "actions": [
+    "Process control",
+    "treatment upgrades",
+    "flood protection",
+    "wet-weather operating procedures",
+    "effluent monitoring"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c2-population-connected-to-wastewater-collection-and-treatment",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Population connected to wastewater collection and treatment",
+   "questions": [
+    "Which areas lack adequate sanitation services?",
+    "Are low-income or flood-prone communities disproportionately underserved?"
+   ],
+   "actions": [
+    "Targeted network expansion",
+    "decentralized or nature-based treatment where suitable",
+    "inclusive sanitation planning",
+    "service-area prioritization"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c2-wastewater-generated-but-not-collected-or-treated",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Wastewater generated but not collected or treated",
+   "questions": [
+    "Is untreated wastewater entering drains, watercourses, or the environment?",
+    "Could rainfall overwhelm the system?"
+   ],
+   "actions": [
+    "Expand service coverage",
+    "control overflows",
+    "improve drainage and sewer capacity",
+    "develop safe decentralized treatment solutions"
+   ],
+   "links": {
+    "stages": [
+     "wwc"
+    ],
+    "source": "untreated_discharge",
+    "rules": [
+     "cso_reduction"
+    ]
+   }
+  },
+  {
+   "id": "s2-c2-sludge-management-and-disposal",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Sludge management and disposal",
+   "questions": [
+    "Is sludge safely removed, transported, treated, and disposed of or reused?",
+    "Are flooding or access disruptions affecting sludge management?"
+   ],
+   "actions": [
+    "Improve sludge dewatering and treatment",
+    "strengthen transport and disposal arrangements",
+    "assess safe resource recovery",
+    "develop contingency plans"
+   ],
+   "links": null
+  },
+  {
+   "id": "s2-c2-biogas-generation-and-utilization",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Biogas generation and utilization",
+   "questions": [
+    "Is biogas being captured and used effectively?",
+    "Are leakage, flaring, or unreliable equipment reducing the benefits?"
+   ],
+   "actions": [
+    "Leak detection",
+    "improve gas capture",
+    "energy recovery",
+    "equipment maintenance",
+    "methane monitoring"
+   ],
+   "links": {
+    "stages": [
+     "wwt"
+    ],
+    "source": "biogas",
+    "rules": [
+     "biogas_capture"
+    ]
+   }
+  },
+  {
+   "id": "s2-c2-onsite-sanitation-and-faecal-sludge-service-performance",
+   "group": "C2",
+   "group_title": "Sanitation indicators",
+   "kind": "indicator",
+   "output": "Onsite sanitation and faecal-sludge service performance",
+   "questions": [
+    "Are containment systems vulnerable to flooding or groundwater intrusion?",
+    "Are emptying and treatment services adequate and safe?"
+   ],
+   "actions": [
+    "Improve containment integrity",
+    "scheduled emptying",
+    "regulated desludging services",
+    "resilient faecal-sludge treatment capacity",
+    "safe disposal and reuse"
+   ],
+   "links": {
+    "stages": [
+     "wwo"
+    ],
+    "source": "containment",
+    "rules": [
+     "septic_desludging"
+    ]
+   }
+  }
+ ],
+ "stage3": [
+  {
+   "n": 1,
+   "id": "s3-area-1",
+   "title": "Define the project",
+   "description": "Purpose, scope, and expected outcome",
+   "questions": []
+  },
+  {
+   "n": 2,
+   "id": "s3-area-2",
+   "title": "Establish the baseline",
+   "description": "Current performance and evidence",
+   "questions": [
+    "What is the current level of emissions, energy consumption or service disruption?",
+    "What climate hazards affect the project location?",
+    "What baseline data are available, and what additional assessments are required?",
+    "How will the utility measure improvement against the baseline?"
+   ]
+  },
+  {
+   "n": 3,
+   "id": "s3-area-3",
+   "title": "Identify project activities",
+   "description": "Translate the selected action into work packages",
+   "questions": [
+    "What activities are required to implement the selected action?",
+    "What technical investigations, designs, permits or approvals are needed?",
+    "What are the main implementation milestones?",
+    "What must be completed before implementation can begin?"
+   ]
+  },
+  {
+   "n": 4,
+   "id": "s3-area-4",
+   "title": "Assign responsibilities",
+   "description": "People, departments and external partners",
+   "questions": []
+  },
+  {
+   "n": 5,
+   "id": "s3-area-5",
+   "title": "Develop the implementation schedule",
+   "description": "Timing, sequencing and dependencies",
+   "questions": []
+  },
+  {
+   "n": 6,
+   "id": "s3-area-6",
+   "title": "Define technical and operational requirements",
+   "description": "Feasibility and continuity of service",
+   "questions": []
+  },
+  {
+   "n": 7,
+   "id": "s3-area-7",
+   "title": "Assess implementation risks",
+   "description": "Delivery risks and resilience under future conditions",
+   "questions": []
+  },
+  {
+   "n": 8,
+   "id": "s3-area-8",
+   "title": "Establish monitoring and evaluation",
+   "description": "Targets, indicators and accountability",
+   "questions": []
+  }
+ ],
+ "stage4": {
+  "cost_components": [
+   "Feasibility and engineering design",
+   "Estimated capital expenditure (CAPEX) required to implement the project",
+   "Costs associated with feasibility studies, engineering design, procurement, installation, training and monitoring",
+   "Contingency allowances, taxes, inflation and price escalation included",
+   "Expected project lifetime and the likely timing of major replacement costs"
+  ],
+  "financing_resources": [
+   "Funding available from utility",
+   "Funding from government"
+  ],
+  "funding_gap": [
+   "Funding gap",
+   "Source of funding"
+  ],
+  "outputs": [
+   "Preliminary budget",
+   "funding-gap analysis",
+   "potential funding-source shortlist",
+   "financial assumptions",
+   "climate-benefit justification",
+   "draft funding concept note"
+  ],
+  "note": "The framework lists \"Funding gap\" and \"Source of funding\" without further detail; ChatWater does not compute either."
+ }
+}

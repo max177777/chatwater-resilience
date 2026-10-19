@@ -6,7 +6,8 @@
  * refine these options, but it never invents the numbers.
  *
  * To add a rule: push an object to RULES with
- *   id, applies(r) -> array of matches, build(match, r) -> option fields.
+ *   id, applies(r) -> array of matches, build(match, r) -> option fields,
+ *   trigger(match, r) -> the condition in words plus the values it read.
  */
 
 const t = (kg) => kg / 1000; // kg -> t
@@ -21,8 +22,20 @@ const ASSUMPTIONS = {
   biogas_capture: 0.5,         // share of WWTP treatment CH4 captured in scenario
 };
 
+// Trigger thresholds used by the rules below (and reported by ruleChecks).
+const NRW_TRIGGER = 0.15;      // non-revenue water share above which NRW reduction is offered
+
 function substages(r, prefix) { return r.substages.filter(s => s.prefix === prefix); }
 
+// Review flag for display only; it never changes which options are offered or their figures.
+// ECAM's pump saving is nrg_cons − (efficiency / expected efficiency) × nrg_pump.
+function pumpReview(s) {
+  const i = s.inputs || {}, pump = i[s.prefix + '_nrg_pump'] || 0, total = i[s.prefix + '_nrg_cons'] || 0;
+  return pump === 0 || pump !== total ? ['pump_energy_basis'] : [];
+}
+
+// trigger(match, r): the rule's own condition in words, with the assessment values it read.
+// values: { code } = ECAM variable (labelled from ECAM's dictionary) or { label } = interface key.
 const RULES = [
   {
     id: 'pump_upgrade',
@@ -32,6 +45,23 @@ const RULES = [
         const sav = s.outputs[s.prefix + '_KPI_nrg_estm_sav'];
         return eff > 0 && sav > 0;
       }),
+    trigger: s => {
+      const p = s.prefix, o = s.outputs;
+      return {
+        text: {
+          en: 'ECAM estimates an energy saving above zero if this pump reached its expected efficiency.',
+          id: 'ECAM memperkirakan penghematan energi di atas nol bila pompa ini mencapai efisiensi yang diharapkan.',
+        },
+        values: [
+          { code: p + '_KPI_nrg_elec_eff', value: o[p + '_KPI_nrg_elec_eff'], unit: '%' },
+          { code: p + '_pmp_exff', value: s.inputs?.[p + '_pmp_exff'], unit: '%' },
+          { code: p + '_KPI_nrg_estm_sav', value: o[p + '_KPI_nrg_estm_sav'], unit: 'kWh' },
+          { code: p + '_nrg_pump', value: s.inputs?.[p + '_nrg_pump'] ?? null, unit: 'kWh' },
+          { code: p + '_nrg_cons', value: s.inputs?.[p + '_nrg_cons'] ?? null, unit: 'kWh' },
+        ],
+        review: pumpReview(s),
+      };
+    },
     build: (s) => {
       const p = s.prefix, o = s.outputs;
       return {
@@ -52,6 +82,13 @@ const RULES = [
     id: 'pump_audit',
     applies: r => ['wsa', 'wsd', 'wwc'].flatMap(p => substages(r, p))
       .filter(s => s.energy_kwh > 0 && !(s.outputs[s.prefix + '_KPI_nrg_elec_eff'] > 0)),
+    trigger: s => ({
+      text: {
+        en: 'This stage uses grid electricity, but ECAM has no pump efficiency for it (pump-efficiency inputs not answered).',
+        id: 'Tahap ini memakai listrik PLN, tetapi ECAM belum memiliki efisiensi pompanya (isian efisiensi pompa belum dijawab).',
+      },
+      values: [{ label: 'grid_kwh', value: s.energy_kwh, unit: 'kWh' }],
+    }),
     build: (s, r) => ({
       category: 'energy',
       title: { en: `Verify pump performance – ${s.name}`, id: `Verifikasi kinerja pompa – ${s.name}` },
@@ -68,7 +105,18 @@ const RULES = [
   {
     id: 'nrw_reduction',
     applies: r => substages(r, 'wsd').filter(s => s.inputs?.wsd_vol_dist > 0 && s.inputs?.wsd_auth_con > 0
-      && (1 - s.inputs.wsd_auth_con / s.inputs.wsd_vol_dist) > 0.15),
+      && (1 - s.inputs.wsd_auth_con / s.inputs.wsd_vol_dist) > NRW_TRIGGER),
+    trigger: s => ({
+      text: {
+        en: `Non-revenue water is above ${NRW_TRIGGER * 100}% (distributed water not counted as authorized consumption).`,
+        id: `Air tak berekening di atas ${NRW_TRIGGER * 100}% (air yang didistribusikan tetapi tidak tercatat sebagai konsumsi resmi).`,
+      },
+      values: [
+        { code: 'wsd_vol_dist', value: s.inputs.wsd_vol_dist, unit: 'm³' },
+        { code: 'wsd_auth_con', value: s.inputs.wsd_auth_con, unit: 'm³' },
+        { label: 'nrw_share', value: 100 * (1 - s.inputs.wsd_auth_con / s.inputs.wsd_vol_dist), unit: '%' },
+      ],
+    }),
     build: (s, r) => {
       const i = s.inputs;
       const nrw = 1 - i.wsd_auth_con / i.wsd_vol_dist;
@@ -101,6 +149,16 @@ const RULES = [
     // estimation formulas for sludge volume and BOD removed.
     applies: r => substages(r, 'wwo').filter(s => (s.outputs.wwo_KPI_GHG_containment?.total || 0) > 0
       && (s.inputs?.wwo_cont_emp || 0) < ASSUMPTIONS.desludging_emptied_pct),
+    trigger: s => ({
+      text: {
+        en: `Containment emits greenhouse gases and less than ${ASSUMPTIONS.desludging_emptied_pct}% of faecal sludge is emptied per year (the scenario's emptying rate).`,
+        id: `Penampungan mengemisikan gas rumah kaca dan kurang dari ${ASSUMPTIONS.desludging_emptied_pct}% lumpur tinja dikuras per tahun (tingkat pengurasan dalam skenario).`,
+      },
+      values: [
+        { label: 'containment_ghg', value: t(s.outputs.wwo_KPI_GHG_containment.total), unit: 'tCO₂eq' },
+        { code: 'wwo_cont_emp', value: s.inputs?.wwo_cont_emp || 0, unit: '%' },
+      ],
+    }),
     build: (s, r, ctx) => {
       const ghg = s.outputs.wwo_KPI_GHG_containment.total;
       const idx = r.substages.filter(x => x.prefix === 'wwo').indexOf(s);
@@ -114,6 +172,8 @@ const RULES = [
         category: 'sanitation',
         title: { en: `Scheduled desludging – ${s.name}`, id: `Layanan lumpur tinja terjadwal (LLTT) – ${s.name}` },
         expected_kwh: 0, expected_kgco2: run.delta_kgco2,
+        // expected_kwh stays 0 for compatibility; no energy change (trucks, sludge treatment) is calculated.
+        benefit_status: { kwh: 'not_quantified' },
         scenario: {
           en: `ECAM re-run: ${ASSUMPTIONS.desludging_emptied_pct}% of faecal sludge emptied per year (now ${s.inputs?.wwo_cont_emp || 0}%). Emissions from treating the emptied sludge are not yet included.`,
           id: `Hitung ulang ECAM: ${ASSUMPTIONS.desludging_emptied_pct}% lumpur tinja dikuras per tahun (saat ini ${s.inputs?.wwo_cont_emp || 0}%). Emisi pengolahan lumpur yang dikuras belum termasuk.`,
@@ -130,6 +190,16 @@ const RULES = [
   {
     id: 'cso_reduction',
     applies: r => substages(r, 'wwc').filter(s => (s.outputs.wwc_KPI_GHG_cso?.total || 0) > 0),
+    trigger: s => ({
+      text: {
+        en: 'Part of the collected wastewater is discharged untreated, and ECAM calculates emissions from it.',
+        id: 'Sebagian air limbah terkumpul dibuang tanpa pengolahan, dan ECAM menghitung emisinya.',
+      },
+      values: [
+        { code: 'wwc_vol_coll_unt', value: s.inputs?.wwc_vol_coll_unt, unit: 'm³' },
+        { label: 'cso_ghg', value: t(s.outputs.wwc_KPI_GHG_cso.total), unit: 'tCO₂eq' },
+      ],
+    }),
     build: (s, r) => {
       const ghg = s.outputs.wwc_KPI_GHG_cso.total;
       return {
@@ -150,6 +220,16 @@ const RULES = [
     id: 'biogas_capture',
     // only anaerobic processes (IPCC CH4 factor >= 0.1 kgCH4/kgBOD) have recoverable methane
     applies: r => substages(r, 'wwt').filter(s => (s.outputs.wwt_KPI_GHG_tre?.ch4 || 0) > 0 && s.inputs?.wwt_ch4_efac_tre >= 0.1),
+    trigger: s => ({
+      text: {
+        en: 'Treatment emits CH4 and the process CH4 factor is at least 0.1 kgCH4/kgBOD (anaerobic processes).',
+        id: 'Pengolahan mengemisikan CH4 dan faktor CH4 prosesnya minimal 0,1 kgCH4/kgBOD (proses anaerobik).',
+      },
+      values: [
+        { label: 'treatment_ch4', value: t(s.outputs.wwt_KPI_GHG_tre.ch4), unit: 'tCO₂eq' },
+        { code: 'wwt_ch4_efac_tre', value: s.inputs?.wwt_ch4_efac_tre, unit: 'kgCH₄/kgBOD' },
+      ],
+    }),
     build: (s) => {
       const ch4 = s.outputs.wwt_KPI_GHG_tre.ch4;
       return {
@@ -172,6 +252,10 @@ const RULES = [
   {
     id: 'fuel_switch',
     applies: r => r.substages.filter(s => (s.outputs[s.prefix + '_KPI_GHG_fuel']?.total || 0) > 0),
+    trigger: s => ({
+      text: { en: 'On-site fuel use produces emissions in ECAM.', id: 'Penggunaan bahan bakar di lokasi menghasilkan emisi dalam ECAM.' },
+      values: [{ label: 'fuel_ghg', value: t(s.outputs[s.prefix + '_KPI_GHG_fuel'].total), unit: 'tCO₂eq' }],
+    }),
     build: (s) => {
       const ghg = s.outputs[s.prefix + '_KPI_GHG_fuel'].total;
       return {
@@ -188,6 +272,13 @@ const RULES = [
   {
     id: 'solar_pv',
     applies: r => r.energy_kwh > 0 ? [r] : [],
+    trigger: (_, r) => ({
+      text: { en: 'The utility uses grid electricity.', id: 'Utilitas memakai listrik PLN.' },
+      values: [
+        { label: 'grid_kwh', value: r.energy_kwh, unit: 'kWh' },
+        { code: 'conv_kwh_co2', value: r.factors.conv_kwh_co2, unit: 'kgCO₂/kWh' },
+      ],
+    }),
     build: (_, r) => {
       const kwh = r.energy_kwh * ASSUMPTIONS.solar_share;
       return {
@@ -221,6 +312,9 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
     ['Waste', 'Collection'], ['Waste', 'Treatment'], ['Waste', 'Onsite']];
   let i = 0;
   for (const [lv, sl] of order) for (const ss of assessment[lv][sl]) results.substages[i++].inputs = ss;
+  // position of each substage within its stage, so callers can give the option a stable identity
+  const where = new Map(), count = {};
+  for (const s of results.substages) { count[s.prefix] = count[s.prefix] || 0; where.set(s, { prefix: s.prefix, index: count[s.prefix]++ }); }
 
   const options = [{
     id: 'A00', rule: 'baseline', category: 'baseline',
@@ -236,15 +330,82 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
   }];
   for (const rule of RULES) {
     for (const m of rule.applies(results)) {
-      options.push({ rule: rule.id, ...rule.build(m, results, ctx) });
+      options.push({ rule: rule.id, ...rule.build(m, results, ctx), trigger: rule.trigger(m, results), substage: where.get(m) || null });
     }
   }
+  const checks = ruleChecks(results, where);
+  const status = v => (typeof v === 'number' && Number.isFinite(v) ? 'quantified' : 'not_quantified');
+  options.forEach(o => {
+    o.benefit_status = { kgco2: status(o.expected_kgco2), kwh: status(o.expected_kwh), ...o.benefit_status };
+  });
   options.forEach((o, k) => { if (!o.id) o.id = 'A' + String(k).padStart(2, '0'); });
   // largest calculated reductions first, keeping the baseline on top
   const [base, ...rest] = options;
   rest.sort((a, b) => (b.expected_kgco2 || 0) - (a.expected_kgco2 || 0));
   rest.forEach((o, k) => { o.id = 'A' + String(k + 1).padStart(2, '0'); });
-  return { assumptions: ASSUMPTIONS, options: [base, ...rest] };
+  return { assumptions: ASSUMPTIONS, options: [base, ...rest], checks };
 }
 
-module.exports = { suggestActions, ASSUMPTIONS };
+/*
+ * Missing-data coverage for a small set of rules. Each check restates its rule's own
+ * condition and reports one of:
+ *   triggered      the rule's condition holds (the rule produced an option)
+ *   not_triggered  the inputs it reads were present and the condition does not hold
+ *   not_assessed   an input or ECAM output the condition needs is missing or zero
+ * Requirements beyond the existing conditions are not enforced here; they are listed
+ * for domain review in docs/decision-support-review.md.
+ */
+// untracked: inputs the rule or its estimate is known to read (from the ECAM formulas and the
+// rule code) without input-status tracking. Known dependencies only, not a complete list.
+const PUMP_KEYS = ['flow', 'head', 'volt', 'amps', 'pf'];
+const CHECKS = [
+  {
+    id: 'pump_efficiency', rules: ['pump_upgrade', 'pump_audit'], prefixes: ['wsa', 'wsd', 'wwc'],
+    inputs: p => [...PUMP_KEYS, 'exff'].map(k => `${p}_pmp_${k}`),
+    untracked: p => [`${p}_nrg_pump`, `${p}_nrg_cons`, ...(p === 'wwc' ? ['wwc_vol_pump'] : []), `${p}_conv_kwh`],
+    evaluate: s => {
+      const p = s.prefix, i = s.inputs || {};
+      const eff = s.outputs[p + '_KPI_nrg_elec_eff'], sav = s.outputs[p + '_KPI_nrg_estm_sav'];
+      if (!(eff > 0)) return { status: 'not_assessed', reason: 'no_efficiency', missing: PUMP_KEYS.map(k => `${p}_pmp_${k}`).filter(c => !(i[c] > 0)) };
+      if (!(i[p + '_pmp_exff'] > 0) || sav == null) return { status: 'not_assessed', reason: 'no_expected_efficiency', missing: [p + '_pmp_exff'] };
+      return sav > 0 ? { status: 'triggered', review: pumpReview(s) } : { status: 'not_triggered', reason: 'saving_not_positive' };
+    },
+  },
+  {
+    id: 'nrw', rules: ['nrw_reduction'], prefixes: ['wsd'],
+    inputs: () => ['wsd_vol_dist', 'wsd_auth_con'],
+    untracked: () => ['wsa_nrg_cons', 'wst_nrg_cons', 'wsd_nrg_cons', 'conv_kwh_co2'],
+    evaluate: s => {
+      const i = s.inputs || {};
+      const missing = ['wsd_vol_dist', 'wsd_auth_con'].filter(c => !(i[c] > 0));
+      if (missing.length) return { status: 'not_assessed', reason: 'missing_volumes', missing };
+      return (1 - i.wsd_auth_con / i.wsd_vol_dist) > NRW_TRIGGER ? { status: 'triggered' } : { status: 'not_triggered', reason: 'nrw_at_or_below_trigger', limit: NRW_TRIGGER * 100 };
+    },
+  },
+  {
+    id: 'desludging', rules: ['septic_desludging'], prefixes: ['wwo'],
+    inputs: () => ['wwo_cont_emp'],
+    untracked: () => ['wwo_bod_cont', 'wwo_bod_rmvd', 'wwo_ch4_efac_con'],
+    evaluate: s => {
+      if (!((s.outputs.wwo_KPI_GHG_containment?.total || 0) > 0)) return { status: 'not_assessed', reason: 'no_containment_emissions', missing: [] };
+      return (s.inputs?.wwo_cont_emp || 0) < ASSUMPTIONS.desludging_emptied_pct ? { status: 'triggered' } : { status: 'not_triggered', reason: 'emptying_at_or_above_scenario', limit: ASSUMPTIONS.desludging_emptied_pct };
+    },
+  },
+];
+
+/** One entry per covered check and substage. where: substage result -> { prefix, index }. */
+function ruleChecks(results, where) {
+  const out = [];
+  for (const c of CHECKS) {
+    for (const s of results.substages.filter(x => c.prefixes.includes(x.prefix))) {
+      out.push({
+        check: c.id, rules: c.rules, substage: where.get(s), name: s.name,
+        inputs: c.inputs(s.prefix).map(code => ({ code, value: s.inputs?.[code] ?? null })),
+        untracked: c.untracked(s.prefix), missing: [], reason: null, review: [], ...c.evaluate(s),
+      });
+    }
+  }
+  return out;
+}
+
+module.exports = { suggestActions, ASSUMPTIONS, NRW_TRIGGER, CHECK_IDS: CHECKS.map(c => c.id) };

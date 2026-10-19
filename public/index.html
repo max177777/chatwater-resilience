@@ -14,6 +14,7 @@
   <header class="top">
     <div class="brand"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C11 11 7 15.5 7 20a9 9 0 0 0 18 0c0-4.5-4-9-9-17z"/></svg><span data-t="brand"></span></div>
     <div class="top-right">
+      <span id="ai-chip" class="chip ai-chip"></span>
       <span id="profile-chip" class="chip"></span>
       <div class="seg" role="group" aria-label="Location">
         <button data-loc="indonesia" data-t="loc_indonesia"></button>
@@ -33,11 +34,13 @@
     <button data-tab="finance" data-t="tab_finance"></button>
   </nav>
   <div class="banner" data-t="banner"></div>
+  <div id="storage-alert" class="storage-alert" role="alert" hidden></div>
 
   <div class="layout">
     <main id="view" tabindex="-1"></main>
     <aside class="chat" id="chat">
       <div class="chat-head"><b data-t="chat_title"></b><span class="row" style="gap:4px"><button class="btn sm" id="chat-clear" data-t="clear_chat"></button><button class="icon-btn" id="chat-toggle" aria-label="Hide chat">–</button></span></div>
+      <div class="chat-scope" id="chat-scope" aria-live="polite"></div>
       <div class="chat-body" id="chat-log"></div>
       <form class="chat-form" id="chat-form">
         <textarea id="chat-input" rows="2"></textarea>
@@ -74,7 +77,12 @@
   <script src="/ecam/backend/ipcc_categories.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="/js/cw-core.js"></script>
   <script src="/js/i18n.js"></script>
+  <script src="/js/action-sources.js"></script>
+  <script src="/js/custom-actions.js"></script>
+  <script src="/js/decision-cards.js"></script>
+  <script src="/js/chat-view.js"></script>
   <script src="/js/ecam-form.js"></script>
   <script src="/js/app.js"></script>
 </body>

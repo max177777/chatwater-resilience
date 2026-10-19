@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "node test/engine.test.js && node test/knowledge.test.js && node test/api.test.js",
+    "test": "node test/run.js",
     "build:sample": "node scripts/make-sample.js",
     "build:id": "node scripts/build-id-labels.js"
   },
