@@ -296,7 +296,10 @@ const CWForm = (() => {
       }
       if (b.dataset.add) return addSubstage(b.dataset.add);
       if (b.dataset.help) { const h = document.getElementById('help_' + b.dataset.help); h.hidden = !h.hidden; return; }
-      if (b.dataset.ask) return app.askChat(`${app.t('ask_chat')}: ${labelOf(b.dataset.ask)} (${b.dataset.ask})`, b.dataset.ask);
+      if (b.dataset.ask) {
+        const sid = app.state.ui.sel?.kind === 'ss' ? app.idOf(stage, 's') : null;
+        return app.askChat(`${app.t('ask_chat')}: ${labelOf(b.dataset.ask)} (${b.dataset.ask})`, { kind: 'input', code: b.dataset.ask, sid, label: `${b.dataset.ask} · ${String(labelOf(b.dataset.ask)).replace(/<[^>]+>/g, '')}` });
+      }
       if (b.dataset.est) { stage[b.dataset.code] = parseFloat(b.dataset.est); entered(b.dataset.code, 'estimate'); app.save(); return app.render(); }
       const act = b.dataset.act;
       if (act === 'new-sc') { app.newScenario(); return app.render(); }
@@ -363,7 +366,8 @@ const CWForm = (() => {
     const relatedCell = x => esc((related.bySid[A().idOf(x.ss, 's')] || []).join(', ') || '–');
     root.innerHTML = `
       <div class="page-head"><h1>${esc(t('results_title'))} · ${esc(Global.General.Name)}</h1>
-        <p class="muted">${esc(t('results_sub'))} ${esc(Global.General.AssessmentPeriodStart)} – ${esc(Global.General.AssessmentPeriodEnd)} · ${esc(gp.report)} · ${Global.General.conv_kwh_co2} kgCO₂/kWh</p></div>
+        <p class="muted">${esc(t('results_sub'))} ${esc(Global.General.AssessmentPeriodStart)} – ${esc(Global.General.AssessmentPeriodEnd)} · ${esc(gp.report)} · ${Global.General.conv_kwh_co2} kgCO₂/kWh</p>
+        <div class="chat-entry"><button type="button" class="btn sm" data-chat="result">${esc(t('chat_btn_results'))}</button><button type="button" class="btn sm" data-chat="missing">${esc(t('chat_btn_missing'))}</button></div></div>
       <div class="kpis">${kpis()}</div>
       <div class="card"><h2>${esc(t('by_stage'))}</h2>
         <div class="chart-box"><canvas id="chart-stages" aria-label="${esc(t('by_stage'))}"></canvas></div>
@@ -375,7 +379,7 @@ const CWForm = (() => {
       </tbody></table></div>
       ${DC.contributor(A().contributorOf(Global), ctx)}
       <div class="card"><h2>${esc(t('substage'))}</h2><table class="data"><thead><tr><th>${esc(t('substage'))}</th><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">${esc(t('share'))}</th><th>${esc(t('sources_col'))} (tCO₂eq)</th><th>${esc(t('related_actions_col'))}</th></tr></thead><tbody>
-        ${subs.map(x => `<tr data-substage="${esc(A().idOf(x.ss, 's'))}"><td>${esc(x.ss.name)}</td><td><i class="sw sw-${x.s.prefix}" aria-hidden="true"></i>${esc(A().stageLabel(x.s.prefix))}</td><td class="num">${fmt(x.ghg / 1000)}</td><td class="num">${g.total ? fmt(100 * x.ghg / g.total, 1) + '%' : '–'}</td>
+        ${subs.map(x => `<tr data-substage="${esc(A().idOf(x.ss, 's'))}"><td>${esc(x.ss.name)}<br><button type="button" class="link small" data-chat="result" data-sid="${esc(A().idOf(x.ss, 's'))}">${esc(t('chat_btn_result'))}</button></td><td><i class="sw sw-${x.s.prefix}" aria-hidden="true"></i>${esc(A().stageLabel(x.s.prefix))}</td><td class="num">${fmt(x.ghg / 1000)}</td><td class="num">${g.total ? fmt(100 * x.ghg / g.total, 1) + '%' : '–'}</td>
           <td class="small">${sourcesCell(x)}</td><td class="small" data-related>${relatedCell(x)}</td></tr>`).join('')}
       </tbody></table>
       ${related.status === 'outdated' ? `<p class="small muted">${esc(t('related_outdated'))}</p>` : ''}</div>

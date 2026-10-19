@@ -6,6 +6,7 @@
  * browser's own bookkeeping.
  */
 const CW = require('../public/js/cw-core');
+const CA = require('../public/js/custom-actions');
 const engine = require('./ecam-engine');
 const { suggestActions } = require('./actions');
 
@@ -19,6 +20,8 @@ const MESSAGES = {
   profile_changed: 'the utility profile changed',
   plan_changed: 'the project plan changed',
   plan_outdated: 'the project plan is outdated',
+  custom_changed: 'a selected user-proposed action was edited after the selection was saved',
+  custom_deleted: 'a selected user-proposed action was deleted',
   framework_changed: 'the financing route or framework changed',
 };
 const WHAT = { actions: 'Selected actions', plan: 'Project plan', proposal: 'Proposal' };
@@ -29,6 +32,16 @@ function conflict(message, issues) {
   e.status = 409; e.issues = issues;
   return e;
 }
+
+const CUSTOM_MESSAGES = {
+  not_object: 'not an action', origin: 'not marked as user-proposed', cid: 'missing or malformed ID',
+  assessment: 'it belongs to a different assessment', key: 'its identity does not match its assessment', label: 'missing label',
+  title_required: 'title is required', description_required: 'description is required',
+  title_too_long: 'title is too long', description_too_long: 'description is too long', problem_too_long: 'problem text is too long', notes_too_long: 'notes are too long',
+  figures: 'user-proposed actions cannot carry benefit figures', category: 'unexpected category',
+  location_invalid: 'location is malformed', location_missing: 'its substage no longer exists; choose a new location in stage 2',
+};
+const customMessage = c => CUSTOM_MESSAGES[c] || (c.startsWith('unknown_field:') ? `unexpected field "${c.slice(14)}"` : c.startsWith('type:') ? `${c.slice(5)} must be text` : c);
 
 const titleOf = a => (a.title && typeof a.title === 'object') ? a.title.en : a.title;
 const same = (a, b) => (a == null || a === 0) && (b == null || b === 0) ? true
@@ -41,8 +54,10 @@ function optionsFor(assessment, meta, gwpIndex = 0) {
 
 /** Problems with the selected actions for this assessment (empty when they match a fresh ECAM run). */
 function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet }) {
-  const sel = (actions || []).filter(a => a.rule !== 'baseline');
+  if (actions != null && !Array.isArray(actions)) return ['Selected actions are malformed.'];
+  const sel = (actions || []).filter(a => !(a && a.rule === 'baseline'));
   if (!sel.length) return [];
+  if (sel.some(a => !a || typeof a !== 'object' || Array.isArray(a))) return ['Selected actions contain an entry that is not an action.'];
   if (!actionSet || actionSet.legacy || !actionSet.revision) return [describe('actions', ['legacy'])];
   if (!assessment || !meta || !meta.id) return [describe('actions', ['assessment_missing'])];
   const codes = [];
@@ -50,9 +65,17 @@ function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet 
   if (actionSet.revision !== CW.revision(assessment)) codes.push('assessment_changed');
   if ((actionSet.gwpIndex || 0) !== (gwpIndex || 0)) codes.push('gwp_changed');
   if (codes.length) return [describe('actions', codes)];
-  const fresh = new Map(optionsFor(assessment, meta, gwpIndex).map(o => [o.key, o]));
+  // user-proposed actions: structure and source assessment only; they carry no figures to recalculate
   const issues = [];
-  for (const a of sel) {
+  const custom = sel.filter(CW.isCustom), calculated = sel.filter(a => !CW.isCustom(a));
+  if (new Set(custom.map(a => a && a.key)).size !== custom.length) issues.push('A user-proposed action is selected more than once.');
+  for (const a of custom) {
+    const problems = CA.validate(a, meta);
+    if (problems.length) issues.push(`User-proposed action "${typeof a?.title === 'string' ? a.title.slice(0, 80) : '?'}" is not valid: ${problems.map(customMessage).join('; ')}.`);
+  }
+  if (!calculated.length) return issues;
+  const fresh = new Map(optionsFor(assessment, meta, gwpIndex).map(o => [o.key, o]));
+  for (const a of calculated) {
     const o = fresh.get(a.key);
     if (!o) issues.push(`Action "${titleOf(a)}" is not produced by this assessment.`);
     else if (!same(o.expected_kgco2, a.expected_kgco2) || !same(o.expected_kwh, a.expected_kwh)) issues.push(`The figures for "${titleOf(a)}" do not match the assessment.`);
@@ -92,7 +115,12 @@ function summedIssues(body) {
  */
 function exportContext(body, { requireProposal = false } = {}) {
   const list = body.assessments || [], metas = body.assessmentMeta || [];
-  const actions = (body.selectedActions || []).filter(a => a.rule !== 'baseline');
+  const raw = body.selectedActions;
+  if ((raw != null && !Array.isArray(raw)) || (raw || []).some(a => !a || typeof a !== 'object' || Array.isArray(a))
+    || (body.customActions != null && (!Array.isArray(body.customActions) || body.customActions.some(c => !c || typeof c !== 'object')))) {
+    throw conflict('Export blocked. The selected or user-proposed actions are malformed.', ['The selected or user-proposed actions are malformed.']);
+  }
+  const actions = (raw || []).filter(a => a.rule !== 'baseline');
   const issues = [];
   if (requireProposal && !body.proposal) issues.push('There is no draft proposal yet. Draft it in stage 4 first.');
 
@@ -112,7 +140,10 @@ function exportContext(body, { requireProposal = false } = {}) {
       assessments: metas.map((m, i) => ({ id: m && m.id, revision: CW.revision(list[i]) })),
       gwpIndex, actionSet: body.actionSet, selectedActions: body.selectedActions,
       plan: body.plan, proposal: body.proposal, profile: body.profile, financing: body.financing,
+      customActions: Array.isArray(body.customActions) ? CW.customDefs(body.customActions, body.actionNotes) : undefined,
     });
+    const customCodes = f.actions.filter(c => c.startsWith('custom_'));
+    if (customCodes.length) issues.push(describe('actions', customCodes));
     for (const stage of ['plan', 'proposal']) if (f[stage].length) issues.push(describe(stage, f[stage]));
   }
   issues.push(...summedIssues(body));

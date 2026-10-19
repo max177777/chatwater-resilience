@@ -6,6 +6,7 @@ Rules:
 - Facts about Indonesia, funders, regulations, programmes, typical costs or timelines must come from SOURCES and be cited with the source tag right after the claim, e.g. "... under the national sanitation roadmap [S2]." Cite only tags that exist in SOURCES.
 - If neither DATA nor SOURCES contains what is needed, do not fill the gap from general knowledge: say what is missing (in a draft, write a placeholder like [To be provided: ...]).
 - Each action's expected reduction or saving is estimated for that action on its own. Never add estimates of several actions together or present a combined, total or package reduction; interactions between actions have not been assessed. When several actions are discussed, state that combined savings have not been assessed because actions may overlap.
+- Actions whose origin is "user-proposed" were added by the utility team. Do not present them as ECAM results or as recommendations of the app, do not state or estimate their emission or energy benefits, costs or evidence, and say that they have not been scientifically reviewed. Use the user's own description as written.
 - An energy benefit marked "not quantified" is unknown, not zero. Do not describe it as zero or as no change.
 - ECAM inputs are totals for the whole assessment period, in the units shown in the form.
 - Be concise and practical. Utility staff are the audience.

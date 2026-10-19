@@ -4,7 +4,8 @@
 const FRAMEWORK = require('../frameworks/project-plan.json');
 
 function buildPlan(actions, lang = 'en') {
-  const L = o => (o && (o[lang] || o.en)) || '';
+  // user-proposed actions carry plain text in the language the user wrote it in
+  const L = o => (typeof o === 'string' ? o : (o && (o[lang] || o.en))) || '';
   const tasks = [];
   let n = 1;
   for (const a of actions.filter(a => a.rule !== 'baseline')) {
@@ -18,6 +19,7 @@ function buildPlan(actions, lang = 'en') {
       const id = 'T' + String(n++).padStart(2, '0');
       tasks.push({
         id, action_id: a.id, action_key: a.key || null, action: L(a.title), phase: p.key,
+        ...(a.origin === 'user' ? { action_origin: 'user' } : {}),
         name: `${L(p)}${p.key === 'confirm' && a.condition ? ': ' + L(a.condition) : ''}`,
         owner: L(p.owner), start_week: start, weeks, depends_on: prev ? [prev] : [],
       });

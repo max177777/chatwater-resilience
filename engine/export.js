@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const AS = require('../public/js/action-sources');
+const CA = require('../public/js/custom-actions');
 
 // Interface labels for what an action addresses, so exports and cards use the same words.
 const { UI, STAGE_LABELS } = vm.runInNewContext(
@@ -68,7 +69,12 @@ function table(headers, rows, widths) {
 
 function sourceList(sources) {
   return sources.map(src => new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ size: 17, color: '555555',
-    text: `[${src.id}] ${src.title}${src.cite ? `, ${src.cite}` : ''}${src.heading ? ` — ${src.heading}` : ''}${src.url ? `. ${src.url}` : ''}` })] }));
+    text: sourceLine(src) })] }));
+}
+/** "[S1] Title, publisher year — locator. url (passage …, library …)"; older saved citations have no passage ID. */
+function sourceLine(src) {
+  return `[${src.id}] ${src.title}${src.cite ? `, ${src.cite}` : ''}${src.heading ? ` — ${src.heading}` : ''}${src.url ? `. ${src.url}` : ''}` +
+    (src.passage_id ? ` (passage ${src.passage_id}${src.library_build ? `, library ${src.library_build}` : ''})` : '');
 }
 
 function textToParagraphs(text) {
@@ -84,7 +90,7 @@ function textToParagraphs(text) {
   return out;
 }
 
-async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan, profile }) {
+async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan, profile, meta }) {
   const t = T[lang] || T.en, S = STAGE_NAMES[lang] || STAGE_NAMES.en;
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : (o || '');
   const children = [
@@ -120,8 +126,10 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
     if (!sel.length) return [];
     return [
       new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun(t.selected)] }),
-      table([t.option, t.expected, t.condition], sel.map(a => [
-        [`${a.id} · ${L(a.title)}`, addressesText(a, lang)].filter(Boolean), expectedText(a, lang), L(a.condition)]), [3600, 2800, 2600]),
+      table([t.option, t.expected, t.condition], sel.map(a => CA.isCustom(a)
+        ? [[`${a.id} · ${a.title}`, ...customLines(a, lang, { results, meta })], expectedText(a, lang), '–']
+        : [[`${a.id} · ${L(a.title)}`, addressesText(a, lang)].filter(Boolean), expectedText(a, lang), L(a.condition)]), [3600, 2800, 2600]),
+      ...(sel.some(CA.isCustom) ? [new Paragraph({ spacing: { before: 120 }, children: [new TextRun({ size: 18, color: '555555', text: uiText('ca_doc_note', lang) })] })] : []),
       ...(sel.length > 1 ? [new Paragraph({ spacing: { before: 120 }, children: [new TextRun({ size: 18, color: '555555', text: uiText('combined_not_assessed', lang) })] })] : []),
       new Paragraph({ text: '' }),
     ];
@@ -130,7 +138,7 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
     if (!plan?.tasks?.length) return [];
     return [
       new Paragraph({ heading: HeadingLevel.HEADING_3, children: [new TextRun(t.plan)] }),
-      table([t.task, t.owner, t.start, t.dur], plan.tasks.map(k => [`${k.id} ${k.action} — ${k.name}`, k.owner, k.start_week, k.weeks]), [4600, 2400, 1000, 1000]),
+      table([t.task, t.owner, t.start, t.dur], plan.tasks.map(k => [`${k.id} ${k.action}${k.action_origin === 'user' ? ` (${uiText('user_proposed', lang)})` : ''} — ${k.name}`, k.owner, k.start_week, k.weeks]), [4600, 2400, 1000, 1000]),
       new Paragraph({ text: '' }),
     ];
   }
@@ -151,6 +159,7 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
 
 function expectedText(a, lang) {
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : (o || '');
+  if (CA.isCustom(a)) return `${uiText('ghg_not_quantified', lang)} · ${uiText('energy_not_quantified', lang)}`;
   const parts = [];
   if (a.expected_kgco2 && AS.isQuantified(a, 'ghg')) parts.push(`${fmt(a.expected_kgco2 / 1000, 0)} tCO2eq`);
   if (a.expected_kwh && AS.isQuantified(a, 'kwh')) parts.push(`${fmt(a.expected_kwh)} kWh`);
@@ -161,6 +170,30 @@ function expectedText(a, lang) {
 
 const uiText = (k, lang) => (UI[lang] && UI[lang][k]) ?? UI.en[k] ?? k;
 const benefitStatus = a => ({ kgco2: AS.benefitStatus(a, 'ghg'), kwh: AS.benefitStatus(a, 'kwh') });
+
+/**
+ * Where a user-proposed action applies, in the output language. The substage is found by its
+ * ChatWater ID in the source assessment's metadata; its name comes from the recalculated results.
+ */
+function customLocationText(a, lang, { results, meta } = {}) {
+  const stage = p => (STAGE_LABELS[lang] || STAGE_LABELS.en)[p] || p;
+  if (!a.location || a.location.at !== 'substage') return uiText('loc_assessment', lang);
+  if (!meta) return stage(a.location.prefix);
+  const r = CA.resolveLocation(a, meta);
+  if (r.at === 'missing') return `${stage(a.location.prefix)} (${uiText('ca_location_missing', lang)})`;
+  const name = results ? ((results.substages || []).filter(s => s.prefix === r.prefix)[r.index] || {}).name : null;
+  return `${stage(r.prefix)}${name ? ' › ' + name : ''}`;
+}
+/** Lines describing a user-proposed action: origin and review status first, then the user's own text unchanged. */
+function customLines(a, lang, ctx) {
+  const u = k => uiText(k, lang);
+  return [
+    `${u('user_proposed')} · ${u('not_reviewed')}`,
+    `${u('ca_description')}: ${a.description}`,
+    a.problem ? `${u('ca_problem')}: ${a.problem}` : null,
+    `${u('ca_location')}: ${customLocationText(a, lang, ctx)}`,
+  ].filter(Boolean);
+}
 
 /** "Addresses: problem — location. Source: classification" in the output language, from action-sources.js. */
 function addressesText(a, lang) {
@@ -195,12 +228,33 @@ async function buildZip(state, docxBuffer) {
       rows.push([r.name, `${s.level}/${s.sublevel}`, s.name, s.ghg?.total, s.ghg?.co2, s.ghg?.ch4, s.ghg?.n2o, s.energy_kwh]);
     zip.file('ecam/results-by-substage.csv', csv(rows));
   }
-  zip.file('actions/selected-actions.json', JSON.stringify((state.selectedActions || []).map(a => ({ ...a, benefit_status: benefitStatus(a), addresses: AS.describe(a) })), null, 2));
+  const metas = state.assessmentMeta || [];
+  const customEntry = a => {
+    const i = metas.findIndex(m => m && m.id === a.assessmentId);
+    const ctx = { meta: metas[i], results: (state.results || [])[i] };
+    return {
+      ...a, origin: 'user', benefit_status: { ...CA.NOT_QUANTIFIED }, scientific_review: 'not_reviewed', emission_classification: null,
+      location_text: customLocationText(a, lang, ctx), location_status: CA.resolveLocation(a, ctx.meta).at,
+    };
+  };
+  zip.file('actions/selected-actions.json', JSON.stringify((state.selectedActions || []).map(a => CA.isCustom(a) ? customEntry(a)
+    : ({ ...a, benefit_status: benefitStatus(a), addresses: AS.describe(a) })), null, 2));
   if (state.plan?.tasks) {
-    zip.file('plan/project-plan.csv', csv([['id', 'action', 'task', 'owner', 'start_week', 'weeks', 'depends_on'],
-      ...state.plan.tasks.map(k => [k.id, k.action, k.name, k.owner, k.start_week, k.weeks, k.depends_on.join(' ')])]));
+    zip.file('plan/project-plan.csv', csv([['id', 'action', 'task', 'owner', 'start_week', 'weeks', 'depends_on', 'action_origin'],
+      ...state.plan.tasks.map(k => [k.id, k.action, k.name, k.owner, k.start_week, k.weeks, k.depends_on.join(' '), k.action_origin === 'user' ? 'user-proposed' : 'calculated'])]));
     if (state.plan.summary) zip.file('plan/project-summary.txt', state.plan.summary +
-      (state.plan.sources?.length ? '\n\nSources:\n' + state.plan.sources.map(x => `[${x.id}] ${x.title}${x.cite ? ', ' + x.cite : ''}${x.url ? ' ' + x.url : ''}`).join('\n') : ''));
+      (state.plan.sources?.length ? '\n\nSources:\n' + state.plan.sources.map(sourceLine).join('\n') : ''));
+  }
+  // where generated text drew on the document library: build, searches, retrieved and cited passages
+  const provenance = {
+    note: 'Document-library provenance for generated text. "cited" lists citation tags that point to retrieved passages; word_overlap is a word check only; no check was made that passages support the claims. Outputs generated before provenance was recorded have no entry.',
+    explanations: Object.fromEntries(Object.entries(state.explanationEvidence || {})
+      .filter(([key, ev]) => ev && (state.selectedActions || []).some(a => a.key === key))),
+    plan_summary: state.plan?.evidence || null,
+    proposal_sections: (state.proposal?.sections || []).filter(s => s.evidence).map(s => ({ key: s.key, title: s.title, ai: s.ai, evidence: s.evidence })),
+  };
+  if (provenance.plan_summary || provenance.proposal_sections.length || Object.keys(provenance.explanations).length) {
+    zip.file('evidence/library-provenance.json', JSON.stringify(provenance, null, 2));
   }
   if (state.profile) zip.file('utility-profile.json', JSON.stringify(state.profile, null, 2));
   zip.file('README.txt', [
@@ -212,11 +266,14 @@ async function buildZip(state, docxBuffer) {
     'ecam/results-by-substage.csv       Emissions and energy per substage',
     'actions/selected-actions.json      Options chosen in stage 2, with calculation basis, benefit status and what each addresses',
     '                                   Each estimate is separate; combined savings have not been assessed because actions may overlap.',
+    '                                   Actions with origin "user" were proposed by the utility team: they are not ECAM results,',
+    '                                   their GHG and energy benefits are not quantified and they have not been scientifically reviewed.',
     'plan/project-plan.csv              Tasks, owners and timing from stage 3',
+    'evidence/library-provenance.json   (when present) Document-library build, searches, retrieved and cited passages for generated text',
     '',
     `Language: ${lang}. Calculations: ECAM v3 by ICRA, IWA and GIZ (CC BY-SA 4.0).`,
   ].join('\n'));
   return zip.generateAsync({ type: 'nodebuffer' });
 }
 
-module.exports = { buildProposalDocx, buildZip, expectedText, addressesText };
+module.exports = { buildProposalDocx, buildZip, expectedText, addressesText, customLocationText, customLines, uiText };

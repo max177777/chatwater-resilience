@@ -48,6 +48,20 @@ main { min-width: 0; outline: none; }
 .msg.user { background: var(--teal); color: #fff; align-self: flex-end; max-width: 90%; }
 .msg.bot { background: var(--teal-faint); align-self: stretch; }
 .msg .src { margin-top: 6px; font-size: 12px; color: var(--ink-2); }
+.chat-scope { padding: 8px 14px; border-bottom: 1px solid var(--line); font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+.chat.collapsed .chat-scope { display: none; }
+.msg .reply { white-space: pre-wrap; margin: 4px 0 6px; }
+.msg.bot { white-space: normal; }
+.excerpt { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; margin: 6px 0; font-size: 13px; }
+.excerpt summary { cursor: pointer; }
+.excerpt .quote { margin: 6px 0; padding: 4px 8px; border-left: 3px solid var(--teal); white-space: pre-wrap; font-size: 12.5px; }
+.excerpt ul, .ctx-panel ul { margin: 2px 0; padding-left: 16px; }
+.ctx-panel { margin-top: 8px; font-size: 13px; }
+.ctx-panel summary { cursor: pointer; font-weight: 600; }
+.badge-role { font-size: 11px; padding: 1px 6px; border-radius: 6px; background: var(--teal-faint); border: 1px solid var(--line); white-space: nowrap; }
+.badge-role.role-training_example, .badge-role.role-derived_synthesis, .badge-role.role-regulation { background: #FFF4E0; }
+.chat-entry { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.support { margin: 4px 0; padding-left: 16px; }
 .chat-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--line); }
 .chat-form textarea { flex: 1; resize: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
 .bottom { display: flex; justify-content: space-between; align-items: center; padding: 10px 24px; background: var(--card); border-top: 1px solid var(--line); }
@@ -135,6 +149,14 @@ table.data input[type=text], table.data input[type=number] { padding: 4px 6px; }
 .dc-benefit { font-weight: 600; white-space: nowrap; }
 .dc-line { margin: 4px 0 0; }
 .dc-flag { margin: 6px 0 0; color: #8A4B08; }
+.dcard-user { border-left: 3px dashed #8A99A1; }
+.badge-user, .badge-unreviewed { font-size: 12px; font-weight: 600; border-radius: 6px; padding: 1px 6px; border: 1px solid; }
+.badge-user { background: #F3F0FA; color: #4A3B78; border-color: #B7AEDA; }
+.badge-unreviewed { background: #FFFFFF; color: #7A4A00; border-style: dashed; border-color: #C69240; }
+.user-text { white-space: pre-line; overflow-wrap: anywhere; }
+.dc-flag-inline { color: #8A4B08; font-weight: 600; }
+.field-error { color: var(--danger); font-size: 12.5px; margin-top: 2px; }
+.field-hint { font-weight: 400; color: var(--muted, #5B6B70); font-size: 12px; }
 .dcard details, .dpanel details { margin-top: 8px; }
 .dcard summary, .dpanel summary { cursor: pointer; color: var(--teal); font-size: 13.5px; }
 .dc-dl { display: grid; grid-template-columns: 170px 1fr; gap: 6px 12px; margin: 8px 0; font-size: 13.5px; }

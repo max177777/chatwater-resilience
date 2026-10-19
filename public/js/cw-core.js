@@ -109,12 +109,23 @@
 
   // ------------------------------------------------------------ dependencies
   const num = v => (typeof v === 'number' && Number.isFinite(v)) ? +v.toPrecision(12) : null;
+  /** User-proposed action (custom-actions.js). Anything claiming either marker takes the custom path. */
+  const isCustom = a => !!a && (a.origin === 'user' || a.rule === 'custom');
+  /** Everything of a custom action that plans, proposals and exports use. */
+  const customContent = a => ({
+    title: String(a.title || ''), description: String(a.description || ''), problem: String(a.problem || ''),
+    location: a.location && a.location.at === 'substage' ? { at: 'substage', prefix: a.location.prefix || null, sid: a.location.sid || null } : { at: 'assessment' },
+    label: a.id || null, notes: a.notes || '',
+  });
   function actionsFingerprint(actions) {
     return fp((actions || []).filter(a => a.rule !== 'baseline').map(a => ({
       key: a.key || null, rule: a.rule, title: titleEn(a) || null,
       kg: num(a.expected_kgco2), kwh: num(a.expected_kwh), notes: a.notes || '',
+      custom: isCustom(a) ? customContent(a) : undefined,
     })).sort((x, y) => String(x.key || x.title).localeCompare(String(y.key || y.title))));
   }
+  /** Current custom-action definitions with their notes, as freshness() compares them with the saved selection. */
+  const customDefs = (customActions, actionNotes) => (customActions || []).map(c => ({ ...c, notes: (actionNotes && actionNotes[c.key]) || '' }));
   /** Every plan field a proposal is drafted or exported with: summary, tasks, owners and timing. */
   function planFingerprint(plan) {
     if (!plan || !plan.tasks) return null;
@@ -146,7 +157,8 @@
 
   // ------------------------------------------------------------ freshness
   /**
-   * ctx: { assessments: [{ id, revision }], gwpIndex, actionResult, actionSet, selectedActions, plan, proposal, profile, financing }
+   * ctx: { assessments: [{ id, revision }], gwpIndex, actionResult, actionSet, selectedActions, plan, proposal, profile, financing,
+   *        customActions? (customDefs(); when given, edited or deleted selected user actions mark the selection outdated) }
    * Returns reason codes per output; an empty list means current.
    */
   function freshness(ctx) {
@@ -165,6 +177,15 @@
     if (ctx.actionResult) out.options = ctx.actionResult.legacy ? ['legacy'] : basis(ctx.actionResult.basis);
     const sel = (ctx.selectedActions || []).filter(a => a.rule !== 'baseline');
     if (sel.length) out.actions = basis(ctx.actionSet);
+    // a selected user action edited or deleted since the selection was saved (ctx.customActions from customDefs)
+    if (Array.isArray(ctx.customActions)) {
+      const defs = new Map(ctx.customActions.map(c => [c.key, c]));
+      for (const a of sel.filter(isCustom)) {
+        const d = defs.get(a.key);
+        if (!d) out.actions.push('custom_deleted');
+        else if (fp(customContent(d)) !== fp(customContent(a))) out.actions.push('custom_changed');
+      }
+    }
     const actionsFp = actionsFingerprint(ctx.selectedActions);
     const profileFp = fp(ctx.profile);
     if (ctx.plan) {
@@ -399,7 +420,7 @@
 
   return {
     SCHEMA, STAGE_KEYS, canonical, hash, fp, revision, actionKey, substageId, withKeys, withCheckIds, assignLabels, mapLegacy,
-    actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, hasSummedClaim, summedClaims, migrate, unitView,
+    isCustom, customContent, customDefs, actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, hasSummedClaim, summedClaims, migrate, unitView,
     commitVersion, regenerate, restoreVersion, loadSession, writeSession, isQuota,
     TRACKED_INPUTS, INPUT_ORIGINS, isTracked, inputState, needsConfirm, setInputOrigin, confirmInputValue,
     parseEcamFile, parseProfileJson, uniqueName,

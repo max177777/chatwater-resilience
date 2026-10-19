@@ -1,0 +1,70 @@
+{
+  "role": "development set (regression check). The separate fresh set is test/eval/library-eval.json; its runs are recorded in test/eval/library-eval-runs.json.",
+  "about": "Offline evaluation set for the context chat. Measures retrieval and context behaviour only; it says nothing about the quality of real model answers, which remains unverified. Expected passages were chosen by reading the library; a case passes when any expected passage (or, where only sources are listed, any passage from an expected source) is in the top 5. The glossary was tuned while these questions were known, so this is a regression check, not a held-out test.",
+  "retrieval": [
+    {
+      "id": "pump-boundary-en", "lang": "en", "category": "pump efficiency and measurement boundary", "stage": 2,
+      "question": "How should pump efficiency be measured, and what boundary does wire-to-water efficiency use?",
+      "expect": "found",
+      "passages": ["ee-synthesis-en#sec-3-5-motor-pump-and-wire-to-water-efficiency-1", "ee-synthesis-en#sec-a2-pump-efficiency-and-wire-to-water-efficiency-1", "cw-framework-stages-2-4#s2-c1-electromechanical-efficiency-of-pumps-1"],
+      "qualifications": ["A2"], "warning_includes": ["Derived synthesis"]
+    },
+    {
+      "id": "pump-boundary-id", "lang": "id", "category": "pump efficiency and measurement boundary", "stage": 2,
+      "question": "Bagaimana mengukur efisiensi pompa dan apa batas pengukurannya?",
+      "expect": "found",
+      "passages": ["ee-deck-02-konsep#s27-1", "ee-synthesis-en#sec-a2-pump-efficiency-and-wire-to-water-efficiency-1", "ee-synthesis-en#sec-3-5-motor-pump-and-wire-to-water-efficiency-1"],
+      "qualifications": ["A2"], "warning_includes": ["Training material"]
+    },
+    {
+      "id": "septic-en", "lang": "en", "category": "septic containment classification", "stage": 2,
+      "question": "Is methane from household septic tanks a direct emission, and how is containment classified?",
+      "expect": "found",
+      "sources": ["ipcc-2019-wastewater-ch6", "ecam-methodology-guide", "gcf-2024-water-guidelines-part3-sanitation"]
+    },
+    {
+      "id": "septic-id", "lang": "id", "category": "septic containment classification", "stage": 2,
+      "question": "Apakah metana dari tangki septik rumah tangga termasuk emisi langsung?",
+      "expect": "found",
+      "sources": ["ipcc-2019-wastewater-ch6", "ecam-methodology-guide", "gcf-2024-water-guidelines-part3-sanitation"]
+    },
+    {
+      "id": "baseline-en", "lang": "en", "category": "missing baseline information for a project plan", "stage": 3,
+      "question": "What baseline information is missing for our project plan?",
+      "expect": "found", "passages": ["cw-framework-stages-2-4#s3-area-2-1"]
+    },
+    {
+      "id": "baseline-id", "lang": "id", "category": "missing baseline information for a project plan", "stage": 3,
+      "question": "Data dasar apa yang dibutuhkan untuk rencana proyek?",
+      "expect": "found", "passages": ["cw-framework-stages-2-4#s3-area-2-1"]
+    },
+    {
+      "id": "monitoring-en", "lang": "en", "category": "monitoring for a user-proposed action", "stage": 3,
+      "question": "What indicators should we use to monitor and evaluate this action?",
+      "expect": "found", "passages": ["cw-framework-stages-2-4#s3-area-8-1"]
+    },
+    {
+      "id": "monitoring-id", "lang": "id", "category": "monitoring for a user-proposed action", "stage": 3,
+      "question": "Indikator apa yang dipakai untuk pemantauan dan evaluasi kegiatan ini?",
+      "expect": "found", "passages": ["cw-framework-stages-2-4#s3-area-8-1"]
+    },
+    {
+      "id": "finance-en", "lang": "en", "category": "financing with unknown costs or eligibility", "stage": 4,
+      "question": "Which funds could finance this project, and are we eligible, given that costs are not known yet?",
+      "expect": "found",
+      "sources": ["id-climate-finance-sectoral-guidelines-en", "id-climate-finance-sectoral-guidelines-id", "id-gcf-country-programme-v2", "gcf-2024-water-guidelines-part3-sanitation"],
+      "warning_includes": ["eligib", "kelayakan"]
+    },
+    {
+      "id": "finance-id", "lang": "id", "category": "financing with unknown costs or eligibility", "stage": 4,
+      "question": "Dana apa yang bisa membiayai proyek ini dan apakah kami memenuhi syarat, padahal biaya belum diketahui?",
+      "expect": "found",
+      "sources": ["id-climate-finance-sectoral-guidelines-en", "id-climate-finance-sectoral-guidelines-id", "id-gcf-country-programme-v2", "gcf-2024-water-guidelines-part3-sanitation"],
+      "warning_includes": ["eligib", "kelayakan"]
+    },
+    { "id": "unsupported-en-1", "lang": "en", "category": "unsupported", "stage": null, "question": "Who won the 1998 football world cup final?", "expect": "none" },
+    { "id": "unsupported-en-2", "lang": "en", "category": "unsupported", "stage": null, "question": "What is the recipe for nasi goreng?", "expect": "none" },
+    { "id": "unsupported-en-3", "lang": "en", "category": "unsupported", "stage": null, "question": "What is the best football team in Jakarta?", "expect": "none" },
+    { "id": "unsupported-id-1", "lang": "id", "category": "unsupported", "stage": null, "question": "Siapa juara piala dunia sepak bola 1998?", "expect": "none" }
+  ]
+}

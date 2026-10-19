@@ -3,14 +3,16 @@ const assert = require('assert');
 const app = require('../server');
 const sample = require('../public/samples/utility-a-indonesia.json');
 const { meta } = require('./helpers/fixtures');
+const { ensureLibrary } = require('./helpers/synthetic-library');
 
 (async () => {
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
   const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
   const assessment = sample[0], m = meta(assessment, 'a_sample');
+  const lib = ensureLibrary();
   try {
-    console.log('API');
+    console.log(`API${lib.synthetic ? ' (document library not built: synthetic test library used)' : ''}`);
     const calc = await (await post('/api/calculate', { assessments: sample })).json();
     assert.ok(calc.results[0].totals.total > 0); console.log('  ok - calculate');
 
@@ -36,8 +38,12 @@ const { meta } = require('./helpers/fixtures');
     }
     console.log('  ok - proposal (general, gcf)');
 
-    const chat = await (await post('/api/chat', { messages: [{ role: 'user', content: 'grid emission factor' }], assessment })).json();
-    assert.ok(chat.sources.length > 0); console.log('  ok - chat retrieval');
+    const chat = await (await post('/api/chat', { messages: [{ role: 'user', content: 'grid emission factor' }], assessment, meta: m })).json();
+    assert.strictEqual(chat.ai, false);
+    assert.strictEqual(chat.reply, undefined, 'with AI off there is no simulated answer');
+    assert.strictEqual(chat.retrieval.status, 'found');
+    assert.ok(chat.retrieval.passages.every(p => p.sourceId && p.locatorLabel && p.text));
+    assert.strictEqual(chat.context.assessment.id, m.id); console.log('  ok - chat retrieval (AI off: excerpts and context, no answer)');
 
     const zip = await post('/api/export', { assessments: sample, assessmentMeta: [m], selectedActions: chosen, actionSet, plan, proposal, financing: { route: 'gcf' } });
     assert.strictEqual(zip.status, 200, await zip.clone().text());
@@ -45,5 +51,5 @@ const { meta } = require('./helpers/fixtures');
     assert.ok((await zip.arrayBuffer()).byteLength > 5000); console.log('  ok - export zip');
     console.log('\nAPI tests passed');
   } catch (e) { console.error(e); process.exitCode = 1; }
-  finally { server.close(); }
+  finally { lib.restore(); server.close(); }
 })();

@@ -61,7 +61,8 @@
    * (without new fields) resolve the same way. Unknown rules return { mapped: false }.
    */
   function describe(o) {
-    if (!o || o.rule === 'baseline') return null;
+    // user-proposed actions are described by custom-actions.js and are never mapped or classified here
+    if (!o || o.rule === 'baseline' || o.rule === 'custom' || o.origin === 'user') return null;
     const m = ACTIONS[o.rule];
     const [aid, , sid] = keyParts(o);
     const sub = o.substage || null;

@@ -1,0 +1,245 @@
+{
+  "_note": "Curated metadata for the ChatWater document library. Keys are paths inside the supplied archives. Titles, publishers and dates were read from the documents themselves; where a document does not state them, the field says so. URLs are only those supplied with the material and have not been verified by the build. sector defaults to 'water and sanitation'; 'multi-sector' sources cover other sectors too, so generated section and plan queries use their passages only for the stages they are tagged with or when a passage concerns water or sanitation. Run: node scripts/library/build.js",
+  "inputs": {
+    "framework": "Revised Framework Stages 2-4.docx",
+    "sources": "Sources-20261018T185625Z-1-001.zip",
+    "examples": "Examples-20261018T185556Z-1-001.zip"
+  },
+  "sources": {
+    "framework:Revised Framework Stages 2-4.docx": {
+      "id": "cw-framework-stages-2-4",
+      "title": "Revised Framework Stages 2–4",
+      "publisher": "ChatWater team (document author: Chimdi Muoghalu)",
+      "date": "2026-10-17 (last modified, from document properties)",
+      "language": "en", "scope": "general (not country-specific)", "stages": [2, 3, 4], "topic": "plan",
+      "role": "team_framework",
+      "review_status": "Team working draft. Not externally reviewed. The links from Stage 2 rows to ECAM stages and emission sources were added by the ChatWater build and await team review.",
+      "caveats": ["Guides the questions to investigate and the actions to consider; it contains no quantitative criteria."]
+    },
+    "sources:Sources/Stage 2_ Methodology Guide_ECAM.pdf": {
+      "id": "ecam-methodology-guide",
+      "title": "Methodology Guide – ECAM",
+      "publisher": "WaCCliM – Water and Wastewater Companies for Climate Mitigation (authors: Rotária do Brasil)",
+      "date": "2022 (PDF created 2022-10-07)",
+      "language": "en", "scope": "global", "stages": [2], "topic": "ecam",
+      "role": "methodology",
+      "review_status": "Published methodology document. Not reviewed by the ChatWater team for this library."
+    },
+    "sources:Sources/Stage 2_ IPCC Wastewater treatment and discharge.pdf": {
+      "id": "ipcc-2019-wastewater-ch6",
+      "title": "2019 Refinement to the 2006 IPCC Guidelines for National Greenhouse Gas Inventories, Volume 5, Chapter 6: Wastewater Treatment and Discharge",
+      "publisher": "Intergovernmental Panel on Climate Change (IPCC)",
+      "date": "2019",
+      "language": "en", "scope": "global", "stages": [2], "topic": "ecam",
+      "role": "methodology",
+      "review_status": "Published IPCC guideline. Not reviewed by the ChatWater team for this library.",
+      "caveats": ["Written for national greenhouse gas inventories, not for a single utility's project accounting."]
+    },
+    "sources:Sources/Stage 4_ GCF - 2024 GCF-Water-Project-Design-Guide-Sanitation.pdf": {
+      "id": "gcf-2024-water-guidelines-part3-sanitation",
+      "title": "GCF Water Project Design Guidelines Part 3: Practical guidelines for designing climate-resilient sanitation projects (Annex III, Water Security Sectoral Guide)",
+      "publisher": "Green Climate Fund (GCF) Secretariat, with the Climate Resilient Sanitation Coalition",
+      "date": "November 2024 (described in the document as the final report for consultation)",
+      "language": "en", "scope": "global", "stages": [3, 4], "topic": "financing",
+      "role": "guidance",
+      "review_status": "Consultation version as stated in the document. Not reviewed by the ChatWater team.",
+      "caveats": ["Design guidance, not an eligibility decision. Current GCF requirements must be checked with GCF or the NDA.", "Sanitation-focused (Part 3). The supplied file named 'Water' contains this same Part 3, not a separate water-supply part."]
+    },
+    "sources:Sources/Stage 4_ GCF - 2024 GCF-Water-Project-Design-Guide-Water.pdf": {
+      "id": "gcf-2024-water-guidelines-part3-copy",
+      "title": "GCF Water Project Design Guidelines Part 3: Practical guidelines for designing climate-resilient sanitation projects (file supplied as 'Water')",
+      "publisher": "Green Climate Fund (GCF) Secretariat, with the Climate Resilient Sanitation Coalition",
+      "date": "November 2024 (described in the document as the final report for consultation)",
+      "language": "en", "scope": "global", "stages": [3, 4], "topic": "financing",
+      "role": "guidance",
+      "review_status": "Consultation version as stated in the document. Not reviewed by the ChatWater team.",
+      "near_duplicate_of": "gcf-2024-water-guidelines-part3-sanitation",
+      "caveats": ["Despite the file name, this is Part 3 (sanitation). Passages that repeat the canonical copy are not indexed separately and never count as independent corroboration."]
+    },
+    "sources:Sources/Stage 3_ WHO Climate resilient water safety plans managing health risks associated with climate variability.pdf": {
+      "id": "who-2017-climate-resilient-wsp",
+      "title": "Climate-resilient water safety plans: managing health risks associated with climate variability and change",
+      "publisher": "World Health Organization (WHO)",
+      "date": "2017",
+      "language": "en", "scope": "global", "stages": [3], "topic": "plan",
+      "role": "guidance",
+      "review_status": "Published WHO guidance. Not reviewed by the ChatWater team for this library."
+    },
+    "sources:Sources/Stage 3_ World Bank From Waste to Resource.pdf": {
+      "id": "wb-2020-waste-to-resource-lac",
+      "title": "From Waste to Resource: Shifting paradigms for smarter wastewater interventions in Latin America and the Caribbean",
+      "publisher": "World Bank (Rodriguez, Serrano, Delgado, Nolasco, Saltiel)",
+      "date": "2020",
+      "language": "en", "scope": "Latin America and the Caribbean", "stages": [3], "topic": "plan",
+      "role": "guidance",
+      "review_status": "Published World Bank report. Not reviewed by the ChatWater team for this library.",
+      "caveats": ["Regional focus is Latin America and the Caribbean; examples are not Indonesian evidence."]
+    },
+    "sources:Sources/Indonesia/Stage 3_ Permen PUPR Nomor 27 Tahun 2016.pdf": {
+      "id": "id-permen-pupr-27-2016",
+      "title": "Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 27/PRT/M/2016 tentang Penyelenggaraan Sistem Penyediaan Air Minum",
+      "publisher": "Kementerian Pekerjaan Umum dan Perumahan Rakyat (PUPR)",
+      "date": "2016",
+      "language": "id", "scope": "Indonesia", "stages": [3], "topic": "indonesia",
+      "role": "regulation",
+      "review_status": "Regulation text as supplied. Its current legal status (amended, replaced or in force) has not been verified.",
+      "caveats": ["Do not infer that this regulation is currently in force; check the official legal database (JDIH PUPR / BPK)."]
+    },
+    "sources:Sources/Indonesia/Stage 3_ 07-Air-Minum.pdf": {
+      "id": "id-dak-air-minum-excerpt",
+      "title": "7. Bidang Air Minum (excerpt: DAK Fisik drinking-water technical guidance, printed pages 694–706)",
+      "publisher": "Not identified. Pages are headed 'PRESIDEN REPUBLIK INDONESIA'; the parent document is unidentified.",
+      "date": "Not stated in the excerpt (scan created 2025-06-23)",
+      "language": "id", "scope": "Indonesia", "stages": [3], "topic": "indonesia",
+      "role": "regulation",
+      "review_status": "Scanned excerpt of an unidentified parent document. Text obtained by local OCR and not proofread.",
+      "parent": "unidentified",
+      "ocr": { "languages": "ind+eng", "dpi": 300 },
+      "caveats": ["Parent document, year and legal status unknown; do not cite as current rules.", "OCR text: list numbering and table layout are partly lost; check the original page before quoting."]
+    },
+    "sources:Sources/Indonesia/Stage 3_ Planning-for-an-Uncertain-Future-Strengthening-the-Resilience-of-Indonesian-Water-Utilities-Technical-Report.pdf": {
+      "id": "wb-2021-indonesia-utility-resilience",
+      "title": "Planning for an Uncertain Future: Strengthening the Resilience of Indonesian Water Utilities — Technical Report",
+      "publisher": "World Bank Group",
+      "date": "February 2021",
+      "language": "en", "scope": "Indonesia", "stages": [3], "topic": "indonesia",
+      "role": "guidance",
+      "review_status": "Published World Bank report. Not reviewed by the ChatWater team for this library."
+    },
+    "sources:Sources/Indonesia/Stage 3_ Technology-and-Investment-for-Energy-FOLU-Food-and-Water-Sectors-in-Indonesia.pdf": {
+      "id": "id-nda-gcf-technology-investment-flyer",
+      "sector": "multi-sector",
+      "title": "Technology and Investment for Energy, FOLU, Food and Water Sectors in Indonesia (two-page summary)",
+      "publisher": "Sekretariat NDA-GCF Indonesia, Kementerian Keuangan (as stated in the document)",
+      "date": "Not stated (PDF created 2025-12-16)",
+      "language": "en", "scope": "Indonesia", "stages": [3], "topic": "indonesia",
+      "role": "guidance",
+      "review_status": "Two-page summary document. Not reviewed by the ChatWater team.",
+      "caveats": ["A summary flyer; it does not establish technology suitability or funding eligibility."]
+    },
+    "sources:Sources/Indonesia/Stage 4_ Indonesia-Climate-Finance-Sectoral-Guidelines-_English.pdf": {
+      "id": "id-climate-finance-sectoral-guidelines-en",
+      "sector": "multi-sector",
+      "title": "Indonesia Climate Finance Sectoral Guidelines (English)",
+      "publisher": "Not stated on the extracted pages (cover is an image)",
+      "date": "2025 (PDF created 2025-09-25; refers to 2024 allocations)",
+      "language": "en", "scope": "Indonesia", "stages": [4], "topic": "financing",
+      "role": "guidance",
+      "review_status": "Not reviewed by the ChatWater team.",
+      "translation_of": "id-climate-finance-sectoral-guidelines-id",
+      "caveats": ["Funding programmes, windows and criteria change; do not infer current eligibility from this document.", "English and Indonesian versions are translations of each other and do not corroborate each other."]
+    },
+    "sources:Sources/Indonesia/Stage 4_ Panduan-Sektoral-Guna-Mengakses-Pendanaan-Iklim-Di-Indonesia.pdf": {
+      "id": "id-climate-finance-sectoral-guidelines-id",
+      "sector": "multi-sector",
+      "title": "Panduan Sektoral Guna Mengakses Pendanaan Iklim di Indonesia",
+      "publisher": "Not stated on the extracted pages (cover is an image)",
+      "date": "2025 (PDF created 2025-10-10)",
+      "language": "id", "scope": "Indonesia", "stages": [4], "topic": "financing",
+      "role": "guidance",
+      "review_status": "Not reviewed by the ChatWater team.",
+      "translation_of": "id-climate-finance-sectoral-guidelines-en",
+      "caveats": ["Program, jendela pendanaan dan kriteria dapat berubah; jangan menyimpulkan kelayakan saat ini dari dokumen ini.", "English and Indonesian versions are translations of each other and do not corroborate each other."]
+    },
+    "sources:Sources/Indonesia/Stage 4_ kucb-cpd-full-document-inggris-print-20230403.pdf": {
+      "id": "id-gcf-country-programme-v2",
+      "sector": "multi-sector",
+      "title": "Indonesia's GCF Country Programme Document, Version 02",
+      "publisher": "Fiscal Policy Agency, Ministry of Finance of the Republic of Indonesia (NDA for the GCF)",
+      "date": "2021 (© 2021; file printed 2023-04-03)",
+      "language": "en", "scope": "Indonesia", "stages": [4], "topic": "financing",
+      "role": "guidance",
+      "review_status": "Published country programme. Not reviewed by the ChatWater team.",
+      "caveats": ["Country priorities and pipelines date from 2021; they do not show current eligibility or funding availability."]
+    },
+    "sources:Sources/Indonesia/Related websites.docx": {
+      "id": "team-related-websites",
+      "exclude": "A list of two links, not a document. The links are recorded under supplied_links and are not indexed for retrieval.",
+      "supplied_links": [
+        { "url": "https://www.greenclimate.fund/countries/indonesia", "status": "supplied by the team, not verified by the build" },
+        { "url": "https://fiskal.kemenkeu.go.id/nda_gcf/tentang-gcf/", "status": "supplied by the team, not verified by the build" }
+      ]
+    },
+    "examples:Examples/Energy Efficiency in Indonesian Drinking Water Utilities.docx": {
+      "id": "ee-synthesis-en",
+      "title": "Energy Efficiency in Indonesian Drinking Water Utilities",
+      "publisher": "ChatWater (synthesis prepared from four training decks)",
+      "date": "2026-10-10 (sources accessed on this date, as stated in the document)",
+      "language": "en", "scope": "Indonesia", "stages": [2, 3], "topic": "plan",
+      "role": "derived_synthesis",
+      "review_status": "Derived synthesis. Not scientifically reviewed. Its qualifications (Appendix A) are attached to the passages they affect.",
+      "synthesis_of": { "S02": "ee-deck-02-konsep", "S03": "ee-deck-03-permasalahan", "S04": "ee-deck-04-kinerja", "S05": "ee-deck-05-modifikasi" },
+      "caveats": ["Training material: figures and cases are illustrations from the training, not facts about the current utility."]
+    },
+    "examples:Examples/02 Konsep Mekanisme & Regulasi Efisiensi Energi.pptx": {
+      "id": "ee-deck-02-konsep",
+      "title": "Konsep, Mekanisme & Regulasi Efisiensi Energi",
+      "publisher": "Bimbingan Teknis Efisiensi Energi, Pembelajaran Jarak Jauh (PJJ); presenter Ir. Chairul Abdullah, ST, IPP. Organising body not stated.",
+      "date": "27 July 2026 (session date on slide 2)",
+      "language": "id", "scope": "Indonesia", "stages": [2, 3], "topic": "plan",
+      "role": "training_example",
+      "review_status": "Training slides. Not reviewed. See the qualifications recorded in the synthesis (ee-synthesis-en, Appendix A).",
+      "synthesis_label": "S02",
+      "caveats": ["Illustrative training material, not facts about the current utility."]
+    },
+    "examples:Examples/03 Permasalahan Energi di PDAM.pptx": {
+      "id": "ee-deck-03-permasalahan",
+      "title": "Permasalahan Energi di PDAM",
+      "publisher": "Bimbingan Teknis Efisiensi Energi, Pembelajaran Jarak Jauh (PJJ); presenter Ir. Chairul Abdullah, ST, IPP. Organising body not stated.",
+      "date": "27 July 2026 (session date on slide 2)",
+      "language": "id", "scope": "Indonesia", "stages": [2, 3], "topic": "plan",
+      "role": "training_example",
+      "review_status": "Training slides. Not reviewed. See the qualifications recorded in the synthesis (ee-synthesis-en, Appendix A).",
+      "synthesis_label": "S03",
+      "caveats": ["Illustrative training material, not facts about the current utility. Named PDAM cases are examples only."]
+    },
+    "examples:Examples/04 Mengukur Kinerja Sistem.pptx": {
+      "id": "ee-deck-04-kinerja",
+      "title": "Mengukur Kinerja Sistem",
+      "publisher": "Bimbingan Teknis Efisiensi Energi, Pembelajaran Jarak Jauh (PJJ); presenter Ir. Chairul Abdullah, ST, IPP. Organising body not stated.",
+      "date": "28 July 2026 (session date on slide 2)",
+      "language": "id", "scope": "Indonesia", "stages": [2, 3], "topic": "plan",
+      "role": "training_example",
+      "review_status": "Training slides. Not reviewed. See the qualifications recorded in the synthesis (ee-synthesis-en, Appendix A).",
+      "synthesis_label": "S04",
+      "caveats": ["Illustrative training material, not facts about the current utility."]
+    },
+    "examples:Examples/05 Operasi dan Modifikasi Peralatan Mekanikal Elektrikal.pptx": {
+      "id": "ee-deck-05-modifikasi",
+      "title": "Operasi dan Modifikasi Peralatan Mekanikal Elektrikal",
+      "publisher": "Bimbingan Teknis Efisiensi Energi, Pembelajaran Jarak Jauh (PJJ); presenter Ir. Chairul Abdullah, ST, IPP. Organising body not stated.",
+      "date": "28 July 2026 (session date on slide 2)",
+      "language": "id", "scope": "Indonesia", "stages": [2, 3], "topic": "plan",
+      "role": "training_example",
+      "review_status": "Training slides. Not reviewed. See the qualifications recorded in the synthesis (ee-synthesis-en, Appendix A).",
+      "synthesis_label": "S05",
+      "caveats": ["Illustrative training material, not facts about the current utility."]
+    }
+  },
+  "framework_links": {
+    "_note": "Added by ChatWater to connect framework rows to ECAM stages, emission sources and existing Stage 2 rules. Awaiting team review. They guide questions only; they do not create or change action rules.",
+    "Water abstraction — electricity (indirect)": { "stages": ["wsa"], "source": "grid_electricity", "rules": ["pump_upgrade", "pump_audit", "solar_pv"] },
+    "Water abstraction — fuel engines": { "stages": ["wsa"], "source": "fuel_engines", "rules": ["fuel_switch"] },
+    "Water treatment — electricity (indirect)": { "stages": ["wst"], "source": "grid_electricity", "rules": ["solar_pv"] },
+    "Water treatment — fuel engines": { "stages": ["wst"], "source": "fuel_engines", "rules": ["fuel_switch"] },
+    "Water distribution — electricity (indirect)": { "stages": ["wsd"], "source": "grid_electricity", "rules": ["pump_upgrade", "pump_audit", "nrw_reduction", "solar_pv"] },
+    "Water distribution — fuel engines": { "stages": ["wsd"], "source": "fuel_engines", "rules": ["fuel_switch"] },
+    "Collection — electricity (indirect)": { "stages": ["wwc"], "source": "grid_electricity", "rules": ["pump_upgrade", "pump_audit"] },
+    "Collection — fuel engines": { "stages": ["wwc"], "source": "fuel_engines", "rules": ["fuel_switch"] },
+    "Collection — generation in sewers (CH₄/N₂O)": { "stages": ["wwc"], "source": "sewer_generation", "rules": [] },
+    "Collection — untreated wastewater discharge, where included in the ECAM inventory": { "stages": ["wwc"], "source": "untreated_discharge", "rules": ["cso_reduction"] },
+    "Treatment — electricity (indirect)": { "stages": ["wwt"], "source": "grid_electricity", "rules": ["solar_pv"] },
+    "Treatment — fuel engines": { "stages": ["wwt"], "source": "fuel_engines", "rules": ["fuel_switch"] },
+    "Treatment — process emissions (CH₄/N₂O)": { "stages": ["wwt"], "source": "treatment_process", "rules": ["biogas_capture"] },
+    "Treatment — biogas": { "stages": ["wwt"], "source": "biogas", "rules": ["biogas_capture"] },
+    "Treatment — treated wastewater discharge": { "stages": ["wwt"], "source": "effluent_discharge", "rules": [] },
+    "Onsite sanitation — process emissions and biogas, where included": { "stages": ["wwo"], "source": "containment", "rules": ["septic_desludging"] },
+    "Electromechanical efficiency of pumps": { "stages": ["wsa", "wsd"], "source": "grid_electricity", "rules": ["pump_upgrade", "pump_audit"] },
+    "Energy consumption per unit of pumped water": { "stages": ["wsa", "wsd"], "source": "grid_electricity", "rules": ["pump_upgrade", "pump_audit"] },
+    "Water losses and distribution performance, where available in the assessment": { "stages": ["wsd"], "source": "grid_electricity", "rules": ["nrw_reduction"] },
+    "Electromechanical efficiency and standardized pumping energy": { "stages": ["wwc"], "source": "grid_electricity", "rules": ["pump_upgrade", "pump_audit"] },
+    "Biogas generation and utilization": { "stages": ["wwt"], "source": "biogas", "rules": ["biogas_capture"] },
+    "Onsite sanitation and faecal-sludge service performance": { "stages": ["wwo"], "source": "containment", "rules": ["septic_desludging"] },
+    "Wastewater generated but not collected or treated": { "stages": ["wwc"], "source": "untreated_discharge", "rules": ["cso_reduction"] }
+  }
+}

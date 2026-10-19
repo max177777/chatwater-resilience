@@ -22,6 +22,9 @@
 
   function benefit(o, ctx) {
     const { t, L, esc, fmt } = ctx;
+    if (CW.isCustom(o)) {
+      return `<span data-ghg-status="not_quantified">${esc(t('ghg_not_quantified'))}</span> · <span data-kwh-status="not_quantified">${esc(t('energy_not_quantified'))}</span>`;
+    }
     const parts = [];
     if (o.expected_kgco2 && AS.isQuantified(o, 'ghg')) parts.push(`${fmt(o.expected_kgco2 / 1000, 0)} tCO₂eq`);
     if (o.expected_kwh && AS.isQuantified(o, 'kwh')) parts.push(`${fmt(o.expected_kwh)} kWh`);
@@ -161,6 +164,14 @@
       <ul class="contrib">${rows}</ul><div class="muted">${esc(t('contrib_note'))}${r.unavailable ? ' ' + esc(t('contrib_unavailable').replace('{n}', r.unavailable)) : ''}</div></div>`;
   }
 
+  /** Read-only chat entry points for one action (only when the caller enables ctx.chat). */
+  function chatRow(k, ctx) {
+    const { t, esc } = ctx;
+    return ctx.chat ? `<div class="chat-entry" data-chat-entry>
+      <button type="button" class="btn sm" data-chat="action" data-intent="develop" data-key="${esc(k)}">${esc(t('chat_btn_develop'))}</button>
+      <button type="button" class="btn sm" data-chat="action" data-intent="missing" data-key="${esc(k)}">${esc(t('chat_btn_missing'))}</button></div>` : '';
+  }
+
   /**
    * opts: { selected, note, open, checks, explainHtml, measure ('ghg' | 'kwh' when the cards are sorted by it) }
    */
@@ -180,6 +191,7 @@
       <p class="small dc-line"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</p>
       ${pending ? `<p class="small dc-flag" data-pending="${pending}">${esc(t('inputs_need_confirm').replace('{n}', pending))}</p>` : ''}
       ${reviewNotices(o.trigger && o.trigger.review, ctx)}
+      ${base ? '' : chatRow(k, ctx)}
       <details data-details="${esc(k)}" ${opts.open ? 'open' : ''}><summary>${esc(t('card_details'))}</summary>
         <dl class="dc-dl">
           <dt>${esc(t('why_appeared'))}</dt><dd>${o.trigger ? esc(L(o.trigger.text)) + valuesList(o.trigger.values, ctx) : ''}
@@ -194,6 +206,42 @@
         </dl>
         <textarea class="field small" data-note="${esc(k)}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea>
         ${opts.explainHtml || ''}
+      </details>
+    </div>`;
+  }
+
+  /**
+   * A user-proposed action (custom-actions.js) in the same selection list. Only the user's text is shown,
+   * as text; it gets no classification, no figures and no rule explanation.
+   * opts: { selected, note, open, measure, location: CA.resolveLocation result }
+   */
+  function customCard(o, ctx, opts) {
+    const { t, esc } = ctx;
+    const k = o.key, loc = opts.location || { at: 'assessment' };
+    const where = loc.at === 'substage' ? locationText({ at: 'substage', prefix: loc.prefix, sid: loc.sid }, ctx)
+      : loc.at === 'missing' ? `<span class="dc-flag-inline" data-location-missing>${esc(t('ca_location_review'))}</span>`
+        : `<span class="loc">${esc(t('loc_assessment'))}</span>`;
+    return `<div class="card dcard dcard-user ${opts.selected ? 'sel' : ''}" data-card="${esc(k)}" data-origin="user">
+      <div class="dc-head"><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${esc(k)}" ${opts.selected ? 'checked' : ''}>
+        <span><b>${esc(o.id)}</b> · ${esc(o.title)}</span></label>
+        <span class="dc-benefit" data-benefit>${benefit(o, ctx)}</span></div>
+      <p class="small dc-line"><span class="badge-user" data-user-proposed>${esc(t('user_proposed'))}</span> <span class="badge-unreviewed" data-not-reviewed>${esc(t('not_reviewed'))}</span></p>
+      ${measureLine(o, opts.measure, ctx)}
+      <p class="small dc-line user-text" data-description><span class="muted">${esc(t('ca_description'))}:</span> ${esc(o.description)}</p>
+      ${o.problem ? `<p class="small dc-line user-text" data-problem><span class="muted">${esc(t('ca_problem'))}:</span> ${esc(o.problem)}</p>` : ''}
+      <p class="small dc-line" data-location="${esc(loc.at)}"><span class="muted">${esc(t('ca_location'))}:</span> ${where}</p>
+      ${loc.at === 'missing' ? `<p class="small dc-flag" data-location-review>${esc(t('ca_location_missing_body'))}</p>` : ''}
+      <div class="row" style="gap:6px;margin-top:6px"><button class="btn sm" data-edit-custom="${esc(k)}">${esc(t('ca_edit'))}</button>
+        <button class="btn sm danger" data-delete-custom="${esc(k)}">${esc(t('ca_delete'))}</button></div>
+      ${chatRow(k, ctx)}
+      <details data-details="${esc(k)}" ${opts.open ? 'open' : ''}><summary>${esc(t('card_details'))}</summary>
+        <dl class="dc-dl">
+          <dt>${esc(t('ca_origin'))}</dt><dd>${esc(t('ca_origin_detail'))}</dd>
+          <dt>${esc(t('est_benefit'))}</dt><dd>${benefit(o, ctx)}</dd>
+          <dt>${esc(t('ca_classification'))}</dt><dd data-classification="none">${esc(t('ca_no_classification'))}</dd>
+          <dt>${esc(t('supporting_doc'))}</dt><dd data-support>${esc(t('no_supporting_doc'))}</dd>
+        </dl>
+        <textarea class="field small" data-note="${esc(k)}" rows="2" maxlength="2000" aria-label="${esc(t('ca_notes'))}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea>
       </details>
     </div>`;
   }
@@ -230,5 +278,5 @@
     </div>`;
   }
 
-  return { card, panel, benefit, checkFor, optionSid, shown, needsConfirm, COVERED_RULES, OTHER_RULES, classChip, componentLabel, contributor, locationText };
+  return { card, customCard, panel, benefit, checkFor, optionSid, shown, needsConfirm, COVERED_RULES, OTHER_RULES, classChip, componentLabel, contributor, locationText };
 });

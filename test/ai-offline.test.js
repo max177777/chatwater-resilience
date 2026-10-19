@@ -7,9 +7,11 @@ const ai = require('../engine/ai');
 const app = require('../server');
 const sample = require('../public/samples/utility-a-indonesia.json');
 const { meta } = require('./helpers/fixtures');
+const { ensureLibrary } = require('./helpers/synthetic-library');
 
 (async () => {
-  console.log('AI offline');
+  const lib = ensureLibrary();
+  console.log(`AI offline${lib.synthetic ? ' (document library not built: synthetic test library used)' : ''}`);
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
   const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
@@ -90,5 +92,5 @@ const { meta } = require('./helpers/fixtures');
     assert.strictEqual(globalThis.__blockedRequests.length, 1, 'no other external request was attempted');
     console.log('\nAI offline tests passed');
   } catch (e) { console.error(e); process.exitCode = 1; }
-  finally { ai.setClient(null); server.close(); }
+  finally { ai.setClient(null); lib.restore(); server.close(); }
 })();

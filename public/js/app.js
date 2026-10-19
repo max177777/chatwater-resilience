@@ -31,8 +31,12 @@
     finished: {}, // assessment ID -> ISO time of "finish assessment"
     selectedAssessmentId: null, actionResult: null, selectedKeys: [], actionNotes: {}, actionLabels: {}, actionReview: [],
     actionSet: null, selectedActions: [],
+    customActions: [], // user-proposed actions (custom-actions.js), each bound to its source assessment ID
+    customLastLabel: {}, // assessment ID -> last U-label handed out, so labels of deleted actions are not reused
     plan: null, financing: { route: 'general' }, proposal: null,
-    chat: [], checkpoints: [], explanations: {},
+    chat: [], // messages from before chats were scoped; kept and shown, never sent
+    chatThreads: {}, // assessment ID -> messages about that assessment only
+    checkpoints: [], explanations: {},
     inputStatus: {}, // assessment ID -> entry status of the inputs read by the covered rule checks (see CW.inputStatus)
     ui: { tab: 'assess', view: 'assess:choose', sel: { kind: 'general' }, chatOpen: true, actionSort: 'original' },
   });
@@ -84,12 +88,16 @@
     }
     return asBlob ? res.blob() : res.json();
   }
-  // Citation list shown under AI drafts: [S1] Title, publisher year — heading ↗
+  // Citation list shown under AI drafts: [S1] Title, publisher year — locator · role · passage ID. Older saved
+  // outputs have no role or passage ID and show as before.
+  const roleBadge = r => r ? ` <span class="badge-role" data-role="${esc(r)}">${esc(t('chat_role_' + r))}</span>` : '';
   const sourcesHtml = list => list?.length ? `<div class="sources"><b>${esc(t('sources'))}</b><ol>${list.map(x =>
-    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${esc(x.cite)}` : ''}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}</li>`).join('')}</ol></div>` : '';
+    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${esc(x.cite)}` : ''}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}${roleBadge(x.role)}${x.passage_id ? ` <span class="muted small" data-passage-id>${esc(x.passage_id)}</span>` : ''}</li>`).join('')}</ol></div>` : '';
   // Passages retrieved for template text, which cites none of them
   const relatedHtml = list => list?.length ? `<div class="sources related"><b>${esc(t('related_reading'))}</b><ul>${list.map(x =>
-    `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}</li>`).join('')}</ul></div>` : '';
+    `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}${roleBadge(x.role)}</li>`).join('')}</ul></div>` : '';
+  // What the library was searched for, the library build, and what the citation checks do and do not cover
+  const evidenceHtml = (ev, cited) => ev?.searched ? `<div class="small muted ev-note" data-evidence data-library-build="${esc(ev.library_build || '')}">${esc(t('chat_searched'))}: ${esc(ev.searched.query || '–')}${ev.searched.status === 'none' ? ` — ${esc(t('chat_no_passage'))}` : ev.searched.status === 'unavailable' ? ` — <span data-library-unavailable>${esc(t('chat_library_unavailable'))}</span>` : ''} · ${esc(t('ev_build'))} ${esc(ev.library_build || '–')}${cited ? ` · ${esc(t('ev_checks'))}` : ''}${ev.unknown_tags?.length ? ` <span class="dc-flag" data-unknown-tags>${esc(t('chat_unknown_tag').replace('{list}', ev.unknown_tags.join(', ')))}</span>` : ''}</div>` : '';
   const busy = (btn, on, label) => {
     if (!btn) return;
     if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label || '')}`; }
@@ -249,8 +257,15 @@
       gwpIndex: state.gwpIndex, actionResult: state.actionResult, actionSet: state.actionSet,
       selectedActions: state.selectedActions, plan: state.plan, proposal: state.proposal,
       profile: state.profile, financing: state.financing,
+      customActions: CW.customDefs(state.customActions, state.actionNotes),
     });
   }
+  // user-proposed actions
+  const customList = () => state.customActions || (state.customActions = []);
+  const customFor = aid => customList().filter(c => c.assessmentId === aid);
+  const customByKey = key => customList().find(c => c.key === key) || null;
+  const customLocation = c => { const sc = byId(c.assessmentId); return CA.resolveLocation(c, sc ? metaOf(sc) : null); };
+  const inSavedSelection = key => (state.selectedActions || []).some(a => a.key === key);
   // assessment the saved actions (and so the plan and proposal) were made from
   const sourceAssessment = () => byId(state.actionSet?.assessmentId) || byId(state.proposal?.deps?.assessmentId) || byId(state.selectedAssessmentId);
   function staleNotice(codes, what) {
@@ -285,16 +300,12 @@
     return line + `<div class="notice small" data-lang-differs="${what}">${esc(t('lang_differs_' + what).replaceAll('{out}', langName(out.lang)))}
       <div class="row" style="margin-top:6px"><button class="btn sm" data-regen-lang="${what}">${esc(t('regenerate_in').replace('{lang}', langName(state.lang)))}</button></div></div>`;
   }
-  // Knowledge-base topics drafts rely on for funders, context and planning; empty ones are named, not implied.
-  const EVIDENCE_TOPICS = ['financing', 'indonesia', 'plan'];
+  // What drafts can draw on: the curated document library and its limits, or that it is not available.
   function evidenceNotice() {
-    const by = META.knowledge?.byTopic;
-    if (!by) return '';
-    const missing = EVIDENCE_TOPICS.filter(k => !by[k]);
-    if (!missing.length) return '';
-    const names = missing.map(k => t('topic_' + k));
-    const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} ${t('or')} ${names[names.length - 1]}` : names[0];
-    return `<div class="notice small" data-evidence><b>${esc(t('evidence_title'))}</b> ${esc(t('evidence_body').replace('{topics}', list))}</div>`;
+    const lib = META.library;
+    if (!lib) return '';
+    if (!lib.loaded) return `<div class="notice small warn" data-evidence-notice="missing"><b>${esc(t('evidence_title'))}</b> ${esc(t('evidence_body_missing'))}</div>`;
+    return `<div class="notice small" data-evidence-notice="library" data-library-build="${esc(lib.build_id || '')}">${esc(t('evidence_body_library').replace('{n}', lib.sources).replace('{build}', lib.build_id || '–'))}</div>`;
   }
   const genErrorNotice = what => state.ui.genError?.what === what
     ? `<div class="notice error" data-gen-error="${what}"><b>${esc(t('gen_failed_' + what))}</b> ${esc(state.ui.genError.message)}<br>${esc(t('gen_failed_kept'))}
@@ -310,7 +321,7 @@
     if (state.plan && !confirm(t('confirm_replace_plan'))) return;
     busy(btn, true, t('drafting'));
     try {
-      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, lang }));
+      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang }));
       state.ui.genError = null;
     } catch (err) { state.ui.genError = { what: 'plan', message: err.message }; }
     save(); render();
@@ -327,7 +338,7 @@
       await CW.regenerate(state, 'proposal', () => api('/api/proposal', {
         route: f.route, customFramework: f.customFramework, guideText: f.guideText,
         actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: state.profile,
-        assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, lang,
+        assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang,
       }));
       state.ui.genError = null;
       return go('finance:draft');
@@ -472,22 +483,44 @@
     return `${fmt(g.total / 1000)} tCO₂eq · ${fmt(sc.TotalNRG())} kWh` + (top && top.total ? ` · ${t('top_source')}: ${stageLabel(top.prefix)} (${fmt(100 * top.total / g.total, 0)}%)` : '');
   }
 
+  // user actions whose assessment was deleted are kept and listed; they are never attached to another assessment
+  const orphanActions = () => customList().filter(c => !byId(c.assessmentId));
+  const orphanNotice = orphans => orphans.length ? `<div class="notice warn" data-custom-orphans="${orphans.length}"><b>${esc(t('ca_orphans_title'))}</b>
+    <ul>${orphans.map(c => `<li>${esc(c.id)} · ${esc(c.title)}</li>`).join('')}</ul>${esc(t('ca_orphans_body'))}
+    <div class="row" style="margin-top:6px"><button class="btn sm danger" id="delete-orphans">${esc(t('ca_delete_orphans'))}</button></div></div>` : '';
+  function bindOrphans(root, orphans) {
+    const btn = root.querySelector('#delete-orphans');
+    if (!btn) return;
+    btn.onclick = () => {
+      if (!confirm(t('ca_confirm_delete_orphans').replace('{n}', orphans.length))) return;
+      const gone = new Set(orphans.map(c => c.key));
+      state.customActions = customList().filter(c => !gone.has(c.key));
+      state.selectedKeys = state.selectedKeys.filter(k => !gone.has(k));
+      gone.forEach(k => delete state.actionNotes[k]);
+      save(); render();
+    };
+  }
+
   function viewActionsSelect(root) {
+    const orphans = orphanActions();
     if (!Scenarios.some(s => s.TotalGHG().total > 0)) {
       root.innerHTML = `<div class="page-head"><h1>${esc(t('identify_title'))}</h1></div><div class="notice warn">${esc(t('no_assessments'))}</div>
-        <button class="btn primary" data-go="assess:entry">${esc(t('tab_assess'))}</button>`;
+        ${orphanNotice(orphans)}<button class="btn primary" data-go="assess:entry">${esc(t('tab_assess'))}</button>`;
+      bindOrphans(root, orphans);
       return;
     }
     if (!byId(state.selectedAssessmentId)) state.selectedAssessmentId = idOf(Global);
     const savedFrom = byId(state.actionSet?.assessmentId);
     root.innerHTML = `<div class="page-head"><h1>${esc(t('identify_title'))}</h1><p class="muted">${esc(t('identify_sub'))}</p></div>
       ${state.actionResult?.legacy ? `<div class="notice warn">${esc(t('legacy_options'))}</div>` : ''}
+      ${orphanNotice(orphans)}
       ${savedFrom && idOf(savedFrom) !== state.selectedAssessmentId ? `<div class="notice small">${esc(t('actions_saved_for'))}: <b>${esc(savedFrom.General.Name)}</b></div>` : ''}
       <div class="card result-list">${Scenarios.map(s => `<label><input type="radio" name="asel" value="${esc(idOf(s))}" ${idOf(s) === state.selectedAssessmentId ? 'checked' : ''}>
         <div><b>${esc(s.General.Name)}</b> <span class="muted small">${esc(s.General.AssessmentPeriodStart)} – ${esc(s.General.AssessmentPeriodEnd)}${state.finished[idOf(s)] ? ' · ✓' : ''}</span><br>
         <span class="small">${esc(summaryOf(s))}</span></div></label>`).join('')}</div>
       <div class="actions-row"><button class="btn primary" id="show-options">${esc(t('show_options'))}</button></div>`;
     root.querySelectorAll('[name=asel]').forEach(r => r.onchange = () => { state.selectedAssessmentId = r.value; save(); });
+    bindOrphans(root, orphans);
     root.querySelector('#show-options').onclick = async e => {
       busy(e.target, true, t('show_options'));
       try {
@@ -495,7 +528,8 @@
         const meta = metaOf(sc), aid = meta.id;
         const res = await api('/api/actions', { assessment: plain(sc), meta, gwpIndex: state.gwpIndex, lang: state.lang });
         state.actionLabels[aid] = CW.assignLabels(res.options, state.actionLabels[aid]);
-        const offered = new Set(res.options.map(o => o.key));
+        // user-proposed actions are not produced by the rules: re-running keeps them, their selection and notes
+        const offered = new Set([...res.options.map(o => o.key), ...customFor(aid).map(c => c.key)]);
         let base = state.actionResult?.assessmentId === aid && !state.actionResult.legacy ? state.selectedKeys
           : state.actionSet?.assessmentId === aid && !state.actionSet.legacy ? state.selectedActions.map(a => a.key) : [];
         let review = [];
@@ -574,27 +608,120 @@
     go(sel ? 'assess:entry' : 'assess:results');
   }
 
+  /** Add (existing = null) or edit a user-proposed action of assessment aid. User text is stored as written. */
+  function openCustomForm(aid, existing) {
+    const sc = byId(aid);
+    if (!sc) return toast(t('stale_assessment_missing'));
+    const loc = existing ? customLocation(existing) : { at: 'assessment' };
+    const v = existing || { title: '', description: '', problem: '' };
+    const note = existing ? state.actionNotes[existing.key] || '' : '';
+    const N = CA.LIMITS;
+    const hint = (req, n) => `<span class="field-hint">(${esc(t(req ? 'ca_required' : 'ca_optional'))}, ${esc(t('ca_max').replace('{n}', n))})</span>`;
+    const field = (name, req, n, control) => `<label class="field" style="grid-column:1/-1"><span>${esc(t('ca_' + name))} ${hint(req, n)}</span>${control}
+      <span class="field-error" id="ca-err-${name}" role="alert" hidden></span></label>`;
+    const subOpts = CW.STAGE_KEYS.map(([p, lv, sl]) => sc[lv][sl].length ? `<optgroup label="${esc(stageLabel(p))}">${sc[lv][sl].map(ss => {
+      const sid = idOf(ss, 's');
+      return `<option value="${esc(p + '|' + sid)}" ${loc.at === 'substage' && loc.sid === sid ? 'selected' : ''}>${esc(stageLabel(p))} › ${esc(ss.name)}</option>`;
+    }).join('')}</optgroup>` : '').join('');
+    const m = $('#modal');
+    m.innerHTML = `<form class="box" id="custom-form" novalidate><h2>${esc(t(existing ? 'ca_form_edit' : 'ca_form_title'))}</h2>
+      <p class="muted small">${esc(t('ca_form_sub'))}</p>
+      <div class="grid2">
+        ${field('title', true, N.title, `<input type="text" name="title" maxlength="${N.title}" required aria-required="true" aria-describedby="ca-err-title" value="${esc(v.title)}">`)}
+        ${field('description', true, N.description, `<textarea class="field" name="description" rows="4" maxlength="${N.description}" required aria-required="true" aria-describedby="ca-err-description">${esc(v.description)}</textarea>`)}
+        ${field('problem', false, N.problem, `<input type="text" name="problem" maxlength="${N.problem}" aria-describedby="ca-err-problem" value="${esc(v.problem)}">`)}
+        <label class="field" style="grid-column:1/-1"><span>${esc(t('ca_location'))}</span>
+          <select name="location" aria-describedby="ca-err-location">
+            ${loc.at === 'missing' ? `<option value="__missing" selected>${esc(t('ca_location_gone'))}</option>` : ''}
+            <option value="assessment" ${loc.at === 'assessment' ? 'selected' : ''}>${esc(t('loc_assessment'))} (${esc(sc.General.Name)})</option>${subOpts}
+          </select><span class="field-error" id="ca-err-location" role="alert" hidden></span></label>
+        ${field('notes', false, N.notes, `<textarea class="field" name="notes" rows="2" maxlength="${N.notes}" aria-describedby="ca-err-notes">${esc(note)}</textarea>`)}
+      </div>
+      <div class="actions-row"><button type="button" class="btn" id="custom-cancel">${esc(t('cancel'))}</button><button class="btn primary">${esc(t('ca_save'))}</button></div></form>`;
+    m.hidden = false;
+    const form = $('#custom-form');
+    form.elements.title.focus();
+    $('#custom-cancel').onclick = () => (m.hidden = true);
+    form.onsubmit = e => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const sel = String(fd.get('location') || 'assessment');
+      const [prefix, sid] = sel.includes('|') ? sel.split('|') : [];
+      const input = {
+        title: fd.get('title'), description: fd.get('description'), problem: fd.get('problem'),
+        location: sid ? { at: 'substage', prefix, sid } : { at: 'assessment' },
+      };
+      const notes = String(fd.get('notes') || '').trim();
+      const errs = CA.fieldErrors({ ...input, notes });
+      if (sel === '__missing') errs.location = 'missing';
+      for (const name of ['title', 'description', 'problem', 'notes', 'location']) {
+        const el = $('#ca-err-' + name), code = errs[name];
+        el.hidden = !code;
+        el.textContent = !code ? '' : code === 'missing' ? t('ca_location_review') : t('ca_err_' + code).replace('{n}', N[name]);
+        if (form.elements[name]) form.elements[name].setAttribute('aria-invalid', code ? 'true' : 'false');
+      }
+      const first = ['title', 'description', 'problem', 'location', 'notes'].find(n => errs[n]);
+      if (first) return form.elements[first].focus();
+      const now = new Date().toISOString();
+      let saved, msg;
+      if (existing) {
+        saved = CA.update(existing, input, now);
+        state.customActions = customList().map(c => c.key === existing.key ? saved : c);
+        const changed = CW.fp(CW.customContent({ ...existing, notes: state.actionNotes[existing.key] || '' })) !== CW.fp(CW.customContent({ ...saved, notes }));
+        msg = changed && inSavedSelection(saved.key) ? 'ca_updated_saved' : 'ca_updated';
+      } else {
+        const label = CA.nextLabel([...customFor(aid).map(c => c.id), state.customLastLabel?.[aid]].filter(Boolean));
+        saved = CA.create({ assessmentId: aid, cid: newId('c'), label, input, now });
+        if (!saved) return toast(t('error'));
+        state.customLastLabel = { ...(state.customLastLabel || {}), [aid]: label };
+        state.customActions = [...customList(), saved];
+        msg = 'ca_saved';
+      }
+      if (notes) state.actionNotes[saved.key] = notes; else delete state.actionNotes[saved.key];
+      m.hidden = true;
+      toast(persist() ? t(msg) : t('not_saved_kept_in_page'));
+      render();
+    };
+  }
+  /** Delete after a confirmation that says what else is affected; downstream text is never removed. */
+  function deleteCustom(key) {
+    const c = customByKey(key);
+    if (!c) return;
+    const msg = [t('ca_confirm_delete').replace('{title}', c.title),
+      state.selectedKeys.includes(key) ? t('ca_confirm_delete_selected') : null,
+      inSavedSelection(key) ? t('ca_confirm_delete_saved') : null].filter(Boolean).join('\n\n');
+    if (!confirm(msg)) return;
+    state.customActions = customList().filter(x => x.key !== key);
+    state.selectedKeys = state.selectedKeys.filter(k => k !== key);
+    delete state.actionNotes[key];
+    toast(persist() ? t('ca_deleted') : t('not_saved_kept_in_page'));
+    render();
+  }
+
   function viewActionsCompare(root) {
     const r = state.actionResult;
     if (!r || r.legacy) return go('actions:select');
     const f = freshness();
     const optionsStale = f.options.length > 0;
     const showDetails = !!state.ui.showDetails;
-    const ctx = cardCtx(r.assessmentId);
+    const ctx = { ...cardCtx(r.assessmentId), chat: true };
     const explainHtml = o => o.rule === 'baseline' ? '' : `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(o.key)}" ${META.ai ? '' : `disabled title="${esc(t('ai_off_short'))}"`}>${esc(t('explain_ai'))}</button>${META.ai ? '' : ` <span class="small muted">${esc(t('ai_off_short'))}</span>`}</div>
-      ${state.explanations[o.key] ? `<div class="ai-text">${esc(state.explanations[o.key])}${sourcesHtml(state.explanationSources?.[o.key])}</div>` : ''}`;
+      ${state.explanations[o.key] ? `<div class="ai-text">${esc(state.explanations[o.key])}${sourcesHtml(state.explanationSources?.[o.key])}${evidenceHtml(state.explanationEvidence?.[o.key], true)}</div>` : ''}`;
     const sort = AS.MEASURES[state.ui.actionSort] ? state.ui.actionSort : 'original';
-    const cards = AS.sortOptions(r.options, sort).map(o => DC.card(o, ctx, {
-      selected: state.selectedKeys.includes(o.key), note: state.actionNotes[o.key] || '',
-      open: showDetails || openCards.has(o.key), checks: r.checks, explainHtml: explainHtml(o),
-      measure: sort === 'original' ? null : sort,
-    })).join('');
+    // user-proposed actions follow the calculated options; sorting puts them with the other unquantified ones
+    const all = [...r.options, ...customFor(r.assessmentId)];
+    const cards = AS.sortOptions(all, sort).map(o => {
+      const common = { selected: state.selectedKeys.includes(o.key), note: state.actionNotes[o.key] || '', open: showDetails || openCards.has(o.key), measure: sort === 'original' ? null : sort };
+      return CW.isCustom(o) ? DC.customCard(o, ctx, { ...common, location: customLocation(o) })
+        : DC.card(o, ctx, { ...common, checks: r.checks, explainHtml: explainHtml(o) });
+    }).join('');
     const review = state.actionReview || [];
     const source = byId(r.assessmentId);
     // the source assessment's current figures; while options are outdated they may no longer match the cards
     const contrib = source && !optionsStale ? DC.contributor(contributorOf(source), ctx) : '';
     const days = source ? source.Days() : null;
-    root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(source?.General.Name || r.assessmentName)}</b></p></div>
+    root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(source?.General.Name || r.assessmentName)}</b></p>
+        <div class="chat-entry"><button type="button" class="btn sm" data-chat="missing">${esc(t('chat_btn_missing'))}</button></div></div>
       ${staleNotice(f.options, 'options')}
       ${review.length ? `<div class="notice warn"><b>${esc(t('review_selection'))}</b><ul>${review.map(x => `<li>${esc(L(x))}</li>`).join('')}</ul></div>` : ''}
       ${contrib}
@@ -605,6 +732,7 @@
         <button class="btn sm" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button></div>
       ${sort === 'original' ? '' : `<p class="small muted" data-sort-note="${sort}">${esc(t('sort_note').replace('{days}', fmt(days, 0)))}</p>`}
       <div class="dcards">${cards}</div>
+      <div class="row" style="margin:4px 0 10px"><button class="btn" id="add-custom">+ ${esc(t('add_custom'))}</button></div>
       <div class="notice small" style="margin-top:12px"><b>${esc(t('assumptions_title'))}:</b> ${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div>
       <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions" ${optionsStale ? 'disabled' : ''}>${esc(t('save_actions'))}</button></div>`;
     root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; if (showDetails) openCards.clear(); save(); render(); };
@@ -633,13 +761,23 @@
       if (!sc) return toast(t('stale_assessment_missing'));
       busy(b, true, t('thinking'));
       try {
-        const res = await api('/api/actions/explain', { option: { ...o, notes: state.actionNotes[o.key] }, assessment: plain(sc), gwpIndex: state.gwpIndex, lang: state.lang });
-        state.explanations[o.key] = res.text; state.explanationSources = { ...(state.explanationSources || {}), [o.key]: res.sources || [] }; save(); render();
+        const res = await api('/api/actions/explain', { option: { ...o, notes: state.actionNotes[o.key] }, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex,
+          profile: state.profile, inputStatus: state.inputStatus?.[r.assessmentId] || null, lang: state.lang });
+        state.explanations[o.key] = res.text;
+        state.explanationSources = { ...(state.explanationSources || {}), [o.key]: res.sources || [] };
+        state.explanationEvidence = { ...(state.explanationEvidence || {}), [o.key]: res.evidence || null };
+        save(); render();
       } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
     });
+    root.querySelector('#add-custom').onclick = () => openCustomForm(r.assessmentId, null);
+    root.querySelectorAll('[data-edit-custom]').forEach(b => b.onclick = () => openCustomForm(r.assessmentId, customByKey(b.dataset.editCustom)));
+    root.querySelectorAll('[data-delete-custom]').forEach(b => b.onclick = () => deleteCustom(b.dataset.deleteCustom));
     root.querySelector('#save-actions').onclick = () => {
       if (freshness().options.length) return toast(t('outdated_hint_options'));
-      const chosen = r.options.filter(o => o.rule !== 'baseline' && state.selectedKeys.includes(o.key)).map(o => ({ ...o, notes: state.actionNotes[o.key] || '' }));
+      const custom = customFor(r.assessmentId).filter(c => state.selectedKeys.includes(c.key));
+      if (custom.some(c => customLocation(c).at === 'missing')) return toast(t('ca_location_blocked'));
+      const chosen = [...r.options.filter(o => o.rule !== 'baseline' && state.selectedKeys.includes(o.key)), ...custom]
+        .map(o => ({ ...o, notes: state.actionNotes[o.key] || '' }));
       if (!chosen.length) return toast(t('no_actions'));
       // plan and proposal are kept; freshness marks them outdated if this selection differs
       state.selectedActions = chosen;
@@ -665,16 +803,17 @@
     }
     const p = state.plan;
     const fr = freshness();
-    const acts = state.selectedActions.map(a => `<li><b>${esc(a.id)}</b> ${esc(L(a.title))} — <span class="muted">${expectedCell(a)}</span></li>`).join('');
+    const acts = state.selectedActions.map(a => `<li data-plan-action="${esc(a.key || a.id)}"><b>${esc(a.id)}</b> ${esc(L(a.title))}${CW.isCustom(a)
+      ? ` <span class="badge-user">${esc(t('user_proposed'))}</span> <span class="badge-unreviewed">${esc(t('not_reviewed'))}</span>` : ''} — <span class="muted">${expectedCell(a)}</span></li>`).join('');
     let body = '';
     if (p) {
       const max = p.total_weeks || 1;
-      body = `<div class="card"><h2>${esc(t('project_summary'))}</h2>
+      body = `<div class="card"><div class="row"><h2 class="grow">${esc(t('project_summary'))}</h2><button type="button" class="btn sm" data-chat="plan">${esc(t('chat_btn_plan'))}</button></div>
           ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
-          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${p.ai === false ? relatedHtml(p.related || p.sources) : sourcesHtml(p.sources)}</div>
+          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${p.ai === false ? relatedHtml(p.related || p.sources) : sourcesHtml(p.sources)}${evidenceHtml(p.evidence, p.ai !== false)}</div>
         <div class="card" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
           <table class="data"><thead><tr><th>ID</th><th>${esc(t('task'))}</th><th>${esc(t('owner'))}</th><th class="num">${esc(t('start_week'))}</th><th class="num">${esc(t('weeks'))}</th><th>${esc(t('depends'))}</th></tr></thead><tbody>
-          ${p.tasks.map((k, i) => `<tr><td>${esc(k.id)}</td><td><span class="muted small">${esc(k.action_id)} · ${esc(k.action)}</span><br>${esc(k.name)}
+          ${p.tasks.map((k, i) => `<tr><td>${esc(k.id)}</td><td><span class="muted small">${esc(k.action_id)} · ${esc(k.action)}${k.action_origin === 'user' ? ` · ${esc(t('user_proposed'))}` : ''}</span><br>${esc(k.name)}
               ${state.ui.planDetails ? `<div class="gantt"><div class="gbar" style="margin-left:${100 * k.start_week / max}%;width:${Math.max(1, 100 * k.weeks / max)}%"></div></div>` : ''}</td>
             <td><input type="text" data-owner="${i}" value="${esc(k.owner)}"></td><td class="num">${k.start_week}</td>
             <td><input type="number" min="0" step="1" data-weeks="${i}" value="${k.weeks}" style="width:70px"></td><td>${esc((k.depends_on || []).join(', '))}</td></tr>`).join('')}
@@ -760,7 +899,7 @@
   }
 
   function exportState() {
-    return { ...plain(state), assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), chat: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
+    return { ...plain(state), assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
   }
   // mirrors the server check so the user sees why before a request is made
   function exportBlockedReason() {
@@ -799,7 +938,7 @@
       ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}</li>`).join('')}</ul></div>`
         : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
       ${evidenceNotice()}
-      ${p.sections.map((s, i) => `<div class="card section-edit"><h2>${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}</div>`).join('')}
+      ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
         <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
@@ -831,35 +970,106 @@
   }
 
   // ---------------------------------------------------------------- chat
+  // The chat is read-only and always about one assessment: the one the current view shows.
+  // Each assessment has its own thread, so another assessment's discussion is never sent as context.
+  function chatAssessment() {
+    const v = state.ui.view || '';
+    if (v.startsWith('assess')) return Global;
+    if (v === 'actions:compare') return byId(state.actionResult?.assessmentId) || Global;
+    if (v === 'actions:select') return byId(state.selectedAssessmentId) || Global;
+    return sourceAssessment() || Global;
+  }
+  const chatThread = aid => (state.chatThreads || (state.chatThreads = {}))[aid] || [];
+  const chatFocusFor = aid => (state.ui.chatFocus && state.ui.chatFocus.aid === aid ? state.ui.chatFocus : null);
+  const chatViewCtx = () => ({ t, esc, fmt });
+  // only the latest answers keep their full context and excerpts in storage
+  function compactThread(list) {
+    let full = 0;
+    return list.slice(-30).reverse().map(m => {
+      if (m.role !== 'assistant' || m.error || ++full <= 3) return m;
+      const { context, ...rest } = m;
+      return { ...rest, context: context ? { assessment: context.assessment, focus: context.focus, mentions_other: context.mentions_other } : null,
+        retrieval: m.retrieval ? { ...m.retrieval, passages: m.ai === false ? m.retrieval.passages.slice(0, 2) : [] } : null };
+    }).reverse();
+  }
   function renderChat() {
+    const sc = chatAssessment();
+    const aid = sc ? idOf(sc) : null;
+    const focus = chatFocusFor(aid);
+    const vctx = chatViewCtx();
+    $('#chat-scope').innerHTML = CV.scope({ name: sc?.General?.Name, focusLabel: focus?.label, ai: META.ai }, vctx);
+    const legacy = state.chat?.length ? `<details class="small" data-chat-legacy><summary>${esc(t('chat_legacy'))}</summary>
+      ${state.chat.map(m => `<div class="msg ${m.role === 'user' ? 'user' : 'bot'}">${esc(m.content)}</div>`).join('')}</details>` : '';
     const log = $('#chat-log');
-    const intro = `<div class="msg bot">${esc(t('chat_intro'))}</div>`;
-    log.innerHTML = intro + state.chat.map(m => `<div class="msg ${m.role === 'user' ? 'user' : 'bot'}">${esc(m.content)}${m.sources?.length ? `<div class="src">${esc(t('sources'))}: ${esc(m.sources.join('; '))}</div>` : ''}</div>`).join('');
+    log.innerHTML = `<div class="msg bot">${esc(t('chat_intro'))}</div>` + legacy +
+      chatThread(aid).map(m => m.role === 'user' ? `<div class="msg user">${esc(m.content)}</div>` : CV.assistant(m, vctx)).join('');
     log.scrollTop = log.scrollHeight;
   }
+  /** focus: { kind, label, … } from an entry point (kept until cleared or the assessment changes). */
   async function askChat(text, focus) {
     if (!text.trim()) return;
+    const sc = chatAssessment();
+    if (!sc) return;
+    const meta = metaOf(sc), aid = meta.id;
+    if (focus && typeof focus === 'object') state.ui.chatFocus = { ...focus, aid };
+    const f = chatFocusFor(aid);
     state.ui.chatOpen = true; applyShell();
-    state.chat.push({ role: 'user', content: text });
+    const thread = chatThread(aid).slice();
+    thread.push({ role: 'user', content: text, assessmentId: aid });
+    state.chatThreads[aid] = thread;
     renderChat();
     const log = $('#chat-log');
     const pending = document.createElement('div'); pending.className = 'msg bot'; pending.innerHTML = `<span class="spin"></span> ${esc(t('thinking'))}`;
     log.appendChild(pending); log.scrollTop = log.scrollHeight;
+    const own = state.actionSet?.assessmentId === aid;
+    const custom = customFor(aid);
+    const { aid: _aid, label: _label, ...focusBody } = f || { kind: 'general' };
+    if (f && focus && typeof focus === 'object') focusBody.entry = true;
     try {
-      const sc = (state.ui.view.startsWith('assess') ? Global : sourceAssessment()) || Global;
       const res = await api('/api/chat', {
-        messages: state.chat.filter(m => !m.local).map(({ role, content }) => ({ role, content })),
-        lang: state.lang, stage: state.ui.view, focus: focus || '',
-        assessment: JSON.parse(JSON.stringify(sc)), gwpIndex: state.gwpIndex,
-        actions: state.selectedActions, plan: state.plan, profile: state.profile,
+        messages: thread.filter(m => !m.local && !m.error).map(({ role, content, assessmentId }) => ({ role, content, assessmentId })),
+        lang: state.lang, view: state.ui.view, focus: focusBody,
+        assessment: plain(sc), meta, gwpIndex: state.gwpIndex,
+        inputStatus: state.inputStatus?.[aid] || null, actionLabels: state.actionLabels?.[aid] || null,
+        actionSet: own ? state.actionSet : null, selectedActions: own ? state.selectedActions : [],
+        customActions: custom, actionNotes: Object.fromEntries(custom.map(c => [c.key, state.actionNotes[c.key] || ''])),
+        plan: state.plan?.deps?.assessmentId === aid ? state.plan : null,
+        proposal: state.proposal?.deps?.assessmentId === aid ? state.proposal : null,
+        profile: state.profile, financing: state.financing,
+        otherAssessments: Scenarios.filter(s => s !== sc).map(s => ({ id: idOf(s), name: s.General.Name })),
       });
-      const content = res.ai === false ? (res.reply ? `${t('chat_no_ai')}\n\n${res.reply}` : t('chat_no_match')) : res.reply;
-      state.chat.push({ role: 'assistant', content, sources: res.sources, local: res.ai === false });
+      thread.push({ role: 'assistant', assessmentId: aid, ai: res.ai, content: res.reply || '', local: res.ai === false,
+        retrieval: res.retrieval, context: res.context, scope: res.scope, sources: res.sources || [], support: res.support || [], unknown_tags: res.unknown_tags || [] });
     } catch (err) {
-      state.chat.push({ role: 'assistant', content: `${t('error')}: ${err.message}`, local: true });
+      thread.push({ role: 'assistant', assessmentId: aid, content: `${t('error')}: ${err.message}`, local: true, error: true });
     }
-    state.chat = state.chat.slice(-40);
+    state.chatThreads[aid] = compactThread(thread);
     save(); renderChat();
+  }
+  /** Entry points ([data-chat] buttons): set the focus and ask the matching question. */
+  function chatEntry(el) {
+    const kind = el.dataset.chat;
+    const sc = chatAssessment();
+    if (!sc) return;
+    const name = sc.General.Name;
+    if (kind === 'result') {
+      const ss = el.dataset.sid ? CW.STAGE_KEYS.flatMap(([p, lv, sl]) => sc[lv][sl].map(x => ({ p, x }))).find(o => idOf(o.x, 's') === el.dataset.sid) : null;
+      if (ss) return askChat(t('chat_q_result').replace('{label}', `${stageLabel(ss.p)} › ${ss.x.name}`), { kind: 'result', sid: el.dataset.sid, label: `${stageLabel(ss.p)} › ${ss.x.name}`, intent: 'explain' });
+      return askChat(t('chat_q_results'), { kind: 'result', label: name, intent: 'explain' });
+    }
+    if (kind === 'missing') return askChat(t('chat_q_missing_all'), { kind: 'missing', label: name, intent: 'missing' });
+    if (kind === 'action') {
+      const key = el.dataset.key;
+      const o = customByKey(key) || state.actionResult?.options.find(x => x.key === key);
+      const label = o ? `${o.id} ${L(o.title)}` : key;
+      const q = el.dataset.intent === 'missing' ? t('chat_q_missing').replace('{label}', label) : t('chat_q_develop').replace('{label}', label);
+      return askChat(q, { kind: 'action', key, label, intent: el.dataset.intent === 'missing' ? 'missing' : 'develop' });
+    }
+    if (kind === 'plan') return askChat(t('chat_q_plan'), { kind: 'plan', label: t('plan_title'), intent: 'explain' });
+    if (kind === 'proposal_section') {
+      const s = state.proposal?.sections?.[+el.dataset.index];
+      if (s) return askChat(t('chat_q_section').replace('{label}', s.title), { kind: 'proposal_section', index: +el.dataset.index, label: s.title, intent: 'explain' });
+    }
   }
 
   // ---------------------------------------------------------------- events
@@ -872,6 +1082,9 @@
       return;
     }
     if (e.target.closest('[data-dismiss-error]')) { state.ui.genError = null; save(); return render(); }
+    const entry = e.target.closest('[data-chat]');
+    if (entry) { e.preventDefault(); return chatEntry(entry); }
+    if (e.target.closest('[data-chat-unfocus]')) { state.ui.chatFocus = null; save(); return renderChat(); }
     const g = e.target.closest('[data-go]');
     if (g) { e.preventDefault(); return go(g.dataset.go); }
     const tab = e.target.closest('[data-tab]');
@@ -886,8 +1099,10 @@
   });
   $('#btn-checkpoint').onclick = checkpoint;
   $('#chat-clear').onclick = () => {
-    if (!state.chat.length || !confirm(t('confirm_clear_chat'))) return;
-    state.chat = []; save(); renderChat(); toast(t('chat_cleared'));
+    const sc = chatAssessment(), aid = sc ? idOf(sc) : null;
+    if (!(chatThread(aid).length || state.chat.length) || !confirm(t('confirm_clear_chat'))) return;
+    if (aid) delete state.chatThreads[aid];
+    state.chat = []; state.ui.chatFocus = null; save(); renderChat(); toast(t('chat_cleared'));
   };
   $('#chat-toggle').onclick = () => { state.ui.chatOpen = !state.ui.chatOpen; save(); applyShell(); };
   $('#chat-form').onsubmit = e => { e.preventDefault(); const v = $('#chat-input').value; $('#chat-input').value = ''; askChat(v); };
@@ -897,7 +1112,7 @@
   // ---------------------------------------------------------------- boot
   window.App = {
     get state() { return state; }, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
-    idOf, cardCtx, contributorOf, relatedActions,
+    idOf, cardCtx, contributorOf, relatedActions, metaOf,
     setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
   };
 

@@ -24,13 +24,14 @@ const P = require('../engine/proposal');
   assert.ok(chunks.length > 1 && chunks.every(c => c.text.length <= 1300 && c.heading === 'A'));
   console.log('  ok - long text is split with its heading kept');
 
-  // without AI, template text cites nothing; relevant documents are listed as related reading
+  // drafting no longer reads this legacy corpus: without AI, template text cites nothing and the
+  // document-library passages retrieved for each section are listed as related reading
   const fw = P.financingFrameworks().find(f => f.id === 'general');
   const draft = await P.draftProposal({ lang: 'en', actions: [] }, fw);
-  const budget = draft.sections.find(s => s.key === 'budget');
-  assert.ok(draft.sections.find(s => s.key === 'risks').related.every(s => s.title !== 'Test procurement'), 'plan docs must not leak into proposal');
-  assert.ok(budget.related.some(s => s.title === 'Test Fund Guide'));
+  assert.ok(draft.sections.every(s => s.related.every(x => x.title !== 'Test Fund Guide' && x.title !== 'Test procurement')), 'legacy knowledge folder is not used for drafting');
   assert.ok(draft.sections.every(s => s.sources.length === 0 && s.ai === false), 'template sections claim no citations');
-  console.log('  ok - template sections list related documents, not sources');
+  assert.ok(draft.sections.every(s => s.related.every(x => !x.id && x.passage_id)), 'related reading carries passage IDs but no [S#] tag');
+  assert.ok(draft.sections.every(s => s.evidence && s.evidence.cited.length === 0 && s.evidence.retrieved.length === s.related.length));
+  console.log('  ok - template sections list library passages as related reading, with nothing recorded as cited');
   console.log('\nKnowledge tests passed');
 })().catch(e => { console.error(e); process.exitCode = 1; });
