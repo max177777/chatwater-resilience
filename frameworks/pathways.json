@@ -1,0 +1,80 @@
+{
+  "_note": "Stage 4 financing pathways (draft prepared by ChatWater after the Oct 20 meeting; not reviewed by the team or by funders). Each pathway is a direction to investigate. It never states that a project is eligible. 'fits' decides when a pathway is shortlisted: categories = action categories (energy, water, sanitation), capital = shortlisted when selected actions need investment, small = shortlisted for low-cost or verification steps, conditional = shortlisted when actions need coordination with local government or another provider, capex = profile capex answers that point to it. 'documents' are source IDs from scripts/library/sources.json. Edit freely; keep ids stable.",
+  "review_status": "draft — not reviewed",
+  "pathways": [
+    {
+      "id": "utility_budget",
+      "name": { "en": "Utility's own budget", "id": "Anggaran utilitas sendiri" },
+      "summary": { "en": "Operating or investment budget of the utility, for low-cost steps and verification work.", "id": "Anggaran operasional atau investasi utilitas, untuk langkah berbiaya rendah dan pekerjaan verifikasi." },
+      "who": { "en": "Utility management, with approval from its board or owner where required.", "id": "Manajemen utilitas, dengan persetujuan dewan pengawas atau pemilik bila diperlukan." },
+      "fits": { "categories": ["energy", "water", "sanitation"], "small": true, "capex": ["own", "partial"] },
+      "questions": [
+        { "en": "Is the cost within this year's or next year's approved budget?", "id": "Apakah biayanya masuk dalam anggaran tahun ini atau tahun depan yang sudah disetujui?" },
+        { "en": "Does the investment need approval from the board or the local government as owner?", "id": "Apakah investasi ini memerlukan persetujuan dewan pengawas atau pemerintah daerah sebagai pemilik?" }
+      ],
+      "documents": ["wb-2021-indonesia-utility-resilience"]
+    },
+    {
+      "id": "local_government",
+      "name": { "en": "Local government budget or capital support", "id": "Anggaran atau dukungan modal pemerintah daerah" },
+      "summary": { "en": "Local government budget, capital participation in the utility, or a programme run by a local agency.", "id": "Anggaran pemerintah daerah, penyertaan modal ke utilitas, atau program yang dijalankan dinas daerah." },
+      "who": { "en": "Local government together with the utility; the local agency responsible for the service.", "id": "Pemerintah daerah bersama utilitas; dinas daerah yang bertanggung jawab atas layanan tersebut." },
+      "fits": { "categories": ["water", "sanitation"], "capital": true, "conditional": true, "capex": ["partial", "external"] },
+      "questions": [
+        { "en": "Is the project in the local government's development plan or sanitation strategy?", "id": "Apakah proyek ini ada dalam rencana pembangunan daerah atau strategi sanitasi daerah?" },
+        { "en": "Which agency will own and operate the assets after construction?", "id": "Dinas atau lembaga mana yang akan memiliki dan mengoperasikan aset setelah pembangunan?" },
+        { "en": "When is the next budget cycle, and who prepares the proposal?", "id": "Kapan siklus anggaran berikutnya, dan siapa yang menyiapkan usulannya?" }
+      ],
+      "documents": ["wb-2021-indonesia-utility-resilience"]
+    },
+    {
+      "id": "national_transfer",
+      "name": { "en": "National transfers to local government (e.g. special allocation funds)", "id": "Transfer pusat ke daerah (mis. Dana Alokasi Khusus)" },
+      "summary": { "en": "National funds channelled through local government for drinking water or sanitation infrastructure.", "id": "Dana pusat yang disalurkan melalui pemerintah daerah untuk infrastruktur air minum atau sanitasi." },
+      "who": { "en": "Local government proposes through the national planning and budgeting cycle; the utility prepares technical inputs.", "id": "Pemerintah daerah mengusulkan melalui siklus perencanaan dan penganggaran nasional; utilitas menyiapkan masukan teknis." },
+      "fits": { "categories": ["water", "sanitation"], "capital": true, "conditional": true, "capex": ["external"] },
+      "questions": [
+        { "en": "Does this year's technical guidance cover this type of work? (The library excerpt is an unverified OCR copy.)", "id": "Apakah petunjuk teknis tahun ini mencakup jenis pekerjaan ini? (Kutipan di pustaka adalah salinan OCR yang belum diverifikasi.)" },
+        { "en": "Is the local government planning to propose it in the coming cycle?", "id": "Apakah pemerintah daerah berencana mengusulkannya pada siklus mendatang?" }
+      ],
+      "documents": ["id-dak-air-minum-excerpt", "id-permen-pupr-27-2016"]
+    },
+    {
+      "id": "ppp",
+      "name": { "en": "Public–private partnership or performance contract", "id": "Kerja sama pemerintah dan badan usaha (KPBU) atau kontrak berbasis kinerja" },
+      "summary": { "en": "Private investment repaid from tariffs, availability payments or verified energy savings.", "id": "Investasi swasta yang dibayar kembali dari tarif, pembayaran ketersediaan layanan, atau penghematan energi terverifikasi." },
+      "who": { "en": "Local government or the utility as contracting agency, with a private partner.", "id": "Pemerintah daerah atau utilitas sebagai penanggung jawab proyek, bersama mitra swasta." },
+      "fits": { "categories": ["energy", "water"], "capital": true, "capex": ["external"] },
+      "questions": [
+        { "en": "Is the project large enough, and are the savings or revenues measurable and reliable enough to repay an investor?", "id": "Apakah proyek cukup besar, dan apakah penghematan atau pendapatannya cukup terukur dan andal untuk membayar kembali investor?" },
+        { "en": "Who would bear the risk if savings are lower than expected?", "id": "Siapa yang menanggung risiko jika penghematan lebih rendah dari perkiraan?" }
+      ],
+      "documents": ["ee-synthesis-en", "id-nda-gcf-technology-investment-flyer"]
+    },
+    {
+      "id": "climate_fund",
+      "name": { "en": "International climate funds (e.g. Green Climate Fund)", "id": "Dana iklim internasional (mis. Green Climate Fund)" },
+      "summary": { "en": "Grants or concessional finance for projects with a clear climate rationale, usually as part of a larger programme.", "id": "Hibah atau pembiayaan lunak untuk proyek dengan alasan iklim yang jelas, biasanya sebagai bagian dari program yang lebih besar." },
+      "who": { "en": "An accredited entity submits, with the country's national designated authority; utilities usually join a larger programme.", "id": "Entitas terakreditasi mengajukan bersama otoritas nasional yang ditunjuk; utilitas biasanya bergabung dalam program yang lebih besar." },
+      "fits": { "categories": ["energy", "water", "sanitation"], "capital": true, "capex": ["external"] },
+      "questions": [
+        { "en": "Which accredited entity could lead or host the proposal?", "id": "Entitas terakreditasi mana yang dapat memimpin atau menampung proposal?" },
+        { "en": "Does the project match the country programme priorities? (The library copy dates from 2021–2023.)", "id": "Apakah proyek sesuai dengan prioritas program negara? (Salinan di pustaka berasal dari 2021–2023.)" },
+        { "en": "Can the climate rationale be shown beyond business as usual, with ECAM figures?", "id": "Apakah alasan iklim dapat ditunjukkan melampaui kondisi biasa, dengan angka ECAM?" }
+      ],
+      "documents": ["gcf-2024-water-guidelines-part3-sanitation", "id-gcf-country-programme-v2", "id-climate-finance-sectoral-guidelines-en"]
+    },
+    {
+      "id": "development_bank",
+      "name": { "en": "Development bank loan or programme", "id": "Pinjaman atau program bank pembangunan" },
+      "summary": { "en": "Loans or programmes of multilateral or bilateral development banks, often channelled through national or local government.", "id": "Pinjaman atau program bank pembangunan multilateral atau bilateral, sering disalurkan melalui pemerintah pusat atau daerah." },
+      "who": { "en": "National or local government with the utility; the bank's country team.", "id": "Pemerintah pusat atau daerah bersama utilitas; tim negara dari bank tersebut." },
+      "fits": { "categories": ["water", "sanitation", "energy"], "capital": true, "conditional": true, "capex": ["external"] },
+      "questions": [
+        { "en": "Is there an ongoing programme in Indonesia that this project could join?", "id": "Apakah ada program berjalan di Indonesia yang dapat diikuti proyek ini?" },
+        { "en": "Can the utility or local government take on the loan, or is a grant component needed?", "id": "Apakah utilitas atau pemerintah daerah dapat menanggung pinjaman, atau diperlukan komponen hibah?" }
+      ],
+      "documents": ["wb-2021-indonesia-utility-resilience", "id-climate-finance-sectoral-guidelines-en"]
+    }
+  ]
+}

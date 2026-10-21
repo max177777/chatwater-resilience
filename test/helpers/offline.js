@@ -1,10 +1,12 @@
 /*
  * Loaded before every test file (node --require). Tests never reach a paid model:
- *   - ANTHROPIC_API_KEY is removed, so AI routes use their template fallback;
+ *   - ANTHROPIC_API_KEY and GEMINI_API_KEY are removed, so AI routes use their template fallback;
  *   - any fetch to a host other than localhost is refused and recorded.
  * Tests that need AI responses inject a fake client with ai.setClient().
  */
 delete process.env.ANTHROPIC_API_KEY;
+delete process.env.GEMINI_API_KEY;
+delete process.env.LLM_PROVIDER;
 
 const realFetch = globalThis.fetch;
 const blocked = [];

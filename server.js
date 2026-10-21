@@ -1,7 +1,7 @@
 /*
  * ChatWater Resilience — web server.
  *   npm start   → http://localhost:3000
- * Env: PORT, ANTHROPIC_API_KEY (optional, enables AI), CLAUDE_MODEL (optional)
+ * Env: PORT; AI (optional): GEMINI_API_KEY + GEMINI_MODEL, or ANTHROPIC_API_KEY + CLAUDE_MODEL (see engine/ai.js)
  */
 const path = require('path');
 const express = require('express');
@@ -12,11 +12,16 @@ const knowledge = require('./engine/knowledge');
 const library = require('./engine/library');
 const R = require('./engine/retrieval');
 const chatContext = require('./engine/chat-context');
-const { callClaude, aiEnabled, MODEL } = require('./engine/ai');
+const { callClaude, aiEnabled, info: aiInfo } = require('./engine/ai');
 const P = require('./engine/proposal');
 const X = require('./engine/export');
 const CW = require('./public/js/cw-core');
 const I = require('./engine/integrity');
+const AS = require('./public/js/action-sources');
+const RS = require('./public/js/responsibility');
+const PC = require('./engine/plan-concept');
+const PW = require('./engine/pathways');
+const ALT = require('./engine/alternatives');
 
 const app = express();
 app.disable('x-powered-by');
@@ -46,7 +51,7 @@ const resultsFor = (assessment, gwpIndex) => assessment ? engine.calculateOne(as
 app.get('/api/health', (req, res) => {
   const k = knowledge.summary();
   const lib = library.summary();
-  res.json({ ok: true, ai: aiEnabled(), model: aiEnabled() ? MODEL : null, ecam: '3.0.1', knowledge: { documents: k.documents, byTopic: k.byTopic },
+  res.json({ ok: true, ai: aiEnabled(), provider: aiInfo().provider, model: aiInfo().model, ecam: '3.0.1', knowledge: { documents: k.documents, byTopic: k.byTopic },
     library: { loaded: lib.loaded, build_id: lib.build_id || null, passages: lib.passages || 0, sources: (lib.sources || []).filter(s => s.status === 'indexed').length, ...(lib.loaded ? {} : { error: lib.error }) } });
 });
 
@@ -102,10 +107,38 @@ app.post('/api/plan', limitAI, wrap(async (req, res) => {
   I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet });
   const plan = buildPlan(actions, lang);
   const missing = chatContext.knownMissing({ assessment, meta, gwpIndex, inputStatus, profile });
-  const summary = await P.planSummary({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, meta, lang, missing });
+  const results = resultsFor(assessment, gwpIndex);
+  const estimates = Math.max(0, Math.min(+req.body.estimates || 0, 10000));
+  const summary = await P.planSummary({ results, actions, plan, profile, meta, lang, missing, estimates });
+  // project concept in the team framework's eight areas; a failed AI rewrite keeps the data-based areas
+  const conceptInput = {
+    facts: P.facts({ results, actions, plan, profile, meta, lang, estimates }), actions, plan, profile, lang, estimates, missing,
+    breakdown: results && RS.answered(profile) ? RS.breakdown(AS.rowsFromResults(results, meta).rows, profile) : null,
+  };
+  let concept;
+  try { concept = await PC.draft(conceptInput, { system: P.systemFor(lang), promptData: P.promptData, langName: P.LANG_NAME[lang] }); }
+  catch (e) { concept = { areas: PC.template(conceptInput), ai: false, ai_failed: true }; }
   const deps = CW.planDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, profile });
   res.json({ ...plan, summary: summary.text, sources: summary.sources || [], ...(summary.related ? { related: summary.related } : {}),
-    evidence: summary.evidence, ai: summary.ai, lang, deps });
+    evidence: summary.evidence, ai: summary.ai, lang, deps, concept });
+}));
+
+// Stage 2: alternatives for one option. The team framework's actions always; with AI on, drafts that
+// consider the utility's responsibilities and capacity. Drafts carry no figures and are added as user-proposed actions.
+app.post('/api/actions/alternatives', limitAI, wrap(async (req, res) => {
+  const { option, assessment, meta, gwpIndex = 0, profile, mode = 'alternatives', request = '', lang = 'en' } = req.body;
+  if (!option || typeof option !== 'object') throw new Error('No option given.');
+  const framework = ALT.fromFramework(option, lang);
+  if (mode !== 'revise' && !aiEnabled()) return res.json({ ...framework, mode, ai: false });
+  if (mode === 'revise' && !String(request).trim()) throw new Error('Say what should change.');
+  const out = await ALT.fromAI({ option, mode, request, results: resultsFor(assessment, gwpIndex), profile, meta, lang });
+  res.json({ ...out, framework_rows: framework.rows, ai: true });
+}));
+
+// Stage 4: financing pathways matched to the selected actions and profile (a shortlist, never eligibility)
+app.post('/api/pathways', wrap((req, res) => {
+  const { actions = [], profile = null, lang = 'en' } = req.body;
+  res.json(PW.match({ actions, profile, lang }));
 }));
 
 app.post('/api/guide/parse', limitAI, wrap(async (req, res) => {
@@ -129,8 +162,10 @@ app.post('/api/proposal', limitAI, wrap(async (req, res) => {
   I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet });
   I.requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile });
   const missing = chatContext.knownMissing({ assessment, meta, gwpIndex, inputStatus, profile });
-  const proposal = await P.draftProposal({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, meta, lang, missing }, fw, guideText);
-  const deps = CW.proposalDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, plan, profile, financing: { route, customFramework } });
+  const pathways = PW.forFacts(Array.isArray(req.body.pathways) ? req.body.pathways.slice(0, 10) : [], lang);
+  const estimates = Math.max(0, Math.min(+req.body.estimates || 0, 10000));
+  const proposal = await P.draftProposal({ results: resultsFor(assessment, gwpIndex), actions, plan, profile, meta, lang, missing, pathways, estimates }, fw, guideText);
+  const deps = CW.proposalDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, plan, profile, financing: { route, customFramework, pathways: req.body.pathways } });
   res.json({ ...proposal, lang, deps });
 }));
 
@@ -205,6 +240,6 @@ if (require.main === module) {
     console.log(`Knowledge base: ${k.documents} documents, ${k.chunks} passages`, k.byTopic);
     k.errors.forEach(e => console.warn(`  could not read ${e.file}: ${e.error}`));
   }).catch(e => console.error('Knowledge base failed to load:', e));
-  app.listen(PORT, () => console.log(`ChatWater Resilience on http://localhost:${PORT} (AI ${aiEnabled() ? 'on: ' + MODEL : 'off'})`));
+  app.listen(PORT, () => console.log(`ChatWater Resilience on http://localhost:${PORT} (AI ${aiEnabled() ? `on: ${aiInfo().provider} ${aiInfo().model}` : 'off'})`));
 }
 module.exports = app;

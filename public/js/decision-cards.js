@@ -173,7 +173,9 @@
   }
 
   /**
-   * opts: { selected, note, open, checks, explainHtml, measure ('ghg' | 'kwh' when the cards are sorted by it) }
+   * opts: { selected, note, open, checks, explainHtml, measure ('ghg' | 'kwh' when the cards are sorted by it),
+   *         compact (move source, condition and input notices into Details), extraHtml (line under the title),
+   *         toolsHtml (buttons and panels above the chat row) }
    */
   function card(o, ctx, opts) {
     const { t, L, esc } = ctx;
@@ -181,18 +183,22 @@
     const check = base ? null : checkFor(o, opts.checks);
     const pending = unconfirmed(check, ctx);
     const why = o.trigger ? L(o.trigger.text) : L(o.evidence);
-    return `<div class="card dcard ${opts.selected ? 'sel' : ''}" data-card="${esc(k)}">
+    const secondary = `${addressesLine(o, ctx)}
+      <p class="small dc-line"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</p>
+      ${pending ? `<p class="small dc-flag" data-pending="${pending}">${esc(t('inputs_need_confirm').replace('{n}', pending))}</p>` : ''}
+      ${reviewNotices(o.trigger && o.trigger.review, ctx)}`;
+    return `<div class="card dcard ${opts.selected ? 'sel' : ''}${opts.compact ? ' compact' : ''}" data-card="${esc(k)}">
       <div class="dc-head"><label class="row" style="gap:8px;flex-wrap:nowrap"><input type="checkbox" data-pick="${esc(k)}" ${opts.selected ? 'checked' : ''} ${base ? 'disabled' : ''}>
         <span><b>${esc(o.id)}</b> · ${esc(L(o.title))}</span></label>
         <span class="dc-benefit" data-benefit>${benefit(o, ctx)}</span></div>
-      ${addressesLine(o, ctx)}
+      ${opts.extraHtml || ''}
       ${measureLine(o, opts.measure, ctx)}
       <p class="small dc-line" data-why><span class="muted">${esc(t('why_appeared'))}:</span> ${esc(why)}</p>
-      <p class="small dc-line"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</p>
-      ${pending ? `<p class="small dc-flag" data-pending="${pending}">${esc(t('inputs_need_confirm').replace('{n}', pending))}</p>` : ''}
-      ${reviewNotices(o.trigger && o.trigger.review, ctx)}
+      ${opts.compact ? '' : secondary}
+      ${opts.toolsHtml || ''}
       ${base ? '' : chatRow(k, ctx)}
       <details data-details="${esc(k)}" ${opts.open ? 'open' : ''}><summary>${esc(t('card_details'))}</summary>
+        ${opts.compact ? `<div class="dc-secondary">${secondary}</div>` : ''}
         <dl class="dc-dl">
           <dt>${esc(t('why_appeared'))}</dt><dd>${o.trigger ? esc(L(o.trigger.text)) + valuesList(o.trigger.values, ctx) : ''}
             <div class="small"><span class="muted">${esc(t('assessment_data'))}:</span> ${esc(L(o.evidence))}</div></dd>
@@ -226,6 +232,7 @@
         <span><b>${esc(o.id)}</b> · ${esc(o.title)}</span></label>
         <span class="dc-benefit" data-benefit>${benefit(o, ctx)}</span></div>
       <p class="small dc-line"><span class="badge-user" data-user-proposed>${esc(t('user_proposed'))}</span> <span class="badge-unreviewed" data-not-reviewed>${esc(t('not_reviewed'))}</span></p>
+      ${opts.extraHtml || ''}
       ${measureLine(o, opts.measure, ctx)}
       <p class="small dc-line user-text" data-description><span class="muted">${esc(t('ca_description'))}:</span> ${esc(o.description)}</p>
       ${o.problem ? `<p class="small dc-line user-text" data-problem><span class="muted">${esc(t('ca_problem'))}:</span> ${esc(o.problem)}</p>` : ''}
@@ -233,6 +240,7 @@
       ${loc.at === 'missing' ? `<p class="small dc-flag" data-location-review>${esc(t('ca_location_missing_body'))}</p>` : ''}
       <div class="row" style="gap:6px;margin-top:6px"><button class="btn sm" data-edit-custom="${esc(k)}">${esc(t('ca_edit'))}</button>
         <button class="btn sm danger" data-delete-custom="${esc(k)}">${esc(t('ca_delete'))}</button></div>
+      ${opts.toolsHtml || ''}
       ${chatRow(k, ctx)}
       <details data-details="${esc(k)}" ${opts.open ? 'open' : ''}><summary>${esc(t('card_details'))}</summary>
         <dl class="dc-dl">

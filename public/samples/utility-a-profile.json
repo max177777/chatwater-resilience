@@ -1,0 +1,17 @@
+{
+  "name": "Utility A (hypothetical)",
+  "location": "Hypothetical city, Indonesia",
+  "country": "Indonesia",
+  "service_type": "both",
+  "population": "600000",
+  "served": "450000",
+  "notes": "Hypothetical sample profile for demonstrations. All values are invented.",
+  "resp_water_supply": "operates",
+  "resp_sewer": "operates",
+  "resp_wwtp": "operates",
+  "resp_onsite": "none",
+  "resp_fs": "shared",
+  "capex": "partial",
+  "tech_capacity": "some",
+  "data_availability": "partial"
+}

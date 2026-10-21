@@ -131,6 +131,8 @@
     if (!plan || !plan.tasks) return null;
     return fp({
       summary: plan.summary || '',
+      // the project concept (team framework areas); absent in older plans, so their fingerprints stay the same
+      concept: plan.concept && plan.concept.areas ? plan.concept.areas.map(a => a.text || '') : undefined,
       total_weeks: plan.total_weeks == null ? null : plan.total_weeks,
       tasks: plan.tasks.map(t => ({
         id: t.id, action_key: t.action_key || null, action_id: t.action_id, action: t.action || null, name: t.name,
@@ -140,7 +142,10 @@
   }
   function frameworkKey(f) {
     const route = (f && f.route) || 'general';
-    return route === 'custom' ? 'custom:' + fp(f.customFramework ? f.customFramework.sections : null) : route;
+    const base = route === 'custom' ? 'custom:' + fp(f.customFramework ? f.customFramework.sections : null) : route;
+    // financing pathways the user ticked are drafted into the proposal; none ticked keeps older keys unchanged
+    const pw = f && Array.isArray(f.pathways) && f.pathways.length ? ':pw:' + fp(f.pathways.slice().sort()) : '';
+    return base + pw;
   }
   function planDeps({ assessmentId, assessment, gwpIndex, actions, profile }) {
     return {
@@ -384,7 +389,9 @@
   }
 
   // ------------------------------------------------------------ file imports
-  const PROFILE_KEYS = ['name', 'location', 'country', 'service_type', 'population', 'served', 'connections', 'volume', 'staff', 'contact', 'notes'];
+  const PROFILE_KEYS = ['name', 'location', 'country', 'service_type', 'population', 'served', 'connections', 'volume', 'staff', 'contact', 'notes',
+    // responsibilities and capacity (responsibility.js)
+    'resp_water_supply', 'resp_sewer', 'resp_wwtp', 'resp_onsite', 'resp_fs', 'capex', 'tech_capacity', 'data_availability'];
   const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
   const isEcamAssessment = o => isObj(o) && isObj(o.General) && STAGE_KEYS.every(([, lv, sl]) => isObj(o[lv]) && Array.isArray(o[lv][sl]));
   const looksLikeEcam = d => Array.isArray(d) ? d.some(o => isObj(o) && ('General' in o || 'Water' in o)) : isObj(d) && ('General' in d || 'Water' in d);

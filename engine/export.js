@@ -244,6 +244,17 @@ async function buildZip(state, docxBuffer) {
       ...state.plan.tasks.map(k => [k.id, k.action, k.name, k.owner, k.start_week, k.weeks, k.depends_on.join(' '), k.action_origin === 'user' ? 'user-proposed' : 'calculated'])]));
     if (state.plan.summary) zip.file('plan/project-summary.txt', state.plan.summary +
       (state.plan.sources?.length ? '\n\nSources:\n' + state.plan.sources.map(sourceLine).join('\n') : ''));
+    // project concept in the team framework's eight areas, with each area's status and review mark
+    if (state.plan.concept?.areas?.length) {
+      const st = { data: 'from data', template: 'needs input', ai: 'AI draft, verify', edited: 'edited by the user' };
+      zip.file('plan/project-concept.md', [`# ${uiText('pc_title', lang)}`, '',
+        ...state.plan.concept.areas.flatMap(a => [`## ${a.n}. ${a.title}`, `_${st[a.status] || a.status}${a.reviewed ? ' · reviewed' : ''}_`, '', String(a.text || ''), '']),
+        ...(state.plan.concept.sources?.length ? ['Sources:', ...state.plan.concept.sources.map(sourceLine)] : [])].join('\n'));
+    }
+  }
+  if (state.financing?.pathways?.length) {
+    zip.file('financing/pathways-to-investigate.json', JSON.stringify({ note: 'Financing pathways the user chose to investigate. Not a confirmation of eligibility; the list is a draft not reviewed by the team or funders.',
+      pathways: require('./pathways').forFacts(state.financing.pathways, lang) }, null, 2));
   }
   // where generated text drew on the document library: build, searches, retrieved and cited passages
   const provenance = {
@@ -269,6 +280,8 @@ async function buildZip(state, docxBuffer) {
     '                                   Actions with origin "user" were proposed by the utility team: they are not ECAM results,',
     '                                   their GHG and energy benefits are not quantified and they have not been scientifically reviewed.',
     'plan/project-plan.csv              Tasks, owners and timing from stage 3',
+    'plan/project-concept.md            (when present) Project concept in the team framework\'s eight areas; [brackets] still need information',
+    'financing/pathways-to-investigate.json (when present) Financing pathways chosen in stage 4 (not an eligibility confirmation)',
     'evidence/library-provenance.json   (when present) Document-library build, searches, retrieved and cited passages for generated text',
     '',
     `Language: ${lang}. Calculations: ECAM v3 by ICRA, IWA and GIZ (CC BY-SA 4.0).`,

@@ -186,6 +186,10 @@
     let text;
     try { text = await fetch('/samples/utility-a-indonesia.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
     catch { return toast(t('sample_unavailable')); }
+    // the sample comes with a hypothetical profile (responsibilities included) unless the user already has one
+    if (!state.profile || !state.profile.name) {
+      try { const r = CW.parseProfileJson(await fetch('/samples/utility-a-profile.json').then(x => x.text())); if (r.ok) state.profile = r.profile; } catch { /* the sample still loads */ }
+    }
     importEcamText(text);
   }
 
@@ -321,7 +325,7 @@
     if (state.plan && !confirm(t('confirm_replace_plan'))) return;
     busy(btn, true, t('drafting'));
     try {
-      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang }));
+      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, inputStatus: state.inputStatus?.[idOf(sc)] || null, estimates: estimatesList(sc).length, lang }));
       state.ui.genError = null;
     } catch (err) { state.ui.genError = { what: 'plan', message: err.message }; }
     save(); render();
@@ -339,6 +343,7 @@
         route: f.route, customFramework: f.customFramework, guideText: f.guideText,
         actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: state.profile,
         assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang,
+        pathways: f.pathways || [], estimates: estimatesList(sc).length,
       }));
       state.ui.genError = null;
       return go('finance:draft');
@@ -412,6 +417,22 @@
     ['connections', 'p_conn', 'number'], ['volume', 'p_volume', 'number'], ['staff', 'p_staff', 'number'],
     ['contact', 'p_contact', 'text'], ['notes', 'p_notes', 'textarea'],
   ];
+  /** Responsibility and capacity questions (responsibility.js). Unanswered areas are pre-filled from the service type only. */
+  function responsibilityFields(p) {
+    const suggested = RS.answered(p) ? {} : RS.suggestedRoles(p.service_type);
+    const prefilled = Object.keys(suggested).length > 0;
+    const sel = (name, values, value, labelOf) => `<select name="${name}"><option value="">${esc(t(name.startsWith('resp_') ? 'role_unset' : 'opt_unset'))}</option>${values.map(v =>
+      `<option value="${v}" ${value === v ? 'selected' : ''}>${esc(labelOf(v))}</option>`).join('')}</select>`;
+    const areas = Object.entries(RS.AREAS).map(([area, key]) => `<label class="field"><span>${esc(t('area_' + area))}</span>
+      ${sel(key, RS.ROLES, p[key] || suggested[key] || '', v => t('role_' + v))}</label>`).join('');
+    const caps = Object.entries(RS.CAPACITY).map(([key, values]) => `<label class="field"><span>${esc(t(key))}</span>
+      ${sel(key, values, p[key] || '', v => t(key + '_' + v))}</label>`).join('');
+    return `<fieldset class="resp-fields" data-responsibility><legend>${esc(t('resp_title'))}</legend>
+        <p class="small muted" style="margin:0 0 8px">${esc(t('resp_sub'))}</p>
+        ${prefilled ? `<p class="small dc-flag" data-prefilled>${esc(t('resp_prefilled'))}</p>` : ''}
+        <div class="grid2">${areas}</div></fieldset>
+      <fieldset class="resp-fields"><legend>${esc(t('cap_title'))}</legend><div class="grid2">${caps}</div></fieldset>`;
+  }
   function openProfile() {
     const p = state.profile || { country: state.location === 'indonesia' ? 'Indonesia' : '' };
     const field = ([k, lab, type]) => {
@@ -428,10 +449,11 @@
       <div class="row" style="margin-bottom:12px"><label class="btn sm">${esc(t('p_upload'))}<input type="file" id="profile-file" accept=".csv,.json" hidden></label>
         <button type="button" class="link" id="profile-template">${esc(t('p_template'))}</button></div>
       <div class="grid2">${PROFILE_FIELDS.map(field).join('')}</div>
+      ${responsibilityFields(p)}
       <div class="actions-row"><button type="button" class="btn" id="profile-cancel">${esc(t('cancel'))}</button><button class="btn primary">${esc(t('p_apply'))}</button></div></form>`;
     m.hidden = false;
     $('#profile-cancel').onclick = () => (m.hidden = true);
-    $('#profile-template').onclick = () => download('field,value\n' + PROFILE_FIELDS.map(([k]) => `${k},`).join('\n') + '\n', 'utility-profile-template.csv', 'text/csv');
+    $('#profile-template').onclick = () => download('field,value\n' + [...PROFILE_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS].map(k => `${k},`).join('\n') + '\n', 'utility-profile-template.csv', 'text/csv');
     $('#profile-file').onchange = e => {
       const f = e.target.files[0];
       e.target.value = ''; // the same file can be chosen again
@@ -448,14 +470,14 @@
         });
         const form = $('#profile-form');
         let filled = 0;
-        for (const [k] of PROFILE_FIELDS) if (data[k] != null && form.elements[k]) { form.elements[k].value = data[k]; filled++; }
+        for (const k of [...PROFILE_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS]) if (data[k] != null && form.elements[k]) { form.elements[k].value = data[k]; filled++; }
         toast(t(filled ? 'profile_filled' : 'profile_no_profile_fields'));
       }).catch(() => toast(t('profile_not_json')));
     };
     $('#profile-form').onsubmit = e => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      state.profile = Object.fromEntries(PROFILE_FIELDS.map(([k]) => [k, String(fd.get(k) ?? '').trim()]));
+      state.profile = Object.fromEntries([...PROFILE_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS].map(k => [k, String(fd.get(k) ?? '').trim()]));
       // reuse the profile in the current assessment where it is still empty
       if (Global) {
         if (/^(Untitled assessment|Assessment|Penilaian)( \d+)?$/.test(Global.General.Name) && state.profile.name) Global.General.Name = state.profile.name;
@@ -566,16 +588,87 @@
     };
   }
   const safeKg = fn => { try { const v = fn(); return Number.isFinite(v) ? v : null; } catch { return null; } };
-  /** Largest assessed contributor of one assessment, from ECAM's first-level source outputs (AS.COMPONENTS). */
-  function contributorOf(sc) {
-    if (!sc) return null;
+  /** ECAM's first-level source outputs per substage (AS.COMPONENTS), with each substage's own total. */
+  function emissionRows(sc) {
     const rows = [], subTotals = [];
     for (const [p, lv, sl] of CW.STAGE_KEYS) for (const ss of sc[lv][sl]) {
       const sid = idOf(ss, 's');
       subTotals.push({ sid, kg: safeKg(() => ss[p + '_KPI_GHG']().total) });
       for (const c of AS.COMPONENTS[p]) rows.push({ prefix: p, sid, name: ss.name, component: c, kg: safeKg(() => ss[`${p}_KPI_GHG_${c}`]().total) });
     }
+    return { rows, subTotals };
+  }
+  /** Largest assessed contributor of one assessment, from ECAM's first-level source outputs (AS.COMPONENTS). */
+  function contributorOf(sc) {
+    if (!sc) return null;
+    const { rows, subTotals } = emissionRows(sc);
     return AS.largestContributor(rows, subTotals, safeKg(() => sc.TotalGHG().total));
+  }
+
+  // ---------------------------------------------------------------- meeting feedback (Oct 20)
+  const fuCtx = () => ({ t, L, esc, fmt, stageLabel,
+    componentText: (p, c) => { const src = AS.sourceOfOutput(p, c); return src ? t('src_' + src) : String(tE(`${p}_KPI_GHG_${c}_descr`) || c).replace(/<[^>]+>/g, ''); } });
+  /** Stage 1 results and Stage 2: total inventory vs what the utility can act on (or the contributor panel when the profile is not answered). */
+  function responsibilityHtml(sc, ctx) {
+    if (!sc) return '';
+    if (!RS.answered(state.profile)) return FU.responsibilityPanel([], state.profile, fuCtx()) + DC.contributor(contributorOf(sc), ctx);
+    return FU.responsibilityPanel(emissionRows(sc).rows, state.profile, fuCtx());
+  }
+  // Inputs set from ECAM estimates: state.estimateUse[assessmentId][substageId][code] = value when set.
+  // A record only counts while the value is unchanged, so typing a measured value replaces it.
+  function recordEstimate(stage, code) {
+    if (!Global) return;
+    const m = state.estimateUse || (state.estimateUse = {});
+    const a = m[idOf(Global)] || (m[idOf(Global)] = {});
+    (a[idOf(stage, 's')] || (a[idOf(stage, 's')] = {}))[code] = stage[code];
+  }
+  const isEstimate = (sc, stage, code) => { const r = state.estimateUse?.[idOf(sc)]?.[idOf(stage, 's')]; return !!r && code in r && r[code] === stage[code] && stage[code] !== 0; };
+  function estimatesList(sc) {
+    const out = [];
+    if (!sc) return out;
+    for (const [p, lv, sl] of CW.STAGE_KEYS) for (const ss of sc[lv][sl]) {
+      const r = state.estimateUse?.[idOf(sc)]?.[idOf(ss, 's')] || {};
+      for (const code of Object.keys(r)) {
+        if (!isEstimate(sc, ss, code)) continue;
+        const u = CW.unitView(Units, Info, sc, code);
+        out.push({ prefix: p, substage: ss.name, code, label: rich(tE(code + '_descr') || code), value: fmt(ss[code] / (u.mult || 1)), unit: u.unit });
+      }
+    }
+    return out;
+  }
+  /** Fill zero inputs of one substage with ECAM's own estimates; only inputs shown by the current answers. */
+  function fillEstimates(prefix, stage) {
+    if (typeof Estimations === 'undefined') return 0;
+    let n = 0;
+    for (let pass = 0; pass < 2; pass++) for (const code of Object.keys(stage)) {
+      if (typeof stage[code] !== 'number' || stage[code] !== 0 || typeof Estimations[code] !== 'function') continue;
+      if (Questions.is_hidden(code, stage)) continue;
+      let v; try { v = Estimations[code](stage); } catch { continue; }
+      if (!Number.isFinite(v) || v === 0) continue;
+      stage[code] = v; markEntered(prefix, stage, code, 'estimate'); recordEstimate(stage, code); n++;
+    }
+    return n;
+  }
+  // Alternatives and revisions shown under a Stage 2 card (kept for this page session only)
+  const altResults = new Map();
+  /** Location of a Stage 2 option, for a user action drafted from it. */
+  function optionLocation(o) {
+    if (CW.isCustom(o)) return o.location || { at: 'assessment' };
+    const sid = DC.optionSid(o);
+    return o.substage && sid && sid !== 'utility' ? { at: 'substage', prefix: o.substage.prefix, sid } : { at: 'assessment' };
+  }
+  function addAlternative(aid, o, res, item) {
+    const N = CA.LIMITS, cut = (v, n) => String(v || '').slice(0, n);
+    const fromFramework = res.source !== 'ai' && item.problem ? `${t('alt_from_framework').split('.')[0]}: ${item.problem}.` : '';
+    const description = cut([item.description, item.why && `${t('alt_why')}: ${item.why}`, item.open && `${t('alt_open')}: ${item.open}`, fromFramework].filter(Boolean).join('\n\n') || item.title, N.description);
+    const label = CA.nextLabel([...customFor(aid).map(c => c.id), state.customLastLabel?.[aid]].filter(Boolean));
+    const saved = CA.create({ assessmentId: aid, cid: newId('c'), label, now: new Date().toISOString(),
+      input: { title: cut(item.title, N.title), description, problem: cut(item.problem, N.problem), location: optionLocation(o) } });
+    if (!saved) return toast(t('error'));
+    state.customLastLabel = { ...(state.customLastLabel || {}), [aid]: label };
+    state.customActions = [...customList(), saved];
+    state.actionNotes[saved.key] = `${t('alt_based_on').replace('{id}', o.id)} · ${t(res.source === 'ai' ? 'alt_from_ai' : 'alt_from_framework')}`;
+    toast(t('alt_added').replace('{id}', label));
   }
   /** Action labels per substage ID, only while the stored options are current for this assessment. */
   function relatedActions(sc) {
@@ -710,15 +803,37 @@
     const sort = AS.MEASURES[state.ui.actionSort] ? state.ui.actionSort : 'original';
     // user-proposed actions follow the calculated options; sorting puts them with the other unquantified ones
     const all = [...r.options, ...customFor(r.assessmentId)];
-    const cards = AS.sortOptions(all, sort).map(o => {
-      const common = { selected: state.selectedKeys.includes(o.key), note: state.actionNotes[o.key] || '', open: showDetails || openCards.has(o.key), measure: sort === 'original' ? null : sort };
+    const fu = fuCtx();
+    const rejected = state.rejectedActions || (state.rejectedActions = {});
+    const toolsHtml = o => o.rule === 'baseline' ? '' : `<div class="row dc-tools" style="gap:6px;margin-top:6px">
+        <button class="btn sm" data-alt="${esc(o.key)}">${esc(t('act_alternatives'))}</button>
+        <button class="btn sm" data-revise="${esc(o.key)}" ${META.ai ? '' : `disabled title="${esc(t('act_revise_off'))}"`}>${esc(t('act_revise'))}</button>
+        <button class="btn sm" data-reject="${esc(o.key)}">${esc(t('act_reject'))}</button></div>
+      ${FU.alternatives(altResults.get(o.key), o.key, fu)}`;
+    const cardHtml = o => {
+      const common = { selected: state.selectedKeys.includes(o.key), note: state.actionNotes[o.key] || '', open: showDetails || openCards.has(o.key), measure: sort === 'original' ? null : sort,
+        compact: true, extraHtml: FU.cardLine(o, state.profile, fu), toolsHtml: toolsHtml(o) };
       return CW.isCustom(o) ? DC.customCard(o, ctx, { ...common, location: customLocation(o) })
         : DC.card(o, ctx, { ...common, checks: r.checks, explainHtml: explainHtml(o) });
-    }).join('');
+    };
+    const rejectedRow = o => `<div class="card dcard rejected" data-card="${esc(o.key)}" data-rejected><div class="row"><span class="grow"><b>${esc(o.id)}</b> · ${esc(L(o.title))}
+        ${rejected[o.key]?.reason ? `<div class="small muted">${esc(t('rejected_reason'))}: ${esc(rejected[o.key].reason)}</div>` : ''}</span>
+        <button class="btn sm" data-restore-action="${esc(o.key)}">${esc(t('act_restore'))}</button></div></div>`;
+    const groups = {};
+    for (const o of AS.sortOptions(all, sort)) { const g = o.rule === 'baseline' ? 'baseline' : RS.groupOf(o, state.profile, rejected); (groups[g] = groups[g] || []).push(o); }
+    const groupHtml = g => {
+      const list = groups[g];
+      if (!list || !list.length) return '';
+      const head = `${g === 'rejected' ? `<span class="tier tier-rejected">× ${esc(t('tier_rejected'))}</span>` : FU.tierChip(g, fu)} <span class="small muted">(${list.length}) · ${esc(t('tier_desc_' + g))}</span>`;
+      const body = g === 'rejected' ? list.map(rejectedRow).join('') : list.map(cardHtml).join('');
+      return g === 'outside' || g === 'rejected' ? `<details class="grp" data-group="${g}"><summary class="grp-h">${head}</summary>${body}</details>`
+        : `<section class="grp" data-group="${g}"><h3 class="grp-h">${head}</h3>${body}</section>`;
+    };
+    const cards = (groups.baseline || []).map(cardHtml).join('') + RS.GROUP_ORDER.map(groupHtml).join('');
     const review = state.actionReview || [];
     const source = byId(r.assessmentId);
     // the source assessment's current figures; while options are outdated they may no longer match the cards
-    const contrib = source && !optionsStale ? DC.contributor(contributorOf(source), ctx) : '';
+    const contrib = source && !optionsStale ? responsibilityHtml(source, ctx) : '';
     const days = source ? source.Days() : null;
     root.innerHTML = `<div class="page-head"><h1>${esc(t('compare_title'))}</h1><p class="muted">${esc(t('compare_sub'))} · <b>${esc(source?.General.Name || r.assessmentName)}</b></p>
         <div class="chat-entry"><button type="button" class="btn sm" data-chat="missing">${esc(t('chat_btn_missing'))}</button></div></div>
@@ -726,14 +841,14 @@
       ${review.length ? `<div class="notice warn"><b>${esc(t('review_selection'))}</b><ul>${review.map(x => `<li>${esc(L(x))}</li>`).join('')}</ul></div>` : ''}
       ${contrib}
       ${r.checks ? DC.panel(r.checks, r.options, ctx, { open: openCards.has('__checks') }) : ''}
-      <div class="row" style="margin-bottom:10px"><span class="grow small muted">${esc(t('cards_hint'))}</span>
+      <div class="row" style="margin-bottom:10px"><span class="grow small muted">${esc(t('groups_hint'))}</span>
         <label class="small row" style="gap:6px">${esc(t('sort_label'))}
           <select id="action-sort" style="width:auto">${['original', 'ghg', 'kwh'].map(k => `<option value="${k}" ${k === sort ? 'selected' : ''}>${esc(t('sort_' + k))}</option>`).join('')}</select></label>
         <button class="btn sm" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button></div>
       ${sort === 'original' ? '' : `<p class="small muted" data-sort-note="${sort}">${esc(t('sort_note').replace('{days}', fmt(days, 0)))}</p>`}
       <div class="dcards">${cards}</div>
       <div class="row" style="margin:4px 0 10px"><button class="btn" id="add-custom">+ ${esc(t('add_custom'))}</button></div>
-      <div class="notice small" style="margin-top:12px"><b>${esc(t('assumptions_title'))}:</b> ${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div>
+      <details class="small" style="margin-top:12px"><summary>${esc(t('assumptions_title'))}</summary><div class="notice small">${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div></details>
       <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions" ${optionsStale ? 'disabled' : ''}>${esc(t('save_actions'))}</button></div>`;
     root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; if (showDetails) openCards.clear(); save(); render(); };
     root.querySelector('#action-sort').onchange = e => { state.ui.actionSort = e.target.value; save(); render(); };
@@ -751,6 +866,7 @@
     });
     root.querySelectorAll('[data-pick]').forEach(cb => cb.onchange = () => {
       const k = cb.dataset.pick;
+      if (rejected[k]) { cb.checked = false; return; }
       state.selectedKeys = cb.checked ? [...new Set([...state.selectedKeys, k])] : state.selectedKeys.filter(x => x !== k);
       cb.closest('.dcard').classList.toggle('sel', cb.checked); save();
     });
@@ -770,6 +886,39 @@
       } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
     });
     root.querySelector('#add-custom').onclick = () => openCustomForm(r.assessmentId, null);
+    root.querySelectorAll('[data-act=edit-profile]').forEach(b => b.onclick = openProfile);
+    const optionByKey = k => r.options.find(x => x.key === k) || customByKey(k);
+    root.querySelectorAll('[data-reject]').forEach(b => b.onclick = () => {
+      const reason = prompt(t('reject_prompt'), '');
+      if (reason === null) return;
+      rejected[b.dataset.reject] = { reason: reason.trim().slice(0, 500), at: new Date().toISOString() };
+      state.selectedKeys = state.selectedKeys.filter(k => k !== b.dataset.reject);
+      save(); render();
+    });
+    root.querySelectorAll('[data-restore-action]').forEach(b => b.onclick = () => { delete rejected[b.dataset.restoreAction]; save(); render(); });
+    const askAlternatives = async (b, mode) => {
+      const o = optionByKey(b.dataset.alt || b.dataset.revise);
+      const sc = byId(r.assessmentId);
+      if (!o || !sc) return toast(t('stale_assessment_missing'));
+      let request = '';
+      if (mode === 'revise') { request = prompt(t('revise_prompt'), ''); if (!request || !request.trim()) return; }
+      busy(b, true, t('thinking'));
+      try {
+        const res = await api('/api/actions/alternatives', { option: { ...o, notes: state.actionNotes[o.key] || '' }, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex,
+          profile: state.profile, mode, request, lang: state.lang });
+        altResults.set(o.key, res); render();
+      } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
+    };
+    root.querySelectorAll('[data-alt]').forEach(b => b.onclick = () => askAlternatives(b, 'alternatives'));
+    root.querySelectorAll('[data-revise]').forEach(b => b.onclick = () => askAlternatives(b, 'revise'));
+    root.querySelectorAll('[data-alt-close]').forEach(b => b.onclick = () => { altResults.delete(b.dataset.altClose); render(); });
+    root.querySelectorAll('[data-alt-add]').forEach(b => b.onclick = () => {
+      const [k, i] = [b.dataset.altAdd.slice(0, b.dataset.altAdd.lastIndexOf('|')), +b.dataset.altAdd.split('|').pop()];
+      const o = optionByKey(k), res = altResults.get(k), item = res && res.items[i];
+      if (!o || !item) return;
+      addAlternative(r.assessmentId, o, res, item);
+      persist(); render();
+    });
     root.querySelectorAll('[data-edit-custom]').forEach(b => b.onclick = () => openCustomForm(r.assessmentId, customByKey(b.dataset.editCustom)));
     root.querySelectorAll('[data-delete-custom]').forEach(b => b.onclick = () => deleteCustom(b.dataset.deleteCustom));
     root.querySelector('#save-actions').onclick = () => {
@@ -796,6 +945,26 @@
     plan.total_weeks = plan.tasks.reduce((m, k) => Math.max(m, k.start_week + k.weeks), 0);
   }
 
+  /** Parts of the plan a person should check before sharing (FU.review). AI text that was edited counts as AI text until marked reviewed. */
+  function conceptParts(p) {
+    const areas = (p.concept && p.concept.areas) || [];
+    return [{ where: t('project_summary'), text: p.summary, ai: p.ai === true, reviewed: true },
+      ...areas.map(a => ({ where: `${a.n}. ${a.title}`, text: a.text, ai: a.status === 'ai' || (a.status === 'edited' && p.concept.ai), reviewed: !!a.reviewed }))];
+  }
+  function refreshConceptReview(root, p) { const el = root.querySelector('#pc-review'); if (el) el.innerHTML = FU.reviewChecklist(conceptParts(p), fuCtx()); }
+  function conceptHtml(p) {
+    const cp = p && p.concept;
+    if (!cp || !cp.areas) return '';
+    return `<div class="card" data-concept><h2>${esc(t('pc_title'))}</h2><p class="small muted">${esc(t('pc_sub'))}</p>
+      <div id="pc-review">${FU.reviewChecklist(conceptParts(p), fuCtx())}</div>
+      ${cp.areas.map((a, i) => `<div class="pc-area" data-area="${a.n}"><div class="row"><h3 class="grow" style="margin:0">${a.n}. ${esc(a.title)}
+          <span class="pc-st pc-${esc(a.status)}" data-pc-status="${i}">${esc(t('pc_status_' + a.status))}</span></h3>
+          <label class="small"><input type="checkbox" data-pc-reviewed="${i}" ${a.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label></div>
+        <div class="small muted">${esc(a.description || '')}</div>
+        ${a.questions && a.questions.length ? `<details class="small"><summary>${esc(t('pc_questions'))}</summary><ul>${a.questions.map(q => `<li>${esc(q)}</li>`).join('')}</ul></details>` : ''}
+        <textarea data-pc="${i}" rows="${Math.min(12, Math.max(4, String(a.text || '').split('\n').length + 1))}">${esc(a.text)}</textarea></div>`).join('')}
+      ${cp.ai ? sourcesHtml(cp.sources) : ''}</div>`;
+  }
   function viewPlan(root) {
     if (!state.selectedActions.length) {
       root.innerHTML = `<div class="page-head"><h1>${esc(t('plan_title'))}</h1></div><div class="notice warn">${esc(t('no_actions'))}</div><button class="btn primary" data-go="actions:select">${esc(t('tab_actions'))}</button>`;
@@ -811,6 +980,7 @@
       body = `<div class="card"><div class="row"><h2 class="grow">${esc(t('project_summary'))}</h2><button type="button" class="btn sm" data-chat="plan">${esc(t('chat_btn_plan'))}</button></div>
           ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
           <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${p.ai === false ? relatedHtml(p.related || p.sources) : sourcesHtml(p.sources)}${evidenceHtml(p.evidence, p.ai !== false)}</div>
+        ${conceptHtml(p)}
         <div class="card" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
           <table class="data"><thead><tr><th>ID</th><th>${esc(t('task'))}</th><th>${esc(t('owner'))}</th><th class="num">${esc(t('start_week'))}</th><th class="num">${esc(t('weeks'))}</th><th>${esc(t('depends'))}</th></tr></thead><tbody>
           ${p.tasks.map((k, i) => `<tr><td>${esc(k.id)}</td><td><span class="muted small">${esc(k.action_id)} · ${esc(k.action)}${k.action_origin === 'user' ? ` · ${esc(t('user_proposed'))}` : ''}</span><br>${esc(k.name)}
@@ -846,7 +1016,13 @@
       p.deps = CW.planDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, profile: state.profile });
       save(); render();
     };
-    root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); refreshSummed(root, 'plan'); };
+    root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); refreshSummed(root, 'plan'); refreshConceptReview(root, p); };
+    root.querySelectorAll('[data-pc]').forEach(tx => tx.oninput = () => {
+      const a = p.concept.areas[+tx.dataset.pc];
+      a.text = tx.value; if (a.status !== 'edited') { a.status = 'edited'; const st = root.querySelector(`[data-pc-status="${tx.dataset.pc}"]`); if (st) { st.className = 'pc-st pc-edited'; st.textContent = t('pc_status_edited'); } }
+      save(); refreshConceptReview(root, p);
+    });
+    root.querySelectorAll('[data-pc-reviewed]').forEach(cb => cb.onchange = () => { p.concept.areas[+cb.dataset.pcReviewed].reviewed = cb.checked; save(); refreshConceptReview(root, p); });
     root.querySelectorAll('[data-owner]').forEach(i => i.oninput = () => { p.tasks[+i.dataset.owner].owner = i.value; save(); });
     root.querySelectorAll('[data-weeks]').forEach(i => i.onchange = () => { p.tasks[+i.dataset.weeks].weeks = Math.max(0, parseInt(i.value, 10) || 0); recomputeSchedule(p); save(); render(); });
     root.querySelector('#plan-details').onclick = () => { state.ui.planDetails = !state.ui.planDetails; save(); render(); };
@@ -866,6 +1042,7 @@
       ${staleNotice(fr.actions, 'actions')}${staleNotice(fr.plan, 'plan')}${staleNotice(fr.proposal, 'proposal')}${genErrorNotice('proposal')}
       ${state.plan ? summedNotice('plan') : ''}${state.proposal ? summedNotice('proposal') : ''}
       ${META.ai ? '' : `<div class="notice small">${esc(t('ai_off_note'))}</div>`}${evidenceNotice()}
+      <div id="pathways">${pathwayCache.html || ''}</div>
       ${card('general', t('general_proposal'), t('general_desc'), `<button class="btn ${f.route === 'general' ? 'primary' : ''}">${esc(t('use_general'))}</button>`)}
       ${card('custom', t('tailor'), t('tailor_desc'), `<label class="btn ${f.route === 'custom' ? 'primary' : ''}">${esc(t('add_guide'))}<input type="file" id="guide-file" accept=".pdf,.docx,.txt,.md" hidden></label>
         ${f.guideName ? `<span class="small muted" style="margin-left:8px">${esc(t('guide_loaded'))}: ${esc(f.guideName)}</span>` : ''}
@@ -896,6 +1073,29 @@
     };
     root.querySelector('#draft').onclick = e => generateProposal(e.target, state.proposal?.lang || state.lang);
     root.querySelector('#dl-all').onclick = e => downloadAll(e.target);
+    loadPathways(root);
+  }
+  // Financing pathways for the selected actions (server match; cached for the same actions, profile and language)
+  const pathwayCache = { key: null, match: null, html: '' };
+  function bindPathways(root) {
+    const f = state.financing;
+    root.querySelectorAll('[data-fp]').forEach(cb => cb.onchange = () => {
+      const set = new Set(f.pathways || []);
+      cb.checked ? set.add(cb.dataset.fp) : set.delete(cb.dataset.fp);
+      f.pathways = [...set];
+      save(); render();
+    });
+  }
+  async function loadPathways(root) {
+    const el = root.querySelector('#pathways');
+    if (!el || !state.selectedActions.length) return;
+    const key = CW.fp({ a: state.selectedActions.map(a => a.key || a.id), p: state.profile, l: state.lang });
+    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); };
+    if (pathwayCache.key === key && pathwayCache.match) return paint();
+    try {
+      pathwayCache.match = await api('/api/pathways', { actions: state.selectedActions, profile: state.profile, lang: state.lang });
+      pathwayCache.key = key; paint();
+    } catch (err) { el.innerHTML = ''; }
   }
 
   function exportState() {
@@ -920,6 +1120,7 @@
     busy(btn, false);
   }
 
+  const draftParts = p => (p.sections || []).map(s => ({ where: s.title, text: s.text, ai: s.ai === true, reviewed: !!s.reviewed }));
   function viewDraft(root) {
     const p = state.proposal;
     if (!p) return go('finance');
@@ -938,13 +1139,16 @@
       ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}</li>`).join('')}</ul></div>`
         : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
       ${evidenceNotice()}
-      ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
+      <div id="draft-review">${FU.reviewChecklist(draftParts(p), fuCtx())}</div>
+      ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2>${s.ai === true ? `<label class="small" style="margin-right:8px"><input type="checkbox" data-sec-reviewed="${i}" ${s.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label>` : ''}<button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
         <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
         <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(t('download_all'))}</button></div>`;
+    const refreshDraftReview = () => { const el = root.querySelector('#draft-review'); if (el) el.innerHTML = FU.reviewChecklist(draftParts(p), fuCtx()); };
+    root.querySelectorAll('[data-sec-reviewed]').forEach(cb => cb.onchange = () => { p.sections[+cb.dataset.secReviewed].reviewed = cb.checked; save(); refreshDraftReview(); });
     root.querySelectorAll('[data-sec]').forEach(tx => tx.oninput = () => {
-      p.sections[+tx.dataset.sec].text = tx.value; save();
+      p.sections[+tx.dataset.sec].text = tx.value; save(); refreshDraftReview();
       refreshSummed(root, 'proposal');
       const off = !!(outdated || sums());
       root.querySelectorAll('#dl-word, #dl-all').forEach(b => { b.disabled = off; });
@@ -1111,7 +1315,7 @@
 
   // ---------------------------------------------------------------- boot
   window.App = {
-    get state() { return state; }, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
+    get state() { return state; }, fillEstimates, recordEstimate, isEstimate, estimatesList, responsibilityHtml, openProfile, fuCtx, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
     idOf, cardCtx, contributorOf, relatedActions, metaOf,
     setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
   };

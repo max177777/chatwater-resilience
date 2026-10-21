@@ -30,16 +30,16 @@ Updating ECAM: copy a newer `backend/` and `languages/en.json` into `vendor/ecam
 ```bash
 npm install
 npm start                       # http://localhost:3000
-ANTHROPIC_API_KEY=sk-... npm start   # with AI chat and drafting
+GEMINI_API_KEY=... npm start        # with AI chat and drafting (Gemini)
 npm test
 ```
 
-Without `ANTHROPIC_API_KEY`, everything still works. Chat returns the matching ECAM guidance, and drafts use structured templates filled with the calculated numbers.
+AI uses Google Gemini by default (`GEMINI_API_KEY`, optional `GEMINI_MODEL`, default `gemini-3.8-flash`). Claude still works with `ANTHROPIC_API_KEY`; `LLM_PROVIDER` picks one when both keys are set. See `engine/ai.js`. Without any key, everything still works. Chat returns the matching ECAM guidance, and drafts use structured templates filled with the calculated numbers.
 
 ## Deploy on Render with supermaxtest.com
 
 1. In Render, go to **New → Blueprint**, connect GitHub, and pick `max177777/chatwater-resilience`. `render.yaml` sets up the service.
-2. When prompted, enter `ANTHROPIC_API_KEY` (optional; it can be added later under Environment).
+2. In the service's **Environment** tab, add `GEMINI_API_KEY` (optional; the app works without it).
 3. Once deployed, open the service's **Settings → Custom Domains**. `supermaxtest.com` is already listed from the Blueprint.
 4. At your domain registrar's DNS settings:
    - `A` record, host `@`, value `216.24.57.1`

@@ -11,9 +11,12 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
-      - key: ANTHROPIC_API_KEY   # enables AI chat and drafting; app works without it
+      # AI backend: Gemini. Set the key in the Render dashboard (Environment), never in this file.
+      - key: GEMINI_API_KEY      # enables AI chat and drafting; app works without it
         sync: false
-      - key: CLAUDE_MODEL
-        value: claude-sonnet-5-5
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
+      - key: GEMINI_THINKING_LEVEL
+        value: low
     domains:
       - supermaxtest.com      # Render adds www.supermaxtest.com redirecting here

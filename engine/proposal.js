@@ -4,12 +4,13 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { callClaude, aiEnabled } = require('./ai');
+const { callClaude, aiEnabled, parseJson } = require('./ai');
 const { expectedText, customLocationText, uiText } = require('./export');
 const R = require('./retrieval');
 const { missingText } = require('./chat-context');
 const AS = require('../public/js/action-sources');
 const CA = require('../public/js/custom-actions');
+const RS = require('../public/js/responsibility');
 
 /** Prompt tail shared by every draft: project data, known gaps, then document evidence. */
 function promptData(f, missing, r) {
@@ -45,7 +46,26 @@ function customFact(a, { results, meta, lang }) {
   };
 }
 
-function facts({ results, actions, plan, profile, meta, lang = 'en' }) {
+/** What the utility can act on: per selected action, and the inventory split (when the profile answers it). */
+function responsibilityFacts({ results, actions, profile, meta }) {
+  if (!RS.answered(profile)) return { status: 'responsibilities not specified in the utility profile' };
+  const out = {};
+  if (results) {
+    const { rows } = AS.rowsFromResults(results, meta);
+    const b = RS.breakdown(rows, profile);
+    const t = kg => +(kg / 1000).toFixed(1);
+    out.inventory_tco2eq = { total: t(b.total), directly_actionable: t(b.byTier.direct), needs_coordination: t(b.byTier.conditional),
+      outside_utility_responsibility: t(b.byTier.outside), responsibility_not_specified: t(b.byTier.unspecified) };
+    out.note = 'Sources outside the utility\'s responsibility stay in the inventory but are not the utility\'s action priorities.';
+  }
+  out.actions = (actions || []).filter(a => a.rule !== 'baseline').map(a => {
+    const r = RS.forOption(a, profile) || {};
+    return { id: a.id, responsibility: r.tier || 'unspecified', service_area: r.area || null, feasibility_flags: RS.flags(a, profile) };
+  });
+  return out;
+}
+
+function facts({ results, actions, plan, profile, meta, lang = 'en', pathways, estimates }) {
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : o;
   const r = results;
   return {
@@ -71,7 +91,11 @@ function facts({ results, actions, plan, profile, meta, lang = 'en' }) {
     })),
     combined_savings: (actions || []).filter(a => a.id !== 'A00' && a.rule !== 'baseline').length > 1
       ? 'not assessed: each estimate is for one action on its own; actions may overlap, so do not add them up' : null,
-    plan: plan?.tasks ? { total_weeks: plan.total_weeks, summary: plan.summary || null, tasks: plan.tasks.map(t => `${t.id} [${t.action}] ${t.name} — ${t.owner}, week ${t.start_week}+${t.weeks}`) } : null,
+    plan: plan?.tasks ? { total_weeks: plan.total_weeks, summary: plan.summary || null, tasks: plan.tasks.map(t => `${t.id} [${t.action}] ${t.name} — ${t.owner}, week ${t.start_week}+${t.weeks}`),
+      ...(plan.concept?.areas ? { concept: plan.concept.areas.map(a => ({ area: a.title, text: String(a.text || '').slice(0, 1500), status: a.status })) } : {}) } : null,
+    utility_responsibility: responsibilityFacts({ results, actions, profile, meta }),
+    ...(estimates ? { inputs_based_on_ecam_estimates: estimates } : {}),
+    ...(pathways && pathways.length ? { financing_pathways_to_investigate: pathways } : {}),
   };
 }
 
@@ -113,6 +137,7 @@ function templatePlanSummary(f, lang) {
 }
 
 async function planSummary(input) {
+  // input.estimates (count of inputs using ECAM estimates) reaches the facts through facts(input)
   const lang = input.lang || 'en';
   const f = facts(input);
   const r = R.search(R.forPlan(f));
@@ -126,9 +151,28 @@ async function planSummary(input) {
   return { text, sources: cit.sources, evidence: R.evidenceRecord(r, cit), ai: true };
 }
 
+/** Financing pathways the user ticked, as template text (directions to investigate, never eligibility). */
+function pathwaysText(f, lang) {
+  const list = f.financing_pathways_to_investigate || [];
+  if (!list.length) return '';
+  const head = lang === 'id' ? 'Jalur pembiayaan yang akan ditelusuri (kelayakan belum dikonfirmasi):' : 'Financing pathways to investigate (eligibility not confirmed):';
+  const ask = lang === 'id' ? 'Perlu dipastikan' : 'To confirm';
+  return head + '\n' + list.map(p => `- ${p.name} (${p.who_applies}). ${ask}: ${p.questions_to_confirm.join(' ')}`).join('\n');
+}
+/** Inventory split by responsibility, as template text. */
+function responsibilityText(f, lang) {
+  const inv = f.utility_responsibility && f.utility_responsibility.inventory_tco2eq;
+  if (!inv) return '';
+  return lang === 'id'
+    ? `Dari inventaris ${fmt(inv.total)} tCO2eq, ${fmt(inv.directly_actionable)} t berada dalam tanggung jawab langsung utilitas, ${fmt(inv.needs_coordination)} t perlu koordinasi dengan pihak lain, dan ${fmt(inv.outside_utility_responsibility)} t di luar tanggung jawab utilitas.`
+    : `Of the ${fmt(inv.total)} tCO2eq inventory, ${fmt(inv.directly_actionable)} t are within the utility's direct responsibility, ${fmt(inv.needs_coordination)} t need coordination with others, and ${fmt(inv.outside_utility_responsibility)} t are outside the utility's responsibility.`;
+}
+
 function templateSection(sec, f, lang) {
   const r = f.ecam_results;
   const todo = lang === 'id' ? `[Perlu dilengkapi: ${sec.guidance}]` : `[To be completed: ${sec.guidance}]`;
+  if (['budget', 'efficiency'].includes(sec.key) && pathwaysText(f, lang)) return pathwaysText(f, lang) + '\n\n' + todo;
+  if (['context', 'needs'].includes(sec.key) && responsibilityText(f, lang)) return responsibilityText(f, lang) + '\n\n' + todo;
   if (['summary'].includes(sec.key)) return (f.plan?.summary || templatePlanSummary(f, lang)) + '\n\n' + todo;
   if (['baseline', 'rationale'].includes(sec.key) && r) return lang === 'id'
     ? `Total emisi ${fmt(r.total_tco2eq)} tCO2eq (CO2 ${fmt(r.by_gas_tco2eq.co2)}, CH4 ${fmt(r.by_gas_tco2eq.ch4)}, N2O ${fmt(r.by_gas_tco2eq.n2o)}) dihitung dengan ECAM v3, ${r.gwp_report}, faktor listrik ${r.grid_factor_kgco2_per_kwh} kgCO2/kWh.`
@@ -199,16 +243,16 @@ async function frameworkFromGuide(guideText, filename, lang = 'en') {
   const base = financingFrameworks().find(x => x.id === 'general');
   if (!aiEnabled()) {
     return { ...base, id: 'custom', name: { en: `Tailored to ${filename}`, id: `Disesuaikan dengan ${filename}` },
-      _note: 'AI not configured: using the general structure. Set ANTHROPIC_API_KEY to read section requirements from the guide.' };
+      _note: 'AI not configured: using the general structure. Set GEMINI_API_KEY (or ANTHROPIC_API_KEY) to read section requirements from the guide.' };
   }
   const out = await callClaude({
     system: 'You extract proposal structures from funding guidelines. Reply with JSON only.',
-    max_tokens: 2000,
+    max_tokens: 2000, json: true,
     messages: [{ role: 'user', content:
       `From this funding guide, list the sections a proposal must contain, in order, with what each must cover. Reply as JSON: {"name":"<fund or guide name>","sections":[{"key":"short_snake_key","en":"English title","id":"Indonesian title","guidance":"what the section must contain, incl. any page/word limits or required indicators"}],"requirements":["eligibility or formatting rules worth confirming with the user"]}\n\nGUIDE (${filename}):\n${guideText.slice(0, 60000)}` }],
   });
-  const json = JSON.parse(out.slice(out.indexOf('{'), out.lastIndexOf('}') + 1));
+  const json = parseJson(out);
   return { id: 'custom', name: { en: json.name, id: json.name }, sections: json.sections, requirements: json.requirements || [] };
 }
 
-module.exports = { facts, planSummary, draftProposal, financingFrameworks, frameworkFromGuide, fill, prompt, LANG_NAME };
+module.exports = { facts, planSummary, draftProposal, financingFrameworks, frameworkFromGuide, fill, prompt, LANG_NAME, promptData, systemFor };

@@ -66,6 +66,10 @@ const CWForm = (() => {
             return `<option value="${v}">${esc(A().tE(row.name) || row.name)} (${fmt(v / mult(code))})</option>`;
           }).join('') + '</select>';
       }
+      // values taken from ECAM's estimates stay labelled until the user types their own value
+      if (A().isEstimate(Global, stage, code)) {
+        extra += `<span class="est-badge" data-est-used="${code}">${esc(t('est_badge'))}</span>`;
+      }
       if (typeof Estimations !== 'undefined' && Estimations[code]) {
         const est = safeNum(() => Estimations[code](stage));
         if (est !== null && est !== stage[code]) {
@@ -172,6 +176,7 @@ const CWForm = (() => {
     const qs = Questions.get_questions(ss);
     return `<div class="card">
       <div class="row" style="margin-bottom:8px"><h2 class="grow" style="margin:0">${esc(A().stageLabel(struct.prefix))} · ${esc(ss.name)}</h2>
+        <button class="btn sm" data-act="fill-est" title="${esc(t('est_summary_note'))}">${esc(t('est_fill'))}</button>
         <button class="btn sm" data-act="rename-ss">${esc(t('rename'))}</button>
         <button class="btn sm danger" data-act="delete-ss">${esc(t('delete'))}</button></div>
       <h3>${esc(t('inputs'))}</h3>
@@ -300,8 +305,17 @@ const CWForm = (() => {
         const sid = app.state.ui.sel?.kind === 'ss' ? app.idOf(stage, 's') : null;
         return app.askChat(`${app.t('ask_chat')}: ${labelOf(b.dataset.ask)} (${b.dataset.ask})`, { kind: 'input', code: b.dataset.ask, sid, label: `${b.dataset.ask} · ${String(labelOf(b.dataset.ask)).replace(/<[^>]+>/g, '')}` });
       }
-      if (b.dataset.est) { stage[b.dataset.code] = parseFloat(b.dataset.est); entered(b.dataset.code, 'estimate'); app.save(); return app.render(); }
+      if (b.dataset.est) {
+        stage[b.dataset.code] = parseFloat(b.dataset.est); entered(b.dataset.code, 'estimate');
+        if (sel.kind === 'ss') app.recordEstimate(stage, b.dataset.code);
+        app.save(); return app.render();
+      }
       const act = b.dataset.act;
+      if (act === 'fill-est' && sel.kind === 'ss') {
+        const n = app.fillEstimates(sel.struct.prefix, stage);
+        app.toast(n ? app.t('est_fill_done').replace('{n}', n) : app.t('est_fill_none'));
+        app.save(); return app.render();
+      }
       if (act === 'new-sc') { app.newScenario(); return app.render(); }
       if (act === 'dup-sc') { app.duplicateScenario(); return app.render(); }
       if (act === 'del-sc') { if (confirm(app.t('confirm_delete'))) { app.deleteScenario(); app.render(); } return; }
@@ -369,23 +383,26 @@ const CWForm = (() => {
         <p class="muted">${esc(t('results_sub'))} ${esc(Global.General.AssessmentPeriodStart)} – ${esc(Global.General.AssessmentPeriodEnd)} · ${esc(gp.report)} · ${Global.General.conv_kwh_co2} kgCO₂/kWh</p>
         <div class="chat-entry"><button type="button" class="btn sm" data-chat="result">${esc(t('chat_btn_results'))}</button><button type="button" class="btn sm" data-chat="missing">${esc(t('chat_btn_missing'))}</button></div></div>
       <div class="kpis">${kpis()}</div>
+      ${A().responsibilityHtml(Global, ctx)}
+      ${FU.estimatesSummary(A().estimatesList(Global), A().fuCtx())}
       <div class="card"><h2>${esc(t('by_stage'))}</h2>
         <div class="chart-box"><canvas id="chart-stages" aria-label="${esc(t('by_stage'))}"></canvas></div>
         <div class="legend"><span><i style="background:var(--co2)"></i>CO₂</span><span><i style="background:var(--ch4)"></i>CH₄ (CO₂eq)</span><span><i style="background:var(--n2o)"></i>N₂O (CO₂eq)</span></div>
       </div>
-      <div class="card"><table class="data"><thead><tr><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">CO₂</th><th class="num">CH₄</th><th class="num">N₂O</th><th class="num">${esc(t('energy'))}</th><th class="num">${esc(t('share'))}</th></tr></thead><tbody>
+      <details class="card" data-detail-tables><summary><b>${esc(t('results_details'))}</b></summary>
+      <div style="overflow:auto"><table class="data"><thead><tr><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">CO₂</th><th class="num">CH₄</th><th class="num">N₂O</th><th class="num">${esc(t('energy'))}</th><th class="num">${esc(t('share'))}</th></tr></thead><tbody>
         ${rows.map(r => `<tr><td>${esc(A().stageLabel(r.prefix))} <span class="muted small">(${r.n})</span></td><td class="num">${fmt(r.total / 1000)}</td><td class="num">${fmt(r.co2 / 1000)}</td><td class="num">${fmt(r.ch4 / 1000)}</td><td class="num">${fmt(r.n2o / 1000)}</td><td class="num">${fmt(r.kwh)}</td><td class="num">${g.total ? fmt(100 * r.total / g.total, 1) + '%' : '–'}</td></tr>`).join('')}
         <tr style="font-weight:700"><td>Total</td><td class="num">${fmt(g.total / 1000)}</td><td class="num">${fmt(g.co2 / 1000)}</td><td class="num">${fmt(g.ch4 / 1000)}</td><td class="num">${fmt(g.n2o / 1000)}</td><td class="num">${fmt(e)}</td><td class="num">100%</td></tr>
       </tbody></table></div>
-      ${DC.contributor(A().contributorOf(Global), ctx)}
-      <div class="card"><h2>${esc(t('substage'))}</h2><table class="data"><thead><tr><th>${esc(t('substage'))}</th><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">${esc(t('share'))}</th><th>${esc(t('sources_col'))} (tCO₂eq)</th><th>${esc(t('related_actions_col'))}</th></tr></thead><tbody>
+      <h2 style="margin-top:16px">${esc(t('substage'))}</h2><div style="overflow:auto"><table class="data"><thead><tr><th>${esc(t('substage'))}</th><th>${esc(t('stage'))}</th><th class="num">${t('tco2')}</th><th class="num">${esc(t('share'))}</th><th>${esc(t('sources_col'))} (tCO₂eq)</th><th>${esc(t('related_actions_col'))}</th></tr></thead><tbody>
         ${subs.map(x => `<tr data-substage="${esc(A().idOf(x.ss, 's'))}"><td>${esc(x.ss.name)}<br><button type="button" class="link small" data-chat="result" data-sid="${esc(A().idOf(x.ss, 's'))}">${esc(t('chat_btn_result'))}</button></td><td><i class="sw sw-${x.s.prefix}" aria-hidden="true"></i>${esc(A().stageLabel(x.s.prefix))}</td><td class="num">${fmt(x.ghg / 1000)}</td><td class="num">${g.total ? fmt(100 * x.ghg / g.total, 1) + '%' : '–'}</td>
           <td class="small">${sourcesCell(x)}</td><td class="small" data-related>${relatedCell(x)}</td></tr>`).join('')}
-      </tbody></table>
-      ${related.status === 'outdated' ? `<p class="small muted">${esc(t('related_outdated'))}</p>` : ''}</div>
+      </tbody></table></div>
+      ${related.status === 'outdated' ? `<p class="small muted">${esc(t('related_outdated'))}</p>` : ''}</details>
       <div class="actions-row"><button class="btn" data-go="assess:entry">${esc(t('back_to_data'))}</button><button class="btn primary" data-act="finish">${esc(t('finish_assessment'))}</button></div>`;
     drawChart(rows);
     root.querySelector('[data-act=finish]').onclick = () => A().finishAssessment();
+    root.querySelectorAll('[data-act=edit-profile]').forEach(b => b.onclick = () => A().openProfile());
   }
 
   let chart;
