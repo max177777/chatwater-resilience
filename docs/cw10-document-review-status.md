@@ -1,6 +1,6 @@
 # CW-10 document review status
 
-Local handoff, 2026-10-24. Reviewed CW-11 was committed as `fc85013` on `noah/project-export-scope`, following CW-03 `bc8d316`. This CW-10 batch is checkpointed locally on `noah/document-review-status`; the integration handoff records the exact implementation commit and fetched-main comparison. Pre-existing unrelated `.github/` files remain untouched; no caches, credentials, private documents or generated corpus enter the checkpoint. No push, merge, deployment, external model call or calculation change occurred. AI-off server/tests preload `test/helpers/offline.js`, removing provider keys and blocking non-loopback fetch.
+Local handoff, 2026-10-24. Reviewed CW-11 was committed as `fc85013` on `noah/project-export-scope`, following CW-03 `bc8d316`. This CW-10 batch is committed as `e20bb91` on `noah/document-review-status`; see the [Max integration handoff](max-integration-handoff.md) for the fetched-main comparison and proposed integration order. Pre-existing unrelated `.github/` files remain untouched; no caches, credentials, private documents or generated corpus enter the checkpoint. No push, merge, deployment, external model call or calculation change occurred. AI-off server/tests preload `test/helpers/offline.js`, removing provider keys and blocking non-loopback fetch.
 
 ## Semantics and coverage
 
