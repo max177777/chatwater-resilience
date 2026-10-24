@@ -128,7 +128,7 @@
     const g=GWP_reports[state.gwpIndex || 0], raw=RSData.raw(sc,{Structure,gwp:{report:g.report,ch4:g.ct_ch4_eq,n2o:g.ct_n2o_eq}});
     const graph=RSData.evaluate(sc,ctx), result=RSData.apply(raw,graph);result.validity=validity;result.statusGraph=graph;return result;
   }
-  function saveProjectBackup() {persist();downloadJson(JSON.stringify(CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}),null,2),'chatwater-project-backup.json');}
+  function saveProjectBackup() {if(!persist())return;downloadJson(JSON.stringify(CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}),null,2),'chatwater-full-workspace-backup.json');}
   function importProjectText(text,companionText) {
     const parsed=CWProject.parse(text,companionText);
     if(!parsed.ok) {toast(parsed.error);return false;}
@@ -1084,7 +1084,7 @@
       <div class="actions-row"><button class="btn" data-go="plan">${esc(t('back'))}</button>
         ${state.proposal ? `<button class="btn" data-go="finance:draft">${esc(t('open_draft'))}</button>` : ''}
         ${previousControl('proposal')}
-        <button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(t('download_all'))}</button>
+        ${exportScopeNotice()}<button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(t('download_all'))}</button>
         <button class="btn primary" id="draft" ${upstreamStale ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
     root.querySelectorAll('[data-route]').forEach(c => c.onclick = e => {
       if (e.target.closest('label')) { f.route = c.dataset.route; save(); return; }
@@ -1130,6 +1130,7 @@
     } catch (err) { el.innerHTML = ''; }
   }
 
+  function exportScopeNotice() {const ids=[state.proposal?.deps?.assessmentId,state.plan?.deps?.assessmentId,state.actionSet?.assessmentId].filter(Boolean),sc=new Set(ids).size===1?byId(ids[0]):null;return `<p class="notice" data-selected-project-scope>${esc(t('selected_package_scope').replace('{name}',sc?.General.Name || '—'))}</p>`;}
   function exportState() {
     return { ...plain(state), assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
   }
@@ -1175,7 +1176,7 @@
       ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2>${s.ai === true || s.quotes_plan_summary === 'ai' ? `<label class="small" style="margin-right:8px"><input type="checkbox" data-sec-reviewed="${i}" ${s.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label>` : ''}<button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div>${s.quotes_plan_summary === 'ai' ? `<div class="small dc-flag">${esc(t('sec_quotes_ai_summary'))}</div>` : ''}${(s.ai === true && CW.mayBeIncomplete(s.text)) || (s.quotes_plan_summary === 'ai' && CW.mayBeIncomplete(s.text, { anyParagraph: true })) ? `<div class="small dc-flag" data-incomplete="${i}">${esc(t('may_be_incomplete'))}</div>` : ''}<textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
-        <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
+        ${exportScopeNotice()}<button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
         <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(t('download_all'))}</button></div>`;
     const refreshDraftReview = () => { const el = root.querySelector('#draft-review'); if (el) el.innerHTML = FU.reviewChecklist(draftParts(p), fuCtx()); };
     root.querySelectorAll('[data-sec-reviewed]').forEach(cb => cb.onchange = () => { p.sections[+cb.dataset.secReviewed].reviewed = cb.checked; save(); refreshDraftReview(); });

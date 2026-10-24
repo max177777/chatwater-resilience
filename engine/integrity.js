@@ -147,7 +147,7 @@ function exportContext(body, { requireProposal = false } = {}) {
     const gwpIndex = body.gwpIndex || 0;
     issues.push(...actionIssues({ assessment, meta, gwpIndex, actions, actionSet: body.actionSet, inputStatus:body.inputStatus?.[meta?.id], rejected: body.rejectedActions }));
     const f = CW.freshness({
-      assessments: metas.map((m, i) => ({ id: m && m.id, revision: CW.revision(list[i]),supportRevision:V.calculate(list[i],gwpIndex,{meta:m,inputStatus:body.inputStatus?.[m?.id]}).supportRevision })),
+      assessments: [{ id:meta.id,revision:CW.revision(assessment),supportRevision:V.calculate(assessment,gwpIndex,{meta,inputStatus:body.inputStatus?.[meta.id]}).supportRevision }],
       gwpIndex, actionSet: body.actionSet, selectedActions: body.selectedActions,
       plan: body.plan, proposal: body.proposal, profile: body.profile, financing: body.financing, rejected: body.rejectedActions,
       customActions: Array.isArray(body.customActions) ? CW.customDefs(body.customActions, body.actionNotes) : undefined,

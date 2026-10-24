@@ -240,10 +240,10 @@ const CWForm = (() => {
         <button class="btn sm danger" data-act="del-sc" ${Scenarios.length < 2 ? 'disabled' : ''}>${esc(t('delete'))}</button>
         <span class="spacer"></span>
         <label class="btn sm">${esc(t('load_file'))}<input type="file" accept=".json,application/json" id="load-ecam" multiple hidden></label>
-        <button class="btn sm" data-act="save-project">Save project backup</button><label class="btn sm">Restore project backup<input type="file" accept=".json,application/json" id="load-project" hidden></label>
+        <button class="btn sm" data-act="save-project">${esc(t('full_backup'))}</button><label class="btn sm">${esc(t('restore_backup'))}<input type="file" accept=".json,application/json" id="load-project" hidden></label>
         <button class="btn sm" data-act="save-ecam">${esc(t('save_file'))}</button>
         <button class="btn sm" data-act="load-sample">${esc(t('load_sample'))}</button>
-      </div></div>
+      </div><p class="small muted" data-full-backup-scope>${esc(t('full_backup_scope').replace('{n}',Scenarios.length))}</p></div>
       <div class="kpis" id="kpis">${kpis()}</div>
       <div class="ecam">
         <nav class="stagenav" id="stagenav">${stageNav(sel)}</nav>
@@ -384,7 +384,7 @@ const CWForm = (() => {
       if (act === 'new-sc') { app.newScenario(); return app.render(); }
       if (act === 'dup-sc') { app.duplicateScenario(); return app.render(); }
       if (act === 'del-sc') { if (confirm(app.t('confirm_delete'))) { app.deleteScenario(); app.render(); } return; }
-      if (act === 'save-ecam') return app.download(JSON.stringify(Scenarios, null, 2), Scenarios.map(s => s.General.Name).join('+') + '.json', 'application/json');
+      if (act === 'save-ecam') return app.download(JSON.stringify([Global], null, 2), Global.General.Name + '.json', 'application/json');
       if (act === 'load-sample') return app.loadSample();
       if (act === 'rename-ss') { const n = prompt(app.t('rename'), stage.name); if (n) { stage.name = n; app.save(); app.render(); } return; }
       if (act === 'delete-ss') {

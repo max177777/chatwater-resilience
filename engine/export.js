@@ -394,6 +394,8 @@ async function buildZip(state, docxBuffer) {
       location_text: customLocationText(a, lang, ctx), location_status: CA.resolveLocation(a, ctx.meta).at,
     };
   };
+  if(state.exportScope&&state.actionResult)zip.file('actions/calculated-options.json',JSON.stringify(state.actionResult,null,2));
+  if(state.exportScope)zip.file('actions/user-proposed-actions.json',JSON.stringify((state.customActions || []).map(customEntry),null,2));
   zip.file('actions/selected-actions.json', JSON.stringify((state.selectedActions || []).map(a => CA.isCustom(a) ? customEntry(a)
     : ({ ...a, benefit_status: benefitStatus(a), addresses: AS.describe(a) })), null, 2));
   if (state.plan?.tasks) {
@@ -438,7 +440,13 @@ async function buildZip(state, docxBuffer) {
     zip.file('evidence/library-provenance.json', JSON.stringify(provenance, null, 2));
   }
   if (state.profile) zip.file('utility-profile.json', JSON.stringify(state.profile, null, 2));
-  zip.file('README.txt', z.readme(lang).join('\n'));
+  zip.file('README.txt', (state.exportScope ? [lang==='id'?'PAKET PROYEK TERPILIH — satu penilaian sumber; bukan cadangan ruang kerja lengkap.':'SELECTED PROJECT PACKAGE — one source assessment; not a full workspace backup.',lang==='id'?'Cadangan proyek dalam ZIP hanya memulihkan proyek ini. Gunakan Simpan cadangan ruang kerja lengkap untuk pemulihan semua penilaian.':'The project backup in this ZIP restores only this project. Use Save full workspace backup to recover every assessment.','',...state.exportScope.omissions,'',...z.readme(lang)] : z.readme(lang)).join('\n'));
+  if(state.exportScope){
+    const crypto=require('crypto'),entries=[];
+    for(const [path,file] of Object.entries(zip.files))if(!file.dir){const bytes=await file.async('nodebuffer');entries.push({path,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}
+    entries.push({path:'manifest.json',sha256:null,note:'Self-describing manifest; its own digest is excluded.'});
+    zip.file('manifest.json',JSON.stringify(require('./project-export').manifest(state,entries),null,2));
+  }
   return zip.generateAsync({ type: 'nodebuffer' });
 }
 

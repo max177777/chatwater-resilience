@@ -17,6 +17,7 @@ const P = require('./engine/proposal');
 const X = require('./engine/export');
 const CW = require('./public/js/cw-core');
 const I = require('./engine/integrity');
+const ProjectExport = require('./engine/project-export');
 const AS = require('./public/js/action-sources');
 const RS = require('./public/js/responsibility');
 const PC = require('./engine/plan-concept');
@@ -83,10 +84,9 @@ app.use('/api', (req, res, next) => {
       const {assessment,meta,gwpIndex=0,inputStatus,option}=req.body;
       I.requireCurrentActions({assessment,meta,gwpIndex,inputStatus,actions:[option],actionSet:{assessmentId:meta?.id,revision:CW.revision(assessment),gwpIndex}});
     }
-    if (['/export','/export/docx'].includes(req.path)) {
-      I.exportContext(req.body,{requireProposal:req.path === '/export/docx'});
-      if (!Array.isArray(req.body.assessments) || !req.body.assessments.length) AV.requireValid(null);
-      req.body.assessments.forEach((a,i) => AV.requireSupported(a,{meta:req.body.assessmentMeta?.[i],inputStatus:req.body.inputStatus?.[req.body.assessmentMeta?.[i]?.id],gwpIndex:req.body.gwpIndex}));
+    const exportPath=req.path.replace(/\/+$/,'').toLowerCase(); // Express also accepts trailing slashes and case variants.
+    if (['/export','/export/docx'].includes(exportPath)) {
+      req.body=ProjectExport.select(req.body,{requireProposal:exportPath === '/export/docx'});
     }
     next();
   } catch (e) { res.status(e.status || 400).json({error:e.message,issues:e.issues}); }

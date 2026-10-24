@@ -86,7 +86,7 @@ const cases = [
    for(const route of ['/api/actions','/api/actions/explain','/api/actions/alternatives','/api/plan','/api/proposal']) {
     const response=await post(route,{assessment:x,meta:ac.meta});assert.equal(response.status,422,`${name} ${route}`);
    }
-   const response=await post('/api/export',{assessments:[x],assessmentMeta:[ac.meta]});assert.equal(response.status,422,`${name} ZIP`);
+   const response=await post('/api/export',{assessments:[x],assessmentMeta:[ac.meta],actionSet:{assessmentId:ac.meta.id,revision:CW.revision(x),gwpIndex:0}});assert.equal(response.status,422,`${name} ZIP`);
   }
   const chat=await (await post('/api/chat',{assessment:{...clone(a),General:{...a.General,AssessmentPeriodEnd:a.General.AssessmentPeriodStart}},meta:ac.meta,messages:[{role:'user',content:'Explain my results'}]})).json();
   assert.equal(chat.context.results.availability,'not_assessed');assert.equal(chat.context.actions,null);
