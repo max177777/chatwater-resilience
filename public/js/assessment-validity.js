@@ -24,9 +24,9 @@
   const finite = v => typeof v === 'number' && Number.isFinite(v);
   function state(record, sid, code, value) {
     const r = record?.s?.[sid]?.[code];
-    if (value == null || value === '') return 'missing';
     if (r && r.v === value && r.availability === 'unknown') return 'unknown';
     if (r && r.v === value && r.availability === 'not_applicable') return 'not_applicable';
+    if (value == null || value === '') return 'missing';
     const origin = CW.inputState(record, sid, code, value);
     if (origin.origin === 'default' && value === 0 && !origin.confirmed) return 'missing';
     if (['unknown','imported'].includes(origin.origin) && !origin.confirmed) return 'unconfirmed';
@@ -35,6 +35,12 @@
   function active(ss, code, Questions) {
     const owners = Object.entries(Questions).filter(([,q]) => q?.variables?.includes(code));
     return !owners.length || owners.some(([q]) => ss.Configuration?.Questions?.[q] === true);
+  }
+  function requiredCodes(prefix,ss,{Questions={},InputCodes={}}={}) {
+    const required=[...(MINIMUM[prefix]||[])];
+    for(const [q,spec]of Object.entries(Questions))if(ss.Configuration?.Questions?.[q]===true)
+      for(const c of spec.variables||[])if(InputCodes[prefix]?InputCodes[prefix].includes(c):Object.hasOwn(ss,c)&&typeof ss[c]!=='function')required.push(c);
+    return [...new Set(required)];
   }
   function validate(a, {Info = {}, Questions = {}, Tables = {}, InputCodes = {}, meta, inputStatus} = {}) {
     const issues = [], substages = [];
@@ -55,7 +61,8 @@
         if (!finite(value)) message = 'Enter a finite number using a decimal point and no thousands separators.';
         else if (info.unit === '%' && (value < 0 || value > 100)) message = 'Enter a percentage from 0 to 100.';
         else if (info.unit === 'hours/day' && (value < 0 || value > 24)) message = 'Enter service hours from 0 to 24.';
-        else if (info.magnitude === 'Power factor' && (value <= 0 || value > 1)) message = 'Power factor must be above 0 and at most 1.';
+        else if (info.magnitude === 'Power factor' && (value <= 0 || value > 1)
+          && !(isSubstage && value === 0 && !active(o,code,Questions))) message = 'Power factor must be above 0 and at most 1.';
         else if (info.magnitude === 'Option' && (!Number.isInteger(value) || value < 0 || (Tables[info.table] && value >= Tables[info.table].length))) message = 'Choose a valid option.';
         else if (['Energy','Volume','Mass','Population','People','Number','Currency','Volume of biogas','Flow','Distance','Power','Voltage','Concentration'].includes(info.magnitude) && value < 0) message = 'Enter a nonnegative value; zero is allowed.';
         else if ((/_conv_kwh$|_efac_|_EF$/.test(code) || code === 'conv_kwh_co2') && value < 0) message = 'The grid factor must be nonnegative.';
@@ -74,10 +81,7 @@
       const primary = required.filter(c => !/conv_kwh|efac/.test(c));
       if (primary.every(c => ss[c] === 0 || ss[c] == null) && !primary.some(c => state(inputStatus,sid,c,ss[c]) === 'entered')) add(required[0], 'Enter process data; default zeros do not establish an assessment.',loc,'missing');
       // Additional enabled numeric inputs are necessary for that optional calculation.
-      for (const [q, spec] of Object.entries(Questions)) if (ss.Configuration?.Questions?.[q] === true) {
-        for (const c of spec.variables || []) if ((InputCodes[prefix] ? InputCodes[prefix].includes(c) : Object.hasOwn(ss,c)) && typeof ss[c] !== 'function' && Info[c]) required.push(c);
-      }
-      for (const code of new Set(required)) {
+      for (const code of requiredCodes(prefix,ss,{Questions,InputCodes}).filter(c=>Info[c]||MINIMUM[prefix].includes(c))) {
         const st = state(inputStatus,sid,code,ss[code]);
         if (st === 'missing' || st === 'unknown' || st === 'not_applicable') add(code, 'Enter this input (including an explicit zero where appropriate) or turn off the optional process.',loc,'missing');
       }
@@ -107,5 +111,5 @@
     if (ss[deps[0]] <= 0 || (deps.includes('wsd_main_len') && ss.wsd_main_len <= 0)) return {status:'unavailable',dependencies:deps,reason:'zero denominator'};
     return {status:'available',dependencies:deps, unconfirmed:deps.filter(c => state(inputStatus,sid,c,ss[c]) === 'unconfirmed')};
   }
-  return {MINIMUM, DEPENDENCIES, state, active, validate, availability};
+  return {MINIMUM, DEPENDENCIES, state, active, requiredCodes, validate, availability};
 });

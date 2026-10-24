@@ -98,11 +98,15 @@
   /**
    * parts: [{ where, text, ai, reviewed }]. Returns { placeholders, unreviewed, uncited, items } (counts and where).
    */
+  function screeningDetails(text) {
+    return {placeholders: String(text || "").match(PLACEHOLDER) || [], claims: sentences(text).filter(s => CLAIM.test(s) && !/\[S\d+/.test(s) && !PH_TEST.test(s))};
+  }
   function review(parts) {
     const out = { placeholders: 0, unreviewed: 0, uncited: 0, items: [] };
     for (const p of parts || []) {
-      const ph = (String(p.text || '').match(PLACEHOLDER) || []).length;
-      const unc = p.ai ? sentences(p.text).filter(s => CLAIM.test(s) && !/\[S\d+/.test(s) && !PH_TEST.test(s)).length : 0;
+      const details = screeningDetails(p.text);
+      const ph = details.placeholders.length;
+      const unc = p.ai ? details.claims.length : 0;
       const unrev = p.ai && !p.reviewed ? 1 : 0;
       out.placeholders += ph; out.uncited += unc; out.unreviewed += unrev;
       if (ph || unc || unrev) out.items.push({ where: p.where, placeholders: ph, uncited: unc, unreviewed: !!unrev });
@@ -148,5 +152,5 @@
       ${selected.size ? '' : `<p class="small" data-fp-none>${esc(t('fp_none_selected'))}</p>`}</div>`;
   }
 
-  return { tierChip, cardLine, responsibilityPanel, estimatesSummary, alternatives, hasFigures, review, reviewChecklist, pathways, PLACEHOLDER };
+  return { tierChip, cardLine, responsibilityPanel, estimatesSummary, alternatives, hasFigures, screeningDetails, review, reviewChecklist, pathways, PLACEHOLDER };
 });

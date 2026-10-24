@@ -64,7 +64,7 @@
     const before=d.issues.length,hash=C.fp(payload(p,doc,kind,state)),record=doc.humanReview?.version===VERSION?doc.humanReview.sections?.[p.id]:null;
     const reviewValid=!!(record&&record.version===VERSION&&record.association===hash&&record.confirmed===true&&record.sourceClaims===true&&record.warnings===true&&typeof record.at==='string'&&Number.isFinite(Date.parse(record.at)));
     if(!p.text.trim())add('empty',p);
-    if(FU.review([{text:p.text,ai:p.ai,reviewed:true}]).placeholders)add('missing',p);
+    if(FU.review([{text:p.text,ai:p.ai,reviewed:true}]).placeholders)add('missing',p,true,FU.screeningDetails(p.text).placeholders);
     if(p.id==='schedule'&&list(doc.tasks).some(k=>!String(k.owner||'').trim()||!String(k.name||'').trim()||!Number.isFinite(k.weeks)||k.weeks<=0))add('missing',p);
     if(p.ai&&C.mayBeIncomplete(p.text))add('incomplete',p);
     const tags=[...p.text.matchAll(/\[S(\d+)\]/g)].map(m=>'S'+m[1]);
@@ -77,7 +77,7 @@
     if(sources(p,doc).length||tags.length||ev?.unknown_tags?.length||ev?.word_overlap?.some(w=>w.status==='low_overlap'))warnings.push('evidence');
     if(list(state.selectedActions).some(a=>a.provisional_warning||C.isCustom(a)))warnings.push('calculation');
     const note=typeof record?.note==='string'?record.note.trim():'';
-    for(const w of warnings)if(!reviewValid||!note)add(w,p,false);
+    for(const w of warnings)if(!reviewValid||!note)add(w,p,false,w==='claims'?FU.screeningDetails(p.text).claims:'');
     if(!reviewValid)add('unreviewed',p,false);
     const issues=d.issues.slice(before),hard=issues.some(x=>x.hard);
     d.sections.push({id:p.id,title:p.title,target:p.target,association:hash,status:hard||!reviewValid||(warnings.length&&!note)?'working_draft':'reviewed',warnings,issues,canReview:!hard&&!stale.length,note:reviewValid?note:'',review:reviewValid?copy(record):null});

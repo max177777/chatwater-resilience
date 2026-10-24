@@ -364,7 +364,7 @@ function suggestActions(results, assessment, engine, gwpIndex = 0, inputStatus =
   const [base, ...rest] = options;
   rest.sort((a, b) => (b.expected_kgco2 || 0) - (a.expected_kgco2 || 0));
   rest.forEach((o, k) => { o.id = 'A' + String(k + 1).padStart(2, '0'); });
-  const availability_checks = results.coverage ? Object.keys(Data.ACTIONS).flatMap(rule => rule==='solar_pv' ? [{rule,...statusFor(rule,null)}] : results.substages.filter(s => ({nrw_reduction:['wsd'],septic_desludging:['wwo'],cso_reduction:['wwc'],biogas_capture:['wwt'],pump_audit:['wsa','wsd','wwc']}[rule] || ['wsa','wst','wsd','wwc','wwt','wwo']).includes(s.prefix)).map(s => ({rule,prefix:s.prefix,name:s.name,...statusFor(rule,s)}))) : [];
+  const availability_checks = results.coverage ? Object.keys(Data.ACTIONS).flatMap(rule => rule==='solar_pv' ? [{rule,...statusFor(rule,null)}] : results.substages.filter(s => (Data.ACTION_PREFIXES[rule] || ['wsa','wst','wsd','wwc','wwt','wwo']).includes(s.prefix)).map(s => ({rule,prefix:s.prefix,name:s.name,...statusFor(rule,s)}))) : [];
   return { assumptions: ASSUMPTIONS, options: [base, ...rest], checks, availability_checks };
 }
 

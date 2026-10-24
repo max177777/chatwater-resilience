@@ -72,6 +72,9 @@ app.get('/api/meta', (req, res) => res.json({
   financing: P.financingFrameworks().map(f => ({ id: f.id, name: f.name, note: f._note })),
 }));
 
+// Informational only: downstream routes retain their independent authoritative gates.
+app.post('/api/readiness', wrap((req,res)=>res.json(require('./engine/readiness').evaluate(req.body))));
+
 // Revalidate on every downstream request; browser completion flags are not trusted.
 app.use('/api', (req, res, next) => {
   if (req.method !== 'POST') return next();

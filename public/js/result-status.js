@@ -176,6 +176,8 @@
     cso_reduction:['output:KPI_GHG_cso'],biogas_capture:['output:KPI_GHG_tre'],fuel_switch:['output:KPI_GHG_fuel'],
     solar_pv:['utility_energy','general:conv_kwh_co2'],
   };
+  // Same rule/process coverage used by the action engine's support inventory.
+  const ACTION_PREFIXES={nrw_reduction:['wsd'],septic_desludging:['wwo'],cso_reduction:['wwc'],biogas_capture:['wwt'],pump_audit:['wsa','wsd','wwc']};
   function actionStatus(rule,s,r,{assessment,inputStatus,Info,Tables}={}) {
     if (!r.coverage) return {status:'available',dependencies:[],mode:'raw_engine_math_only'};
     const specs=ACTIONS[rule];if(!specs)return {status:'untracked',dependencies:[]};
@@ -190,5 +192,5 @@
     });
     return {status:combine(states)==='available'&&states.some(s=>s.status==='not_applicable')?'not_applicable':combine(states),dependencies:specs,missing:states.filter(s=>!ok(s.status)).map(s=>s.dependency)};
   }
-  return {ok,input,prepare,inventory,evaluate,apply,raw,rollup,metric,ACTIONS,actionStatus};
+  return {ok,input,prepare,inventory,evaluate,apply,raw,rollup,metric,ACTIONS,ACTION_PREFIXES,actionStatus};
 });

@@ -211,7 +211,7 @@
           <dt>${esc(t('before_deciding'))}</dt><dd><div class="small"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</div>
             ${check ? `<div class="small muted">${esc(t('input_status'))}</div>${completeness(check, ctx)}<div class="small">${zeroNotes(check, ctx)}</div>${inputRows(check, ctx)}${untrackedList(check, ctx)}` : `<div class="small muted" data-not-tracked>${esc(t('not_tracked'))}</div>`}</dd>`}
         </dl>
-        <textarea class="field small" data-note="${esc(k)}" rows="2" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea>
+        <label class="field small"><span>${esc(t('notes_label'))}</span><textarea data-note="${esc(k)}" rows="2" aria-describedby="note-help-${esc(k)}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea></label><p id="note-help-${esc(k)}" class="small muted">${esc(t('notes_help'))}</p>
         ${opts.explainHtml || ''}
       </details>
     </div>`;
@@ -250,7 +250,7 @@
           <dt>${esc(t('ca_classification'))}</dt><dd data-classification="none">${esc(t('ca_no_classification'))}</dd>
           <dt>${esc(t('supporting_doc'))}</dt><dd data-support>${esc(t('no_supporting_doc'))}</dd>
         </dl>
-        <textarea class="field small" data-note="${esc(k)}" rows="2" maxlength="2000" aria-label="${esc(t('ca_notes'))}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea>
+        <label class="field small"><span>${esc(t('notes_label'))}</span><textarea data-note="${esc(k)}" rows="2" maxlength="2000" aria-describedby="note-help-${esc(k)}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea></label><p id="note-help-${esc(k)}" class="small muted">${esc(t('notes_help'))}</p>
       </details>
     </div>`;
   }
