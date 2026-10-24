@@ -241,7 +241,7 @@ app.post('/api/export', wrap(async (req, res) => {
   const results = (state.assessments || []).map((a,i) => AV.calculate(a,state.gwpIndex || 0,{meta:state.assessmentMeta?.[i],inputStatus:state.inputStatus?.[state.assessmentMeta?.[i]?.id]}));
   const docx = state.proposal ? await X.buildProposalDocx({
     lang: state.lang, proposal: state.proposal, results: assessment ? AV.calculate(assessment,state.gwpIndex || 0,{meta,inputStatus:state.inputStatus?.[meta?.id]}) : null,
-    actions: state.selectedActions, plan: state.plan, profile: state.profile, meta,
+    actions: state.selectedActions, plan: state.plan, profile: state.profile, meta, review:state.documentReview, exportMode:state.exportMode,
   }) : null;
   const zip = await X.buildZip({ ...state, results }, docx);
   const name = (state.profile?.name || assessment?.General?.Name || 'chatwater').replace(/[^\w-]+/g, '_');
@@ -254,7 +254,7 @@ app.post('/api/export/docx', wrap(async (req, res) => {
   const { assessment, meta } = I.exportContext(state, { requireProposal: true });
   const buf = await X.buildProposalDocx({
     lang: outputLang(state), proposal: state.proposal, results: assessment ? AV.calculate(assessment,state.gwpIndex || 0,{meta,inputStatus:state.inputStatus?.[meta?.id]}) : null,
-    actions: state.selectedActions, plan: state.plan, profile: state.profile, meta,
+    actions: state.selectedActions, plan: state.plan, profile: state.profile, meta, review:state.documentReview, exportMode:state.exportMode,
   });
   res.set({ 'Content-Type': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'Content-Disposition': 'attachment; filename="proposal.docx"' });
   res.send(buf);

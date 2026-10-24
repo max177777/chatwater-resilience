@@ -13,7 +13,7 @@ const WORKSPACE_KEYS=new Set(['assessments','assessmentMeta','inputStatus','proj
 const EVIDENCE_KEYS=new Set(('en id at prefix sid index kgco2 kwh status dependencies missing reason mode text values code label value unit review '
  +'id tag passage_id source_id sourceId title cite heading locator locatorLabel role review_status warnings qualifications qualification_details library_build publisher date url source from page printed_page section slide '
  +'library_build searched query queries context stage from status reason retrieved cited unknown_tags word_overlap checks tag_valid support overlap sentence '
- +'key error incomplete n questions unsupported_figures placeholders_dropped original kind version').split(/\s+/));
+ +'key error incomplete n questions unsupported_figures placeholders_dropped original kind version caveats').split(/\s+/));
 // Evidence is attached only to the retained output or selected action. Unknown nested
 // workspace containers and explicitly foreign-owned records are never carried along.
 function evidenceValue(v,aid){
@@ -28,13 +28,16 @@ function document(value,kind,aid){
  if(value.deps?.assessmentId!==aid)blocked('Document ownership does not match the project.');
  const out=fields(value,kind==='plan'?['summary','total_weeks','ai','lang','reviewed','created_at']:['title','route','ai','lang','reviewed','created_at']);
  out.deps=fields(value.deps,DEP_KEYS);
+ const reviewIds=new Set(kind==='proposal'?list(value.sections).map((s,i)=>'section-'+i):['summary','schedule',...list(value.concept?.areas).map((a,i)=>'concept-'+i)]);
+ if(value.humanReview){out.humanReview={version:typeof value.humanReview.version==='number'?value.humanReview.version:null,sections:Object.fromEntries(Object.entries(value.humanReview.sections||{}).filter(([id])=>reviewIds.has(id)).map(([id,r])=>[id,fields(r,['version','association','confirmed','sourceClaims','warnings','note','at'])]))};}
+ if(value.reviewNotes)out.reviewNotes=Object.fromEntries(Object.entries(value.reviewNotes).filter(([id,n])=>reviewIds.has(id)&&typeof n==='string'));
  for(const k of ['sources','related','evidence','ai_failed'])if(value[k]!==undefined)out[k]=evidenceValue(value[k],aid);
  if(kind==='plan'){
   out.tasks=list(value.tasks).map(t=>{
    if(t.action_key&&!String(t.action_key).startsWith(aid+'|'))blocked('A plan task points to another assessment.');
    return {...fields(t,['id','action_id','action_key','action','phase','action_origin','name','owner','start_week','weeks']),depends_on:strings(t.depends_on)};
   });
-  if(value.concept){out.concept={...fields(value.concept,['ai','ai_failed']),areas:list(value.concept.areas).map(a=>({...fields(a,['n','id','title','text','status','reviewed']),...Object.fromEntries(['questions','checks'].filter(k=>a[k]!==undefined).map(k=>[k,evidenceValue(a[k],aid)]))}))};for(const k of ['sources','related','evidence'])if(value.concept[k]!==undefined)out.concept[k]=evidenceValue(value.concept[k],aid);}
+  if(value.concept){out.concept={...fields(value.concept,['ai','ai_failed']),areas:list(value.concept.areas).map(a=>({...fields(a,['n','id','title','text','description','status','reviewed']),...Object.fromEntries(['questions','checks'].filter(k=>a[k]!==undefined).map(k=>[k,evidenceValue(a[k],aid)]))}))};for(const k of ['sources','related','evidence'])if(value.concept[k]!==undefined)out.concept[k]=evidenceValue(value.concept[k],aid);}
  }else out.sections=list(value.sections).map(s=>({...fields(s,['key','title','guidance','text','ai','reviewed','quotes_plan_summary']),...Object.fromEntries(['sources','related','evidence'].filter(k=>s[k]!==undefined).map(k=>[k,evidenceValue(s[k],aid)]))}));
  return out;
 }
@@ -120,6 +123,11 @@ function select(body,{requireProposal=false}={}){
   'Foreign or unbound previous versions and unrelated cached explanations',
   'Current-screen selection and workspace-only UI/cache data',
  ],sourceRevision:C.revision(a)};
+ out.documentReview=require('./document-review').evaluate(out);
+ out.exportMode=body.exportMode||'working_draft';
+ if(!['working_draft','reviewed'].includes(out.exportMode))blocked('Unknown document review export mode.');
+ if(out.exportMode==='reviewed'&&out.documentReview.status!=='reviewed')blocked('Human review and required document checks are incomplete. Download a working draft or resolve the review issues.');
+ out.exportScope.review=out.exportMode;
  // Build from the projection, never reuse the full incoming envelope or its digests.
  out.projectTransfer=T.pack(out);
  return out;
@@ -129,7 +137,7 @@ function manifest(state,contents){
  return {format:'chatwater-selected-project-package',version:1,scope:'selected_project',project:{id:m.id,assessmentId:m.id,name:a.General.Name,identity_basis:'outputs.source_assessment_id',revision:C.revision(a)},
  versions:{application:require('../package.json').version,ecam:'3.0.1',native_ecam:a.General.version,session:C.SCHEMA,transfer:T.VERSION},period:r.period,language:state.lang,
  calculation_settings:{gwpIndex:state.gwpIndex,gwp:r.gwp,units:a.Configuration.Units,general_factors:r.factors,input_status_support:r.supportRevision},
- review_status:{package:'working_draft',freshness:'current under existing validity/freshness checks',plan_reviewed:!!state.plan?.reviewed,proposal_sections:list(state.proposal?.sections).map(s=>({key:s.key,reviewed:!!s.reviewed,ai:!!s.ai})),scientific_approval:'not established by export'},
+ review_status:{package:state.exportMode||'working_draft',evaluation:state.documentReview,freshness:'current under existing validity/freshness checks',scientific_approval:'not established by export'},
  omissions:state.exportScope.omissions,contents};
 }
 module.exports={select,manifest};

@@ -1,6 +1,6 @@
 # CW-11 selected project export — local handoff
 
-Verified 2026-10-24. CW-03 is preserved in local commit `bc8d316` on `noah/missing-data-continuity`, following base `37aef3d`. Its remaining real-browser backup acceptance passed before that commit; see the dated addendum in [CW-03](cw03-missing-data-continuity.md). CW-11 starts from that checkpoint on `noah/project-export-scope` and remains **uncommitted**. Existing unrelated `.github/` files are excluded. No push, merge, deployment, provider call or ECAM equation change occurred.
+Verified 2026-10-24. CW-03 is preserved in local commit `bc8d316` on `noah/missing-data-continuity`, following base `37aef3d`. Its remaining real-browser backup acceptance passed before that commit; see the dated addendum in [CW-03](cw03-missing-data-continuity.md). CW-11 starts from that checkpoint on `noah/project-export-scope` and was subsequently committed as `fc85013` before CW-10. The CW-10 continuation is checkpointed locally on `noah/document-review-status`; see [review status handoff](cw10-document-review-status.md). Existing unrelated `.github/` files are excluded. No push, merge, deployment, provider call or ECAM equation change occurred.
 
 ## Default package and ownership
 
@@ -17,7 +17,7 @@ The ZIP includes:
 - `ecam/application-metadata.json` and `project/project-backup.json`, rebuilt from the **same scoped state** with valid native, metadata and state digests. The latter is a supported single-project recovery envelope, not a complete workspace backup.
 - `manifest.json`: project/source assessment ID and revision, application/ECAM/session/transfer versions, period, output language, units, GWP/factors/support revision, review status, deliberate omissions, and every archive file with byte count/SHA-256 (manifest self-hash intentionally excluded).
 
-Review status is explicitly **working draft**. Existing human review flags are preserved; a successful export does not establish scientific approval. Interface-language switching does not translate saved text or change its output language.
+At the CW-11 checkpoint, review status is explicitly **working draft**. The CW-10 continuation adds content-bound human review and accurate draft/reviewed export labels. Existing human review flags are preserved; a successful export does not establish scientific approval. Interface-language switching does not translate saved text or change its output language.
 
 ## Deep exclusions and other download routes
 

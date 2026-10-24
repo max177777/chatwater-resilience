@@ -160,7 +160,7 @@ test('Indonesian export: labels, numbers, dates, README and concept statuses are
   const proposal = await P.draftProposal({ results: p.results, actions: p.selectedActions, plan: p.plan, lang: 'id' }, fw);
   assert.ok(proposal.sections.every(s => !/[A-Za-z]+ (and|the|with) /.test(s.guidance)), 'section guidance in Indonesian');
   const text = plain(await docXml(await X.buildProposalDocx({ lang: 'id', proposal, results: p.results, actions: p.selectedActions, plan: p.plan })));
-  for (const w of ['Status draf', 'Hasil dasar ECAM', 'Kegiatan terpilih', 'Periode penilaian', 'Disiapkan']) assert.ok(text.includes(w), w);
+  for (const w of ['Asal pembuatan teks', 'Hasil dasar ECAM', 'Kegiatan terpilih', 'Periode penilaian', 'Disiapkan']) assert.ok(text.includes(w), w);
   for (const w of ['Expected result', 'Draft status', 'Selected actions', 'Assessment period']) assert.ok(!text.includes(w), `no English label ${w}`);
   assert.ok(/\d{1,3}(\.\d{3})+/.test(text), 'Indonesian thousands separator');
   assert.ok(text.includes('bahasa aslinya'), 'original-language note for sources');

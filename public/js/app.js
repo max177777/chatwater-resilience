@@ -47,6 +47,7 @@
   try { loaded = CW.loadSession(window.localStorage, STORE, newId); }
   catch (e) { loaded = { state: null, problem: 'read_failed', error: e, original: null }; }
   let state = Object.assign(defaults(), loaded.state || {});
+  state.ui={...state.ui,reviewGenerating:false}; // A process-local request cannot survive a reload.
   if (loaded.problem) storageLock = { kind: loaded.problem, quota: !!loaded.quota, original: loaded.original };
   state.ui = Object.assign(defaults().ui, state.ui || {});
 
@@ -369,12 +370,14 @@
   async function generatePlan(btn, lang) {
     const sc = byId(state.actionSet?.assessmentId);
     if (!sc || freshness().actions.length) return toast(t('outdated_hint_actions'));
+    if(state.ui.reviewGenerating)return;
     if (state.plan && !confirm(t('confirm_replace_plan'))) return;
-    busy(btn, true, t('drafting'));
+    state.ui.reviewGenerating=true;render();
     try {
       await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, inputStatus: state.inputStatus?.[idOf(sc)] || null, estimates: estimatesList(sc).length, lang, rejectedActions: state.rejectedActions }));
       state.ui.genError = null;
     } catch (err) { state.ui.genError = { what: 'plan', message: err.message }; }
+    finally{state.ui.reviewGenerating=false;}
     save(); render();
   }
   async function generateProposal(btn, lang) {
@@ -383,8 +386,9 @@
     if (summed().plan) return toast(t('legacy_sum_title') + ' ' + t('legacy_sum_body'));
     const sc = sourceAssessment() || Global;
     const f = state.financing;
+    if(state.ui.reviewGenerating)return;
     if (state.proposal && !confirm(t('confirm_replace_proposal'))) return;
-    busy(btn, true, t('drafting'));
+    state.ui.reviewGenerating=true;render();
     try {
       await CW.regenerate(state, 'proposal', () => api('/api/proposal', {
         route: f.route, customFramework: f.customFramework, guideText: f.guideText,
@@ -393,8 +397,9 @@
         pathways: f.pathways || [], estimates: estimatesList(sc).length, rejectedActions: state.rejectedActions,
       }));
       state.ui.genError = null;
-      return go('finance:draft');
+      state.ui.reviewGenerating=false;return go('finance:draft');
     } catch (err) { state.ui.genError = { what: 'proposal', message: err.message }; }
+    finally{state.ui.reviewGenerating=false;}
     save(); render();
   }
 
@@ -967,13 +972,48 @@
     plan.total_weeks = plan.tasks.reduce((m, k) => Math.max(m, k.start_week + k.weeks), 0);
   }
 
-  /** Parts of the plan a person should check before sharing (FU.review). AI text that was edited counts as AI text until marked reviewed. */
-  function conceptParts(p) {
-    const areas = (p.concept && p.concept.areas) || [];
-    return [{ where: t('project_summary'), text: p.summary, ai: p.ai === true, reviewed: true },
-      ...areas.map(a => ({ where: `${a.n}. ${a.title}`, text: a.text, ai: a.status === 'ai' || (a.status === 'edited' && p.concept.ai), reviewed: !!a.reviewed }))];
+  function reviewContext() {
+    const ids=new Set([state.plan?.deps?.assessmentId,state.proposal?.deps?.assessmentId,state.actionSet?.assessmentId]);
+    return {freshness:freshness(),pending:!!state.ui.reviewGenerating,results:Scenarios.filter(a=>ids.has(idOf(a))).map(a=>({...reviewedResults(a),assessmentId:idOf(a)}))};
   }
-  function refreshConceptReview(root, p) { const el = root.querySelector('#pc-review'); if (el) el.innerHTML = FU.reviewChecklist(conceptParts(p), fuCtx()); }
+  function documentReview() {return DR.evaluate(state,reviewContext());}
+  function reviewPanel(kind) {
+    const report=documentReview(),d=report.documents[kind];if(!d)return '';
+    const tr=k=>DR.t(k,state.lang),issues=kind==='proposal'?report.issues:d.issues.map(i=>({...i,document:kind}));
+    return `<section class="card" id="review-${kind}" tabindex="-1" aria-label="${esc(tr('review'))}"><h2>${esc(tr('status'))}: <span data-document-status="${kind}">${esc(tr(d.status))}</span></h2><p class="small">${esc(tr('meaning'))}</p>
+      ${report.scientificWarnings.map(w=>`<p class="notice warn small">${esc(L(w.text))}</p>`).join('')}<h3>${esc(tr('unresolved'))}</h3><div role="status" aria-live="polite">${issues.length?`<ul>${issues.map(i=>`<li><button type="button" class="link" data-review-link="${esc(i.target)}" data-review-document="${i.document}" data-review-issue="${i.code}">${esc(t(i.document==='plan'?'tab_plan':'tab_finance'))} / ${esc(i.title)}: ${esc(tr(i.code))}</button></li>`).join('')}</ul>`:`<p>${esc(tr('none'))}</p>`}</div>
+      ${d.sections.map(r=>`<fieldset><legend>${esc(r.title)} — ${esc(tr(r.status))}</legend>${r.warnings.length?`<ul class="small">${r.warnings.map(w=>`<li>${esc(tr(w))}</li>`).join('')}</ul>`:''}
+        <label class="field"><span>${esc(tr('note'))}</span><textarea data-review-note="${kind}|${r.id}" aria-label="${esc(r.title+' — '+tr('note'))}">${esc(state[kind]?.reviewNotes?.[r.id]??r.note)}</textarea></label>
+        <label><input type="checkbox" data-review-confirm="${kind}|${r.id}" data-review-association="${esc(r.association)}" ${r.status==='reviewed'?'checked':''} ${!r.canReview||state.ui.reviewGenerating?'disabled':''}> ${esc(tr('confirm').replace('{section}',r.title))}</label>
+        <p class="small muted">${esc(tr('association'))}: ${esc(r.association)}</p><p data-review-error="${r.id}" role="alert"></p></fieldset>`).join('')}</section>`;
+  }
+  function refreshDocumentReview(root,kind) {
+    const panel=root.querySelector('#review-'+kind);if(panel)panel.outerHTML=reviewPanel(kind);
+    bindDocumentReview(root,kind);
+    const report=documentReview();root.querySelectorAll('[data-reviewed-export]').forEach(b=>b.disabled=!!exportBlockedReason()||report.status!=='reviewed'||!!state.ui.reviewGenerating);
+  }
+  function bindDocumentReview(root,kind) {
+    root.querySelectorAll('[data-review-note]').forEach(tx=>tx.oninput=()=>{
+      const [what,id]=tx.dataset.reviewNote.split('|'),doc=state[what];doc.reviewNotes={...doc.reviewNotes,[id]:tx.value};DR.clear(doc,id);save();
+      const panel=root.querySelector('#review-'+what),report=documentReview();
+      panel.querySelector('[data-document-status]').textContent=DR.t(report.documents[what].status,state.lang);
+      panel.querySelector('[role=status]').textContent=DR.t('unreviewed',state.lang);
+      const cb=panel.querySelector(`[data-review-confirm="${what}|${id}"]`);cb.checked=false;
+      root.querySelectorAll('[data-reviewed-export]').forEach(b=>b.disabled=true);
+    });
+    root.querySelectorAll('[data-review-link]').forEach(b=>b.onclick=()=>{
+      if(['invalid','outdated_issue'].includes(b.dataset.reviewIssue)){const sc=byId(state[b.dataset.reviewDocument]?.deps?.assessmentId);if(sc)setCurrent(Scenarios.indexOf(sc));go('assess:results');return;}
+      if(b.dataset.reviewDocument!==kind){go(b.dataset.reviewDocument==='plan'?'plan':'finance:draft');}
+      const el=document.getElementById(b.dataset.reviewLink)||document.getElementById('review-'+b.dataset.reviewDocument);
+      if(el){el.scrollIntoView({block:'center'});el.focus();}
+    });
+    root.querySelectorAll('[data-review-confirm]').forEach(cb=>cb.onchange=()=>{
+      const [what,id]=cb.dataset.reviewConfirm.split('|'),note=root.querySelector(`[data-review-note="${what}|${id}"]`).value;
+      try{DR.confirm(state,what,id,cb.dataset.reviewAssociation,{note,checked:cb.checked},reviewContext());save();refreshDocumentReview(root,kind);}
+      catch(e){cb.checked=false;const error=root.querySelector(`[data-review-error="${id}"]`);error.textContent=DR.t(e.message,state.lang);error.tabIndex=-1;error.focus();}
+    });
+  }
+  function refreshConceptReview(root, p) { refreshDocumentReview(root,'plan'); }
   function conceptHtml(p) {
     const cp = p && p.concept;
     if (!cp || !cp.areas) return '';
@@ -987,13 +1027,13 @@
     };
     return `<div class="card" data-concept><h2>${esc(t('pc_title'))}</h2><p class="small muted">${esc(t('pc_sub'))}</p>
       ${cp.ai_failed ? `<div class="notice warn small" data-pc-ai-failed>${esc(t('pc_ai_failed'))}</div>` : ''}
-      <div id="pc-review">${FU.reviewChecklist(conceptParts(p), fuCtx())}</div>
+
       ${cp.areas.map((a, i) => `<div class="pc-area" data-area="${a.n}"><div class="row"><h3 class="grow" style="margin:0">${a.n}. ${esc(a.title)}
           <span class="pc-st pc-${esc(a.status)}" data-pc-status="${i}">${esc(t('pc_status_' + a.status))}</span></h3>
-          <label class="small"><input type="checkbox" data-pc-reviewed="${i}" ${a.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label></div>
+          </div>
         <div class="small muted">${esc(a.description || '')}</div>${checks(a)}
         ${a.questions && a.questions.length ? `<details class="small"><summary>${esc(t('pc_questions'))}</summary><ul>${a.questions.map(q => `<li>${esc(q)}</li>`).join('')}</ul></details>` : ''}
-        <textarea data-pc="${i}" rows="${Math.min(12, Math.max(4, String(a.text || '').split('\n').length + 1))}">${esc(a.text)}</textarea></div>`).join('')}
+        <textarea id="review-plan-concept-${i}" aria-label="${esc(a.title)}" data-pc="${i}" rows="${Math.min(12, Math.max(4, String(a.text || '').split('\n').length + 1))}">${esc(a.text)}</textarea></div>`).join('')}
       ${cp.ai ? sourcesHtml(cp.sources) : ''}</div>`;
   }
   function viewPlan(root) {
@@ -1011,14 +1051,14 @@
       body = `<div class="card"><div class="row"><h2 class="grow">${esc(t('project_summary'))}</h2><button type="button" class="btn sm" data-chat="plan">${esc(t('chat_btn_plan'))}</button></div>
           ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
           ${p.ai === true && CW.mayBeIncomplete(p.summary) ? `<div class="small dc-flag" data-incomplete="plan">${esc(t('may_be_incomplete'))}</div>` : ''}
-          <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${p.ai === false ? relatedHtml(p.related || p.sources) : sourcesHtml(p.sources)}${evidenceHtml(p.evidence, p.ai !== false)}</div>
+          <div class="section-edit"><textarea id="plan-summary" aria-label="${esc(t('project_summary'))}">${esc(p.summary || '')}</textarea></div>${p.ai === false ? relatedHtml(p.related || p.sources) : sourcesHtml(p.sources)}${evidenceHtml(p.evidence, p.ai !== false)}</div>
         ${conceptHtml(p)}
-        <div class="card" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
+        <div class="card" id="review-plan-schedule" tabindex="-1" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
           <table class="data"><thead><tr><th>ID</th><th>${esc(t('task'))}</th><th>${esc(t('owner'))}</th><th class="num">${esc(t('start_week'))}</th><th class="num">${esc(t('weeks'))}</th><th>${esc(t('depends'))}</th></tr></thead><tbody>
           ${p.tasks.map((k, i) => `<tr><td>${esc(k.id)}</td><td><span class="muted small">${esc(k.action_id)} · ${esc(k.action)}${k.action_origin === 'user' ? ` · ${esc(t('user_proposed'))}` : ''}</span><br>${esc(k.name)}
               ${state.ui.planDetails ? `<div class="gantt"><div class="gbar" style="margin-left:${100 * k.start_week / max}%;width:${Math.max(1, 100 * k.weeks / max)}%"></div></div>` : ''}</td>
-            <td><input type="text" data-owner="${i}" value="${esc(k.owner)}"></td><td class="num">${k.start_week}</td>
-            <td><input type="number" min="0" step="1" data-weeks="${i}" value="${k.weeks}" style="width:70px"></td><td>${esc((k.depends_on || []).join(', '))}</td></tr>`).join('')}
+            <td><input type="text" data-owner="${i}" aria-label="${esc(k.name+' — '+t('owner'))}" value="${esc(k.owner)}"></td><td class="num">${k.start_week}</td>
+            <td><input type="number" min="0" step="1" data-weeks="${i}" aria-label="${esc(k.name+' — '+t('weeks'))}" value="${k.weeks}" style="width:70px"></td><td>${esc((k.depends_on || []).join(', '))}</td></tr>`).join('')}
           </tbody></table></div>`;
     }
     root.innerHTML = `<div class="page-head"><h1>${esc(t('plan_title'))}</h1><p class="muted">${esc(t('plan_sub'))}</p></div>
@@ -1030,6 +1070,7 @@
       ${outputLangNotice(p, 'plan')}
       ${evidenceNotice()}
       <div class="card"><ul style="margin:0;padding-left:18px">${acts}</ul></div>
+      ${p ? reviewPanel('plan') : ''}
       ${body}
       <div class="actions-row">
         <button class="btn" data-go="actions:compare">${esc(t('back'))}</button>
@@ -1048,15 +1089,15 @@
       p.deps = CW.planDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, profile: state.profile, supportRevision:reviewedResults(sc).supportRevision });
       save(); render();
     };
-    root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); refreshSummed(root, 'plan'); refreshConceptReview(root, p); };
+    root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; DR.clear(p,'summary'); save(); refreshSummed(root, 'plan'); refreshConceptReview(root, p); };
     root.querySelectorAll('[data-pc]').forEach(tx => tx.oninput = () => {
       const a = p.concept.areas[+tx.dataset.pc];
-      a.text = tx.value; if (a.status !== 'edited') { a.status = 'edited'; const st = root.querySelector(`[data-pc-status="${tx.dataset.pc}"]`); if (st) { st.className = 'pc-st pc-edited'; st.textContent = t('pc_status_edited'); } }
+      a.text = tx.value; DR.clear(p,'concept-'+tx.dataset.pc);delete a.reviewed; if (a.status !== 'edited') { a.status = 'edited'; const st = root.querySelector(`[data-pc-status="${tx.dataset.pc}"]`); if (st) { st.className = 'pc-st pc-edited'; st.textContent = t('pc_status_edited'); } }
       save(); refreshConceptReview(root, p);
     });
-    root.querySelectorAll('[data-pc-reviewed]').forEach(cb => cb.onchange = () => { p.concept.areas[+cb.dataset.pcReviewed].reviewed = cb.checked; save(); refreshConceptReview(root, p); });
-    root.querySelectorAll('[data-owner]').forEach(i => i.oninput = () => { p.tasks[+i.dataset.owner].owner = i.value; save(); });
-    root.querySelectorAll('[data-weeks]').forEach(i => i.onchange = () => { p.tasks[+i.dataset.weeks].weeks = Math.max(0, parseInt(i.value, 10) || 0); recomputeSchedule(p); save(); render(); });
+    bindDocumentReview(root,'plan');
+    root.querySelectorAll('[data-owner]').forEach(i => i.oninput = () => { p.tasks[+i.dataset.owner].owner = i.value; DR.clear(p,'schedule');save();refreshDocumentReview(root,'plan'); });
+    root.querySelectorAll('[data-weeks]').forEach(i => i.onchange = () => { p.tasks[+i.dataset.weeks].weeks = Math.max(0, parseInt(i.value, 10) || 0); recomputeSchedule(p);DR.clear(p,'schedule');save();render(); });
     root.querySelector('#plan-details').onclick = () => { state.ui.planDetails = !state.ui.planDetails; save(); render(); };
     root.querySelector('#save-plan').onclick = () => { toast(persist() ? t('plan_saved') : t('not_saved_kept_in_page')); go('finance'); };
   }
@@ -1084,7 +1125,7 @@
       <div class="actions-row"><button class="btn" data-go="plan">${esc(t('back'))}</button>
         ${state.proposal ? `<button class="btn" data-go="finance:draft">${esc(t('open_draft'))}</button>` : ''}
         ${previousControl('proposal')}
-        ${exportScopeNotice()}<button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(t('download_all'))}</button>
+        ${exportScopeNotice()}<button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button>
         <button class="btn primary" id="draft" ${upstreamStale ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
     root.querySelectorAll('[data-route]').forEach(c => c.onclick = e => {
       if (e.target.closest('label')) { f.route = c.dataset.route; save(); return; }
@@ -1131,8 +1172,8 @@
   }
 
   function exportScopeNotice() {const ids=[state.proposal?.deps?.assessmentId,state.plan?.deps?.assessmentId,state.actionSet?.assessmentId].filter(Boolean),sc=new Set(ids).size===1?byId(ids[0]):null;return `<p class="notice" data-selected-project-scope>${esc(t('selected_package_scope').replace('{name}',sc?.General.Name || '—'))}</p>`;}
-  function exportState() {
-    return { ...plain(state), assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
+  function exportState(exportMode='working_draft') {
+    return { ...plain(state), exportMode, assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
   }
   // mirrors the server check so the user sees why before a request is made
   function exportBlockedReason() {
@@ -1142,18 +1183,17 @@
     if (s.plan || s.proposal.length) return t('legacy_sum_title') + ' ' + t('legacy_sum_body');
     return '';
   }
-  async function downloadAll(btn) {
+  async function downloadAll(btn,exportMode='working_draft') {
     const why = exportBlockedReason();
     if (why) return toast(why);
     busy(btn, true, t('download_all'));
     try {
-      const blob = await api('/api/export', exportState(), true);
+      const blob = await api('/api/export', exportState(exportMode), true);
       download(blob, `${(state.profile?.name || sourceAssessment()?.General?.Name || 'chatwater').replace(/[^\w-]+/g, '_')}-chatwater-files.zip`);
     } catch (err) { toast(t('error') + ': ' + err.message); }
     busy(btn, false);
   }
 
-  const draftParts = p => (p.sections || []).map(s => ({ where: s.title, text: s.text, ai: s.ai === true || s.quotes_plan_summary === 'ai', reviewed: !!s.reviewed }));
   function viewDraft(root) {
     const p = state.proposal;
     if (!p) return go('finance');
@@ -1172,16 +1212,16 @@
       ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}</li>`).join('')}</ul></div>`
         : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
       ${evidenceNotice()}
-      <div id="draft-review">${FU.reviewChecklist(draftParts(p), fuCtx())}</div>
-      ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2>${s.ai === true || s.quotes_plan_summary === 'ai' ? `<label class="small" style="margin-right:8px"><input type="checkbox" data-sec-reviewed="${i}" ${s.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label>` : ''}<button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div>${s.quotes_plan_summary === 'ai' ? `<div class="small dc-flag">${esc(t('sec_quotes_ai_summary'))}</div>` : ''}${(s.ai === true && CW.mayBeIncomplete(s.text)) || (s.quotes_plan_summary === 'ai' && CW.mayBeIncomplete(s.text, { anyParagraph: true })) ? `<div class="small dc-flag" data-incomplete="${i}">${esc(t('may_be_incomplete'))}</div>` : ''}<textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
+      ${reviewPanel('proposal')}
+      ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div>${s.quotes_plan_summary === 'ai' ? `<div class="small dc-flag">${esc(t('sec_quotes_ai_summary'))}</div>` : ''}${(s.ai === true && CW.mayBeIncomplete(s.text)) || (s.quotes_plan_summary === 'ai' && CW.mayBeIncomplete(s.text, { anyParagraph: true })) ? `<div class="small dc-flag" data-incomplete="${i}">${esc(t('may_be_incomplete'))}</div>` : ''}<textarea id="review-proposal-section-${i}" aria-label="${esc(s.title)}" data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
-        ${exportScopeNotice()}<button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
-        <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(t('download_all'))}</button></div>`;
-    const refreshDraftReview = () => { const el = root.querySelector('#draft-review'); if (el) el.innerHTML = FU.reviewChecklist(draftParts(p), fuCtx()); };
-    root.querySelectorAll('[data-sec-reviewed]').forEach(cb => cb.onchange = () => { p.sections[+cb.dataset.secReviewed].reviewed = cb.checked; save(); refreshDraftReview(); });
+        ${exportScopeNotice()}<button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · Word</button>
+        <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button><button class="btn" data-reviewed-export="word" ${blocked||state.ui.reviewGenerating||documentReview().status!=='reviewed'?'disabled':''}>${esc(DR.t('reviewed_download',state.lang))} · Word</button><button class="btn" data-reviewed-export="package" ${blocked||state.ui.reviewGenerating||documentReview().status!=='reviewed'?'disabled':''}>${esc(DR.t('reviewed_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button></div>`;
+    const refreshDraftReview=()=>refreshDocumentReview(root,'proposal');
+    bindDocumentReview(root,'proposal');
     root.querySelectorAll('[data-sec]').forEach(tx => tx.oninput = () => {
-      p.sections[+tx.dataset.sec].text = tx.value; save(); refreshDraftReview();
+      p.sections[+tx.dataset.sec].text = tx.value;DR.clear(p,'section-'+tx.dataset.sec);delete p.sections[+tx.dataset.sec].reviewed;save(); refreshDraftReview();
       refreshSummed(root, 'proposal');
       const off = !!(outdated || sums());
       root.querySelectorAll('#dl-word, #dl-all').forEach(b => { b.disabled = off; });
@@ -1195,14 +1235,16 @@
       p.deps = CW.proposalDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, plan: state.plan, profile: state.profile, supportRevision:reviewedResults(sc).supportRevision, financing: state.financing });
       save(); render();
     };
-    root.querySelector('#dl-word').onclick = async e => {
+    const downloadWord=async (btn,exportMode='working_draft') => {
       const why = exportBlockedReason();
       if (why) return toast(why);
-      busy(e.target, true, t('download_word'));
-      try { download(await api('/api/export/docx', exportState(), true), 'proposal.docx'); }
+      busy(btn, true, t('download_word'));
+      try { download(await api('/api/export/docx', exportState(exportMode), true), 'proposal.docx'); }
       catch (err) { toast(t('error') + ': ' + err.message); }
-      busy(e.target, false);
+      busy(btn, false);
     };
+    root.querySelector('#dl-word').onclick=e=>downloadWord(e.target);
+    root.querySelectorAll('[data-reviewed-export]').forEach(b=>b.onclick=()=>b.dataset.reviewedExport==='word'?downloadWord(b,'reviewed'):downloadAll(b,'reviewed'));
     root.querySelector('#dl-all').onclick = e => downloadAll(e.target);
   }
 

@@ -13,6 +13,7 @@ const CA = require('../public/js/custom-actions');
 const CW = require('../public/js/cw-core');
 const MD = require('./doc-markdown');
 const SN = require('../public/js/source-notes');
+const DR = require('../public/js/document-review');
 
 // Interface labels for what an action addresses, so exports and cards use the same words.
 const { UI, STAGE_LABELS } = vm.runInNewContext(
@@ -121,7 +122,7 @@ function documentTitle(proposal, name) {
   return /—\s*$/.test(title) && name ? `${base} — ${name}` : base;
 }
 
-async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan, profile, meta }) {
+async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan, profile, meta, review, exportMode='working_draft' }) {
   const t = T[lang] || T.en;
   const names = stageNameMap(lang);
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : (o || '');
@@ -131,10 +132,21 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
   const states = sections.map(s => sectionState(s, proposal));
 
   const children = [
+    new Paragraph({style:'StatusBox',children:[new TextRun({text:DR.t(exportMode,lang).toUpperCase(),bold:true})]}),
     new Paragraph({ heading: HeadingLevel.TITLE, children: [new TextRun(documentTitle(proposal, name))] }),
     new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: [profile?.name || results?.name, profile?.location].filter(Boolean).join(' · '), color: MD.COLORS.muted })] }),
     new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: `${t.prepared}: ${CW.formatDate(new Date().toISOString().slice(0, 10), lang)}`, size: MD.SIZE.note, color: MD.COLORS.muted })] }),
   ];
+  children.push(note(DR.t('meaning',lang)));
+  if(review){
+    for(const w of review.scientificWarnings||[])children.push(note(L(w.text)));
+    children.push(new Paragraph({heading:HeadingLevel.HEADING_1,children:[new TextRun(DR.t('unresolved',lang))]}));
+    children.push(...(review.issues.length?review.issues.map(i=>note(`${i.document} / ${i.title}: ${DR.t(i.code,lang)}${i.detail?' ('+i.detail+')':''}`)):[note(DR.t('none',lang))]));
+    for(const [kind,d]of Object.entries(review.documents)){
+      children.push(note(`${kind}: ${DR.t(d.status,lang)} · ${DR.t('association',lang)} ${d.association}`));
+      for(const r of d.sections)children.push(note(`${r.title}: ${DR.t(r.status,lang)}${r.review?.note?' · '+r.review.note:''}`));
+    }
+  }
   // concise overall status: how the draft was produced, what failed and what may be incomplete
   const aiCount = states.filter(x => x.ai).length;
   const failed = proposal.ai_failed || [];
@@ -143,16 +155,18 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
     : [aiCount === sections.length && sections.length ? t.status_ai(sections.length) : aiCount === 0 ? t.status_template : t.status_mixed(aiCount, sections.length - aiCount)];
   const incomplete = sections.filter((s, i) => states[i].incomplete).map(s => s.title);
   if (incomplete.length) lines.push(t.status_incomplete(incomplete.join('; ')));
+  if(exportMode==='reviewed'&&!failed.length&&!aiCount)lines.splice(0,1,lang==='id'?'Asal teks: templat terstruktur yang telah ditinjau manusia.':'Text origin: structured template with human review recorded.');
   lines.push(t.note);
   if (t.original_language) lines.push(t.original_language);
-  children.push(new Paragraph({ style: 'StatusBox', keepNext: true, children: [new TextRun({ text: t.status_head, bold: true })] }),
+  children.push(new Paragraph({ style: 'StatusBox', keepNext: true, children: [new TextRun({ text: lang==='id'?'Asal pembuatan teks':'Generation origin', bold: true })] }),
     ...lines.map((l, i) => new Paragraph({ style: 'StatusBox', keepLines: true, ...(i === lines.length - 1 ? { spacing: { after: 280 } } : {}), children: [new TextRun(MD.chem(l))] })));
 
   let lists = 0;
   sections.forEach((s, i) => {
     const st = states[i];
     children.push(new Paragraph({ heading: HeadingLevel.HEADING_1, keepNext: true, keepLines: true, children: [new TextRun(s.title)] }));
-    const label = st.ai ? t.sec_ai : st.quotesAi ? t.sec_quotes_ai : st.failed ? t.sec_template_failed : t.sec_template;
+    if(review?.documents.proposal?.sections[i]){const r=review.documents.proposal.sections[i];children.push(note(`${DR.t(r.status,lang)} · ${DR.t('association',lang)} ${r.association}${r.review?' · '+r.review.at:''}`,{keepNext:true}));}
+    const label = exportMode==='reviewed'?(st.ai?(lang==='id'?'Teks dibuat AI':'AI-generated text'):(lang==='id'?'Teks templat terstruktur':'Structured template text')):st.ai ? t.sec_ai : st.quotesAi ? t.sec_quotes_ai : st.failed ? t.sec_template_failed : t.sec_template;
     children.push(new Paragraph({ style: 'SectionStatus', keepNext: true, children: [new TextRun(label)] }));
     if (st.incomplete) children.push(new Paragraph({ style: 'SectionWarning', keepNext: true, children: [new TextRun(t.sec_incomplete)] }));
     const body = MD.toDocx(s.text, { title: s.title, stageNames: names, listBase: lists, contentWidth: CONTENT });
@@ -202,7 +216,7 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
   }
 
   const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [
-    new TextRun({ size: MD.SIZE.tableNote, color: MD.COLORS.muted, children: [`${t.page} `, PageNumber.CURRENT, ` ${t.of} `, PageNumber.TOTAL_PAGES] })] })] });
+    new TextRun({ size: MD.SIZE.tableNote, color: MD.COLORS.muted, children: [`${DR.t(exportMode,lang)} · ${t.page} `, PageNumber.CURRENT, ` ${t.of} `, PageNumber.TOTAL_PAGES] })] })] });
   const doc = new Document({
     title: documentTitle(proposal, name), creator: 'ChatWater Resilience', description: t.note,
     numbering: { config: [{ reference: MD.NUMBERING.reference, levels: MD.NUMBERING.levels.map(l => ({ ...l, format: LevelFormat[{ decimal: 'DECIMAL', lowerLetter: 'LOWER_LETTER', lowerRoman: 'LOWER_ROMAN' }[l.format]] })) }] },
@@ -364,6 +378,7 @@ async function buildZip(state, docxBuffer) {
   const zip = new JSZip();
   const lang = state.lang || 'en';
   const z = ZIP_T[lang] || ZIP_T.en;
+  if(state.documentReview)zip.file('document-review.json',JSON.stringify({export_status:state.exportMode||'working_draft',...state.documentReview},null,2));
   if (docxBuffer) zip.file('proposal.docx', docxBuffer);
   zip.file('ecam/assessments-ecam-format.json', JSON.stringify(state.assessments || [], null, 2));
   const transfer=require('../public/js/project-transfer');
@@ -402,7 +417,7 @@ async function buildZip(state, docxBuffer) {
     zip.file('plan/project-plan.csv', csv([['id', 'action', 'task', 'owner', 'start_week', 'weeks', 'depends_on', 'action_origin'],
       ...state.plan.tasks.map(k => [k.id, k.action, k.name, k.owner, k.start_week, k.weeks, k.depends_on.join(' '), k.action_origin === 'user' ? 'user-proposed' : 'calculated'])]));
     if (state.plan.summary) {
-      const head = [`[${state.plan.ai === true ? z.plan_ai : z.plan_template}]`, ...(state.plan.ai === true && CW.mayBeIncomplete(state.plan.summary) ? [`[${z.incomplete}]`] : [])];
+      const head = [DR.t(state.exportMode||'working_draft',lang).toUpperCase(),...(state.documentReview?[DR.t(state.documentReview.documents.plan.status,lang),DR.t('association',lang)+': '+state.documentReview.documents.plan.association]:[]),`[${state.plan.ai === true ? z.plan_ai : z.plan_template}]`, ...(state.plan.ai === true && CW.mayBeIncomplete(state.plan.summary) ? [`[${z.incomplete}]`] : [])];
       zip.file('plan/project-summary.txt', [...head, '', state.plan.summary].join('\n') +
         (state.plan.sources?.length ? `\n\n${z.sources}\n` + state.plan.sources.map(s => sourceLine(s, lang)).join('\n') : ''));
     }
@@ -416,9 +431,9 @@ async function buildZip(state, docxBuffer) {
           c.placeholders_dropped ? uiText('pc_check_placeholders', lang) : null,
           a.status === 'ai' && CW.mayBeIncomplete(a.text) ? z.incomplete : null].filter(Boolean).map(x => `> ${z.checks}: ${x}`);
       };
-      zip.file('plan/project-concept.md', [`# ${uiText('pc_title', lang)}`, '',
+      zip.file('plan/project-concept.md', [DR.t(state.exportMode||'working_draft',lang).toUpperCase(),`# ${uiText('pc_title', lang)}`, '',
         ...(cp.ai_failed ? [`> ${z.concept_failed}`, ''] : []),
-        ...cp.areas.flatMap(a => [`## ${a.n}. ${a.title}`, `_${uiText('pc_status_' + a.status, lang)}${a.reviewed ? ' · ' + z.reviewed : ''}_`, ...checkLines(a), '', String(a.text || ''), '']),
+        ...cp.areas.flatMap((a,i) => [`## ${a.n}. ${a.title}`, `_${uiText('pc_status_' + a.status, lang)} · ${DR.t(state.documentReview?.documents.plan.sections.find(s=>s.id==='concept-'+i)?.status||'working_draft',lang)}_`, ...checkLines(a), '', String(a.text || ''), '']),
         ...(cp.sources?.length ? [z.sources, ...cp.sources.map(s => sourceLine(s, lang))] : [])].join('\n'));
     }
   }
@@ -440,7 +455,7 @@ async function buildZip(state, docxBuffer) {
     zip.file('evidence/library-provenance.json', JSON.stringify(provenance, null, 2));
   }
   if (state.profile) zip.file('utility-profile.json', JSON.stringify(state.profile, null, 2));
-  zip.file('README.txt', (state.exportScope ? [lang==='id'?'PAKET PROYEK TERPILIH — satu penilaian sumber; bukan cadangan ruang kerja lengkap.':'SELECTED PROJECT PACKAGE — one source assessment; not a full workspace backup.',lang==='id'?'Cadangan proyek dalam ZIP hanya memulihkan proyek ini. Gunakan Simpan cadangan ruang kerja lengkap untuk pemulihan semua penilaian.':'The project backup in this ZIP restores only this project. Use Save full workspace backup to recover every assessment.','',...state.exportScope.omissions,'',...z.readme(lang)] : z.readme(lang)).join('\n'));
+  zip.file('README.txt', (state.exportScope ? [DR.t(state.exportMode||'working_draft',lang).toUpperCase(),DR.t('meaning',lang),lang==='id'?'PAKET PROYEK TERPILIH — satu penilaian sumber; bukan cadangan ruang kerja lengkap.':'SELECTED PROJECT PACKAGE — one source assessment; not a full workspace backup.',lang==='id'?'Cadangan proyek dalam ZIP hanya memulihkan proyek ini. Gunakan Simpan cadangan ruang kerja lengkap untuk pemulihan semua penilaian.':'The project backup in this ZIP restores only this project. Use Save full workspace backup to recover every assessment.','',...state.exportScope.omissions,'',...z.readme(lang)] : z.readme(lang)).join('\n'));
   if(state.exportScope){
     const crypto=require('crypto'),entries=[];
     for(const [path,file] of Object.entries(zip.files))if(!file.dir){const bytes=await file.async('nodebuffer');entries.push({path,bytes:bytes.length,sha256:crypto.createHash('sha256').update(bytes).digest('hex')});}

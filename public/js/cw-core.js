@@ -288,9 +288,14 @@
   }
   /** Replace s[key] only once generate() has succeeded; on failure the current version is untouched. */
   async function regenerate(s, key, generate, at) {
+    const original=s[key],fingerprint=fp(original);
     const next = await generate();
     if (!next || typeof next !== 'object') throw new Error('Generation returned nothing.');
-    return commitVersion(s, key, next, at);
+    if(s[key]!==original||fp(s[key])!==fingerprint)throw new Error('The document changed while generation was running. Your current text was preserved. Retry after reviewing it.');
+    const fresh=next===original?copy(next):next;
+    delete fresh.humanReview;delete fresh.reviewed;
+    for(const part of [...(fresh.sections||[]),...(fresh.concept?.areas||[])])delete part.reviewed;
+    return commitVersion(s, key, fresh, at);
   }
   /** Swap current and previous, so a restore can itself be undone. */
   function restoreVersion(s, key, at) {
