@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "legacy": {
+    "gcf": {
+      "version": "gcf-criteria-legacy-v0",
+      "sha256": "efc5c765de565374395997a7248bf5991c1803d9f51d4d84bcbfbdd7df4d8e54",
+      "note": "Frozen investment-criteria placeholder. Existing unversioned gcf outputs remain legacy, never reinterpreted as preliminary concepts."
+    }
+  },
+  "current": {
+    "gcf-preliminary-v1": {
+      "version": 1,
+      "replaces_automatically": false
+    }
+  }
+}

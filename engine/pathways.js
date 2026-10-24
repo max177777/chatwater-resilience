@@ -75,10 +75,13 @@ function match({ actions = [], profile = null, lang = 'en' } = {}) {
   };
 }
 
+// A separate ID avoids silently reinterpreting historical broad climate-fund selections.
+const GCF_DEMO={...PATHWAYS.pathways.find(p=>p.id==='climate_fund'),id:'gcf',name:{en:'Green Climate Fund (GCF) — preliminary concept',id:'Green Climate Fund (GCF) — konsep awal'},documents:[]};
+function demoMatch(input){const out=match(input),convert=p=>({...p,...GCF_DEMO});return {...out,matched:out.matched.filter(p=>p.id==='climate_fund').map(convert),other:out.other.filter(p=>p.id==='climate_fund').map(convert)};}
 /** The pathways the user ticked, as drafting sees them (no eligibility claims). */
 function forFacts(ids, lang = 'en') {
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : o;
-  return (ids || []).map(id => PATHWAYS.pathways.find(p => p.id === id)).filter(Boolean).map(p => ({
+  return (ids || []).map(id => (id==='gcf'?GCF_DEMO:PATHWAYS.pathways.find(p => p.id === id))).filter(Boolean).map(p => ({
     name: L(p.name), who_applies: L(p.who), status: 'pathway to investigate; eligibility not confirmed',
     questions_to_confirm: (p.questions || []).map(L),
   }));
@@ -87,10 +90,10 @@ function forFacts(ids, lang = 'en') {
 /** The pathways the user ticked, for the chat context: directions to investigate, with every document qualification. */
 function selected(ids, lang = 'en') {
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : o;
-  return (ids || []).map(id => PATHWAYS.pathways.find(p => p.id === id)).filter(Boolean).map(p => ({
+  return (ids || []).map(id => (id==='gcf'?GCF_DEMO:PATHWAYS.pathways.find(p => p.id === id))).filter(Boolean).map(p => ({
     id: p.id, name: L(p.name), who_applies: L(p.who), status: 'pathway to investigate; eligibility not confirmed',
     questions_to_confirm: (p.questions || []).map(L), documents: documentsOf(p),
   }));
 }
 
-module.exports = { match, forFacts, selected, sourceNotes, categoryOf, PATHWAYS };
+module.exports = { demoMatch, match, forFacts, selected, sourceNotes, categoryOf, PATHWAYS };

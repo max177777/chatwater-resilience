@@ -96,7 +96,8 @@ test('both languages: rejection blocks both exports through HTTP until effective
       const body = { assessment: s.assessments[0], meta: s.assessmentMeta[0], actions: s.selectedActions, actionSet: s.actionSet, profile: s.profile, rejectedActions: s.rejectedActions, lang };
       s.plan = await (await post('/api/plan', body)).json();
       assert.strictEqual((await post('/api/export/docx', s)).status, 409, 'old proposal still blocked after plan regeneration');
-      s.proposal = await (await post('/api/proposal', { ...body, route: 'general', plan: s.plan })).json();
+      s.financing={route:'gcf-preliminary-v1',conceptInputs:{}};
+      s.proposal = await (await post('/api/proposal', { ...body, route: 'gcf-preliminary-v1', plan: s.plan })).json();
       for (const route of ['/api/export', '/api/export/docx']) assert.strictEqual((await post(route, s)).status, 200, `${lang}: ${route} after regeneration`);
     }
   } finally { server.close(); }
@@ -256,7 +257,8 @@ test('plan summary edit is rejected by the server export until the proposal is r
     s.plan.summary = 'Summary edited after the proposal (synthetic)';
     let r = await post('/api/export/docx', s);
     assert.strictEqual(r.status, 409); assert.match((await r.json()).error, /project plan changed/);
-    r = await post('/api/proposal', { route: 'general', actions: s.selectedActions, actionSet: s.actionSet, plan: s.plan, profile: s.profile, assessment: s.assessments[0], meta: s.assessmentMeta[0], gwpIndex: 0, lang: 'en' });
+    s.financing={route:'gcf-preliminary-v1',conceptInputs:{}};
+    r = await post('/api/proposal', { route: 'gcf-preliminary-v1', actions: s.selectedActions, actionSet: s.actionSet, plan: s.plan, profile: s.profile, assessment: s.assessments[0], meta: s.assessmentMeta[0], gwpIndex: 0, lang: 'en' });
     assert.strictEqual(r.status, 200);
     s.proposal = await r.json();
     assert.deepStrictEqual(fresh(s).proposal, []);

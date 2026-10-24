@@ -2,9 +2,9 @@
  * It never changes values, applicability, calculations, ownership or export gates.
  */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./cw-core'),require('./assessment-validity'),require('./result-status'),require('./document-review'),require('./custom-actions'));
- else root.Ready=factory(root.CW,root.AV,root.RSData,root.DR,root.CA);
-})(typeof self!=='undefined'?self:this,function(C,AV,Data,DR,CA){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./cw-core'),require('./assessment-validity'),require('./result-status'),require('./document-review'),require('./custom-actions'),require('./preliminary-concept'));
+ else root.Ready=factory(root.CW,root.AV,root.RSData,root.DR,root.CA,root.PC);
+})(typeof self!=='undefined'?self:this,function(C,AV,Data,DR,CA,PC){
  const list=x=>Array.isArray(x)?x:[],enc=x=>encodeURIComponent(String(x??'')),OPS=['finish_assessment','calculate_actions','draft_plan','draft_proposal','export_draft','export_reviewed'];
  const targetId=t=>['ready',t.assessmentId,t.kind,t.scope||'',t.code||'',t.document||'',t.sectionKey||'',t.taskId||'',t.actionKey||'',t.operation||''].map(enc).join(':');
  const docKey=(doc,kind,id)=>id==='summary'||id==='schedule'?id:id.startsWith('section-')?doc.sections?.[+id.slice(8)]?.key:doc.concept?.areas?.[+id.slice(8)]?.id;
@@ -95,6 +95,10 @@
    if(issue.code==='outdated_issue')continue;
    const doc=state[kind],aid=doc.deps?.assessmentId,sectionKey=issue.section?docKey(doc,kind,issue.section):null;
    let target={kind:['unreviewed','evidence','figures','failed','calculation'].includes(issue.code)?'review':'document',assessmentId:aid,document:kind,sectionKey,reviewControl:issue.code==='unreviewed'?'confirm':'note'};
+   if(kind==='proposal'&&doc.route===PC.ROUTE&&state.financing?.route===PC.ROUTE&&issue.code==='missing'&&Array.isArray(issue.detail)){
+    const matched=issue.detail.map(excerpt=>({excerpt,field:PC.FIELDS.find(f=>excerpt==='[To be completed: '+f.label.en+']'||excerpt==='[Perlu dilengkapi: '+f.label.id+']')}));
+    if(matched.length&&matched.every(x=>x.field)){for(const {excerpt,field}of matched)add({assessmentId:aid,stage:'finance',messageKey:'review_missing',detail:issue.title,excerpts:[excerpt],target:{kind:'concept_field',assessmentId:aid,document:'proposal',sectionKey,code:field.key},prevents:['export_reviewed'],choices:['enter_value'],key:'concept_missing:'+field.key});continue;}
+   }
    if(sectionKey==='schedule'&&issue.code==='missing'){const task=list(doc.tasks).find(t=>!String(t.owner||'').trim()||!String(t.name||'').trim()||!Number.isFinite(t.weeks)||t.weeks<=0);if(task)target={kind:'task',assessmentId:aid,document:'plan',taskId:task.id,code:!String(task.owner||'').trim()?'owner':'weeks'};}
    add({assessmentId:aid,stage:kind==='plan'?'plan':'finance',messageKey:'review_'+issue.code,severity:'blocker',detail:issue.title,excerpts:Array.isArray(issue.detail)?issue.detail:[],target,prevents:['export_reviewed'],choices:d.status==='outdated'?['update_output','review_section']:['review_section'],key:issue.code});
   }
@@ -107,6 +111,7 @@
  }
  function resolve(state,target){
   const ms=list(state.assessmentMeta),i=ms.findIndex(m=>m.id===target.assessmentId),a=state.assessments?.[i],m=ms[i];if(i<0||!a||ms.filter(m=>m.id===target.assessmentId).length!==1)return {ok:false,reason:'target_missing'};
+  if(target.kind==='concept_field')return state.financing?.route===PC.ROUTE&&state.proposal?.deps?.assessmentId===target.assessmentId&&PC.FIELDS.some(f=>f.key===target.code)?{ok:true,view:'finance',assessmentIndex:i}:{ok:false,reason:'target_missing'};
   if(target.kind==='field'){const s=findScope(a,m,target.scope);return s&&Object.hasOwn(s.obj,target.code)?{ok:true,view:'assess:entry',assessmentIndex:i,selection:{kind:s.kind,...(s.prefix?{prefix:s.prefix,index:s.index}:{}),...(s.kind==='stage'?{level:s.level}:{})}}:{ok:false,reason:'target_missing'};}
   if(['document','review','task'].includes(target.kind)){
    const doc=state[target.document];if(!doc||doc.deps?.assessmentId!==target.assessmentId)return {ok:false,reason:'target_missing'};

@@ -140,3 +140,7 @@ Use this as a collection checklist. Each item is filled from `financing/`, `plan
 4. **Regulations and approvals** a utility project needs: feasibility study, procurement, environmental permits
 5. **Typical costs and durations** for the actions in stage 2: pump replacement, NRW programmes, scheduled desludging (LLTT) and IPLT, solar PV, biogas. Include the source year and currency.
 6. **Indonesian case studies** of similar projects: what was done, cost, result, who funded it
+
+## Prepared reproducible deployment release
+
+The versioned, approval-gated GCF starter release is documented in [the preliminary concept handoff](../docs/gcf-preliminary-concept.md). It pins two verified guide files and a deterministic build ID/count lock; it does not imply that the larger local corpus is approved for deployment. `npm run build:library:release` requires a protected artifact descriptor and source-owner approval records. It never uses `~/Downloads`. The prepared Render build fails closed when these inputs are absent or mismatched. No source PDF, extracted text or credentials are tracked, and deployment/provisioning remains a separate authorized step.

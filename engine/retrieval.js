@@ -34,7 +34,7 @@ const firstWords = (s, n) => String(s || '').replace(/\s+/g, ' ').trim().split('
  * fill every slot. Duplicates are dropped, at most 2 passages per source are kept, and
  * independence is re-marked across the merged list.
  */
-function search({ queries, query, context = '', stage = null, k = MAX_PASSAGES, from = 'request', scoped = false } = {}) {
+function search({ queries, query, context = '', stage = null, k = MAX_PASSAGES, from = 'request', scoped = false, sources = null } = {}) {
   // scoped: true, or one flag per query (generated queries are scoped, a typed question is not)
   const pairs = [];
   (queries || [query]).forEach((q, i) => {
@@ -42,10 +42,10 @@ function search({ queries, query, context = '', stage = null, k = MAX_PASSAGES, 
     if (text && !pairs.some(p => p.text === text)) pairs.push({ text, scoped: Array.isArray(scoped) ? !!scoped[i] : !!scoped });
   });
   const qs = pairs.slice(0, MAX_QUERIES).map(p => p.text);
-  const base = { query: qs.join(' · '), queries: qs, context: String(context || '').slice(0, 600), stage, from, build_id: library.buildId() };
+  const base = { query: qs.join(' · '), queries: qs, context: String(context || '').slice(0, 600), stage, from, build_id: library.buildId(), ...(sources?{source_filter:sources.slice()}: {}) };
   if (!qs.length) return { ...base, status: 'none', passages: [], terms: [], reason: 'nothing to search for' };
   const per = qs.length > 1 ? Math.max(2, Math.ceil(k / qs.length) + 1) : k;
-  const runs = qs.map((q, i) => library.retrieve(q, { stage, context: base.context, k: per, scoped: pairs[i].scoped }));
+  const runs = qs.map((q, i) => library.retrieve(q, { stage, context: base.context, k: per, scoped: pairs[i].scoped, sources }));
   if (runs.every(r => r.status === 'unavailable')) return { ...base, status: 'unavailable', passages: [], terms: [], reason: runs[0].reason };
   const terms = [...new Set(runs.flatMap(r => r.terms || []))];
   const seen = new Set(), perSource = new Map(), roots = new Map(), passages = [];
@@ -113,7 +113,7 @@ function related(r) {
 function evidenceRecord(r, cit = null) {
   return {
     library_build: r.build_id || null,
-    searched: { query: r.query, queries: r.queries, context: r.context, stage: r.stage, from: r.from, status: r.status, reason: r.reason || null },
+    searched: { query: r.query, queries: r.queries, context: r.context, stage: r.stage, from: r.from, ...(r.source_filter?{source_filter:r.source_filter}:{}), status: r.status, reason: r.reason || null },
     retrieved: r.passages.map(p => ({ passage_id: p.id, source_id: p.sourceId, locator: p.locatorLabel, role: p.role })),
     cited: cit ? cit.sources.map(s => ({ tag: s.tag, passage_id: s.passage_id, source_id: s.source_id, locator: s.locatorLabel })) : [],
     unknown_tags: cit ? cit.unknown_tags : [],

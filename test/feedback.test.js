@@ -169,7 +169,7 @@ const ok = (name, fn) => { fn(); n++; console.log('  ok -', name); };
       const rev = await post('/api/actions/alternatives', { option: byRule('pump_upgrade'), assessment: sample, meta, profile, mode: 'revise', request: 'cheaper', lang: 'en' });
       assert.strictEqual(rev.status, 503, 'revise needs AI');
       const pw = await (await post('/api/pathways', { actions, profile, lang: 'id' })).json();
-      assert.ok(pw.matched.length && /Jalur|Anggaran|Dana|Pinjaman|Kerja sama|Transfer/.test(pw.matched.map(p => p.name.id).join(' ')));
+      assert.deepStrictEqual([...pw.matched,...pw.other].map(p=>p.id),['gcf']);assert.match([...pw.matched,...pw.other][0].name.id,/konsep awal/);
       n++; console.log('  ok - API: alternatives (framework without AI, revise needs AI) and pathways');
 
       // with a fake model: alternatives and the concept come back as AI drafts without figures in the data model

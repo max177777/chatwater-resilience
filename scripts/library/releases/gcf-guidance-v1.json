@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "release": "gcf-guidance-v1",
+  "distribution_status": "Unresolved. Source owner must approve each exact hash for server indexing before provisioning. No source documents or extracted text are committed.",
+  "sources": [
+    {
+      "id": "gcf-water-part1-2023-consultation", "file": "gcf-water-part1-2023.pdf",
+      "sha256": "41505586730e5e1fe02c2f3e0c691ef2b478b50051059c8e2abc4401bd2af41f",
+      "title": "GCF Water Project Design Guidelines Part 1: Practical guidelines for designing water-climate resilient projects",
+      "publisher": "Green Climate Fund", "date": "21 February 2023", "language": "en", "sector": "water supply", "stages": [3,4], "topic": "financing", "role": "guidance",
+      "review_status": "First draft report for consultation. Not reviewed by the ChatWater scientific team.",
+      "caveats": ["Informational design guidance; no guarantee of Board consideration or approval. Current requirements require separate confirmation."],
+      "url": "https://drive.google.com/file/d/1Tb_QxFaxhpVbD3ilhXnIR10WKUl3Dl7p/view",
+      "identity_terms": ["Part 1", "21 February 2023"], "pages": 57
+    },
+    {
+      "id": "gcf-sanitation-part3-2024-consultation", "file": "gcf-sanitation-part3-2024.pdf",
+      "sha256": "c45494840069b8376e6ba74ed56c69191f6feeab3884814eca6b2ad77d84a80e",
+      "title": "GCF Water Project Design Guidelines Part 3: Practical guidelines for designing climate-resilient sanitation projects",
+      "publisher": "Green Climate Fund Secretariat with the Climate Resilient Sanitation Coalition", "date": "November 2024", "language": "en", "sector": "sanitation", "stages": [3,4], "topic": "financing", "role": "guidance",
+      "review_status": "Final report for consultation, described as a draft. Not scientific or funder approval.",
+      "caveats": ["Informational design guidance; no guarantee of Board consideration or approval. The previous files labelled Water/Sanitation were near-duplicates of Part 3; they are not this Part 1 water reference."],
+      "url": "https://drive.google.com/file/d/1dFMPSCT-6reqNpSeISFQnRHFx1asCfIm/view",
+      "identity_terms": ["Part 3", "November 2024"], "pages": 86
+    }
+  ],
+  "illustrations": {"status": "No approved project examples supplied for this release. Portfolio approval is not permission to redistribute or evidence of this project's eligibility.", "sources": []},
+  "retrieval_checks": [
+    {"query": "climate rationale", "source": "gcf-water-part1-2023-consultation"},
+    {"query": "sanitation climate risks", "source": "gcf-sanitation-part3-2024-consultation"}
+  ]
+}

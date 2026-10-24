@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "release": "gcf-guidance-v1",
+  "build_id": "lib-e0d30ffaf40c",
+  "sources": 2,
+  "passages": 511,
+  "source_manifest_sha256": "d9e65619546ebdcba972552b2510248bc8ef14855b4e6969be26a312d49c210f",
+  "retrieval_checks": [
+    {
+      "query": "climate rationale",
+      "source": "gcf-water-part1-2023-consultation"
+    },
+    {
+      "query": "sanitation climate risks",
+      "source": "gcf-sanitation-part3-2024-consultation"
+    }
+  ]
+}

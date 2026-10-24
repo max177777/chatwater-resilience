@@ -34,7 +34,7 @@
     actionSet: null, selectedActions: [],
     customActions: [], // user-proposed actions (custom-actions.js), each bound to its source assessment ID
     customLastLabel: {}, // assessment ID -> last U-label handed out, so labels of deleted actions are not reused
-    plan: null, financing: { route: 'general' }, proposal: null,
+    plan: null, financing: { route: PC.ROUTE, pathways:['gcf'] }, proposal: null,
     chat: [], // messages from before chats were scoped; kept and shown, never sent
     chatThreads: {}, // assessment ID -> messages about that assessment only
     checkpoints: [], explanations: {},
@@ -387,12 +387,13 @@
     if (summed().plan) return toast(t('legacy_sum_title') + ' ' + t('legacy_sum_body'));
     const sc = sourceAssessment() || Global;
     const f = state.financing;
+    if(!PC.demoSupported(f)||state.proposal&&state.proposal.route!==PC.ROUTE)return toast(t('demo_start_help'));
     if(state.ui.reviewGenerating)return;
     if (state.proposal && !confirm(t('confirm_replace_proposal'))) return;
     state.ui.reviewGenerating=true;render();
     try {
       await CW.regenerate(state, 'proposal', () => api('/api/proposal', {
-        route: f.route, customFramework: f.customFramework, guideText: f.guideText,
+        route: f.route, conceptInputs:f.conceptInputs||{}, customFramework: f.customFramework, guideText: f.guideText,
         actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: state.profile,
         assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang,
         pathways: f.pathways || [], estimates: estimatesList(sc).length, rejectedActions: state.rejectedActions,
@@ -482,6 +483,7 @@
     if(target.kind==='operation'&&['calculate_actions','select_actions'].includes(target.operation))state.selectedAssessmentId=target.assessmentId;
     state.ui.readyIssueId=id;go(resolved.view);
     let el;
+    if(target.kind==='concept_field')el=[...document.querySelectorAll('[data-concept-field]')].find(e=>e.dataset.conceptField===target.code);
     if(target.kind==='field')el=[...document.querySelectorAll('[data-gen],[data-code]')].find(e=>(e.dataset.gen||e.dataset.code)===target.code&&['INPUT','SELECT','TEXTAREA'].includes(e.tagName)&&!['exception','unit'].includes(e.dataset.kind));
     if(['document','review'].includes(target.kind)){
       const doc=state[target.document];
@@ -504,7 +506,7 @@
     if(el?.disabled)return unavailable('operation_unavailable');
     if(!el)return unavailable('target_missing');
     for(let parent=el.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
-    highlightTarget(el,ReadyUI.instructions(issue,t,state.lang)+(reviewUnavailable?' '+t('gc_review_blocked'):''),issue.excerpts?.includes(excerpt)?excerpt:issue.excerpts?.[0]);
+    highlightTarget(el,ReadyUI.instructions(issue,t,state.lang)+(reviewUnavailable?' '+t('gc_review_blocked'):''),target.kind==='document'?(issue.excerpts?.includes(excerpt)?excerpt:issue.excerpts?.[0]):undefined);
   }
   function clearGuidedTarget(){
     document.querySelectorAll('.guided-target-highlight').forEach(e=>{e.classList.remove('guided-target-highlight');e.setAttribute('aria-describedby',(e.getAttribute('aria-describedby')||'').split(/\s+/).filter(x=>x&&x!=='readiness-target-explanation').join(' '));});
@@ -1205,47 +1207,63 @@
   }
 
   // ---------------------------------------------------------------- stage 4: financing
+  function preliminaryInputs(){
+    const inputs=state.financing.conceptInputs||{},scope=PC.scope(state.selectedActions,metaOf(sourceAssessment()||Global),inputs);
+    const label=f=>f.label[state.lang]||f.label.en;
+    return `<section class="card" id="preliminary-inputs"><h2>${esc(t('pc_inputs'))}</h2><p>${esc(t('pc_inputs_help'))}</p>${PC.FIELDS.map(f=>`<label class="field"><span>${esc(label(f))} · ${esc(t('pc_'+f.requirement))}${!PC.active(f,inputs)?' · '+esc(t('pc_inactive')):''}</span>${f.key==='purpose'?`<select id="concept-input-purpose" data-concept-field="purpose" aria-required="true"><option value="unknown">${esc(t('pc_unknown'))}</option>${['mitigation','adaptation','both'].map(k=>`<option value="${k}" ${inputs.purpose===k?'selected':''}>${esc(t('pc_'+k))}</option>`).join('')}</select>`:`<textarea class="field" id="concept-input-${f.key}" data-concept-field="${f.key}" maxlength="4000" rows="2" aria-required="${PC.active(f,inputs)&&['required','conditional'].includes(f.requirement)}">${esc(inputs[f.key]||'')}</textarea>`}</label>`).join('')}
+    <h3>${esc(t('pc_action_scope'))}</h3><p>${esc(t('pc_scope_help'))}</p>${scope.classifications.map(c=>{const a=state.selectedActions.find(a=>a.key===c.key);return `<label class="field"><span>${esc(a.id+' · '+L(a.title))} — ${esc(c.sectors.map(s=>t('pc_'+s)).join(' + ')||t('pc_unknown'))}</span>${c.origin==='user_classification'||!c.sectors.length?`<select data-concept-sector="${esc(c.key)}"><option value="unknown">${esc(t('pc_unknown'))}</option>${['water','sanitation','mixed'].map(k=>`<option value="${k}" ${inputs.actionSectors?.[c.key]===k?'selected':''}>${esc(t('pc_'+k))}</option>`).join('')}</select>`:''}</label>`;}).join('')}</section>`;
+  }
+  function bindPreliminaryInputs(root){
+    root.querySelectorAll('[data-concept-field]').forEach(el=>el.oninput=()=>{state.financing.conceptInputs={...state.financing.conceptInputs,[el.dataset.conceptField]:el.value};save();const download=root.querySelector('#dl-all');if(download)download.disabled=!!exportBlockedReason();if(el.dataset.conceptField==='purpose'){render();$('#concept-input-purpose')?.focus();}});
+    root.querySelectorAll('[data-concept-sector]').forEach(el=>el.onchange=()=>{const i=state.financing.conceptInputs||{};state.financing.conceptInputs={...i,actionSectors:{...i.actionSectors,[el.dataset.conceptSector]:el.value}};save();render();[...document.querySelectorAll('[data-concept-sector]')].find(x=>x.dataset.conceptSector===el.dataset.conceptSector)?.focus();});
+  }
+  function gcfRecoveryNotice(){return (state.checkpoints||[]).some(c=>c.reason==='gcf-demo-transition')?`<p class="notice">${esc(t('demo_recovery'))} <button class="btn sm" id="recover-gcf-transition">${esc(t('demo_recover'))}</button></p>`:'';}
+  function startGcfConcept(){
+    if(state.ui.reviewGenerating||!confirm(t('demo_start_confirm')))return;
+    let next;try{next=PC.demoFinancing(state.financing,state.selectedActions);}catch(err){return toast(t('error')+': '+err.message);}
+    const before={financing:state.financing,proposal:state.proposal,checkpoints:state.checkpoints,previous:state.previous};
+    const snap=plain({...state,assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf),checkpoints:undefined});
+    state.checkpoints=[{at:new Date().toISOString(),view:state.ui.view,reason:'gcf-demo-transition',snap},...(state.checkpoints||[])];
+    state.financing=next;
+    if(state.proposal){state.previous={...state.previous,proposal:{at:new Date().toISOString(),value:plain(state.proposal)}};state.proposal=null;}
+    if(!persist()){Object.assign(state,before);return toast(t('checkpoint_not_saved'));}
+    render();
+  }
+  function recoverGcfTransition(){
+    if(state.ui.reviewGenerating||!confirm(t('demo_recover_confirm')))return;
+    const saved=state.checkpoints.find(c=>c.reason==='gcf-demo-transition');if(!saved)return;
+    const before={financing:state.financing,proposal:state.proposal,checkpoints:state.checkpoints,previous:state.previous};
+    const snap=plain({...state,assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf),checkpoints:undefined});
+    state.checkpoints=[{at:new Date().toISOString(),view:state.ui.view,reason:'before-gcf-recovery',snap},...state.checkpoints];
+    state.financing=plain(saved.snap.financing);state.proposal=plain(saved.snap.proposal);state.previous=plain(saved.snap.previous||{});
+    if(!persist()){Object.assign(state,before);return toast(t('checkpoint_not_saved'));}render();
+  }
   function viewFinance(root) {
     const f = state.financing;
     const fr = freshness();
     const upstreamStale = fr.actions.length > 0 || fr.plan.length > 0;
     const sums = summed();
-    const exportBlocked = upstreamStale || fr.proposal.length > 0 || sums.plan || sums.proposal.length > 0;
-    const card = (route, title, desc, btn) => `<div class="card pick ${f.route === route ? 'on' : ''}" data-route="${route}"><h2>${esc(title)}</h2><p>${esc(desc)}</p>${btn}</div>`;
+    const exportBlocked = !state.proposal || upstreamStale || fr.proposal.length > 0 || sums.plan || sums.proposal.length > 0;
+    const legacy=state.proposal&&state.proposal.route!==PC.ROUTE;
+    const supported=PC.demoSupported(f)&&!legacy;
     root.innerHTML = `<div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
       ${!state.plan ? `<div class="notice warn">${esc(t('no_plan'))}</div>` : ''}
       ${staleNotice(fr.actions, 'actions')}${staleNotice(fr.plan, 'plan')}${staleNotice(fr.proposal, 'proposal')}${genErrorNotice('proposal')}
       ${state.plan ? summedNotice('plan') : ''}${state.proposal ? summedNotice('proposal') : ''}
       ${META.ai ? '' : `<div class="notice small">${esc(t('ai_off_note'))}</div>`}${evidenceNotice()}
       <div id="pathways">${pathwayCache.html || ''}</div>
-      ${card('general', t('general_proposal'), t('general_desc'), `<button class="btn ${f.route === 'general' ? 'primary' : ''}">${esc(t('use_general'))}</button>`)}
-      ${card('custom', t('tailor'), t('tailor_desc'), `<label class="btn ${f.route === 'custom' ? 'primary' : ''}">${esc(t('add_guide'))}<input type="file" id="guide-file" accept=".pdf,.docx,.txt,.md" hidden></label>
-        ${f.guideName ? `<span class="small muted" style="margin-left:8px">${esc(t('guide_loaded'))}: ${esc(f.guideName)}</span>` : ''}
-        ${f.customFramework?.requirements?.length ? `<div class="notice small" style="margin-top:10px"><b>${esc(t('requirements'))}</b><ul>${f.customFramework.requirements.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
-        ${f.customFramework?._note ? `<p class="small muted" style="margin-top:8px">${esc(f.customFramework._note)}</p>` : ''}`)}
-      ${card('gcf', t('gcf'), t('gcf_desc'), `<button class="btn ${f.route === 'gcf' ? 'primary' : ''}">${esc(t('use_gcf'))}</button><p class="small muted" style="margin:8px 0 0">${esc(t('gcf_note'))}</p>`)}
+      <div class="card"><h2>${esc(t('pc_route'))}</h2><p>${esc(t('demo_gcf_notice'))}</p><p>${esc(t('pc_route_desc'))}</p>
+      ${!supported?`<p class="notice warn">${esc(t('demo_start_help'))} ${esc(t('demo_saved_route'))}: ${esc(state.proposal?(state.proposal.route||t('demo_route_unrecorded')):(f.route||t('demo_route_unrecorded')))}. ${esc(t('demo_historical_choices'))}: ${esc((f.pathways||[]).join(', ')||'—')}</p><button class="btn primary" id="start-gcf">${esc(t('demo_start'))}</button>`:''}</div>
+      ${supported?preliminaryInputs():''}
+      ${gcfRecoveryNotice()}
       <div class="actions-row"><button class="btn" data-go="plan">${esc(t('back'))}</button>
         ${state.proposal ? `<button class="btn" data-go="finance:draft">${esc(t('open_draft'))}</button>` : ''}
         ${previousControl('proposal')}
         ${exportScopeNotice()}<button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button>
-        <button class="btn primary" id="draft" ${upstreamStale ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
-    root.querySelectorAll('[data-route]').forEach(c => c.onclick = e => {
-      if (e.target.closest('label')) { f.route = c.dataset.route; save(); return; }
-      f.route = c.dataset.route; save(); render();
-    });
-    root.querySelector('#guide-file').onchange = async e => {
-      const file = e.target.files[0]; if (!file) return;
-      f.route = 'custom';
-      const lbl = e.target.closest('label'); busy(lbl, true, file.name);
-      try {
-        const buf = await file.arrayBuffer();
-        let bin = ''; const bytes = new Uint8Array(buf);
-        for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-        const res = await api('/api/guide/parse', { filename: file.name, base64: btoa(bin), lang: state.lang });
-        Object.assign(f, { guideName: file.name, guideText: res.guideText, customFramework: res.framework });
-        save(); render();
-      } catch (err) { busy(lbl, false); toast(t('error') + ': ' + err.message); }
-    };
+        <button class="btn primary" id="draft" ${upstreamStale||!supported ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
+    root.querySelector('#start-gcf')?.addEventListener('click',startGcfConcept);
+    root.querySelector('#recover-gcf-transition')?.addEventListener('click',recoverGcfTransition);
+    bindPreliminaryInputs(root);
     root.querySelector('#draft').onclick = e => generateProposal(e.target, state.proposal?.lang || state.lang);
     root.querySelector('#dl-all').onclick = e => downloadAll(e.target);
     loadPathways(root);
@@ -1265,7 +1283,7 @@
     const el = root.querySelector('#pathways');
     if (!el || !state.selectedActions.length) return;
     const key = CW.fp({ a: state.selectedActions.map(a => a.key || a.id), p: state.profile, l: state.lang });
-    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); };
+    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); if(!PC.demoSupported(state.financing)||state.proposal&&state.proposal.route!==PC.ROUTE)el.querySelectorAll('[data-fp]').forEach(cb=>cb.disabled=true); };
     if (pathwayCache.key === key && pathwayCache.match) return paint();
     try {
       pathwayCache.match = await api('/api/pathways', { actions: state.selectedActions, profile: state.profile, lang: state.lang });
@@ -1273,7 +1291,7 @@
     } catch (err) { el.innerHTML = ''; }
   }
 
-  function exportScopeNotice() {const ids=[state.proposal?.deps?.assessmentId,state.plan?.deps?.assessmentId,state.actionSet?.assessmentId].filter(Boolean),sc=new Set(ids).size===1?byId(ids[0]):null;return `<p class="notice" data-selected-project-scope>${esc(t('selected_package_scope').replace('{name}',sc?.General.Name || '—'))}</p>`;}
+  function exportScopeNotice() {const ids=[state.proposal?.deps?.assessmentId,state.plan?.deps?.assessmentId,state.actionSet?.assessmentId].filter(Boolean),sc=new Set(ids).size===1?byId(ids[0]):null;return `${state.proposal?.preliminary?`<p class="notice">${esc(L(state.proposal.preliminary.preparation_status))} · ${esc(L(state.proposal.preliminary.status_notice))}</p>`:''}<p class="notice" data-selected-project-scope>${esc(t('selected_package_scope').replace('{name}',sc?.General.Name || '—'))}</p>`;}
   function exportState(exportMode='working_draft') {
     return { ...plain(state), exportMode, assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
   }
@@ -1291,7 +1309,7 @@
     busy(btn, true, t('download_all'));
     try {
       const blob = await api('/api/export', exportState(exportMode), true);
-      download(blob, `${(state.profile?.name || sourceAssessment()?.General?.Name || 'chatwater').replace(/[^\w-]+/g, '_')}-chatwater-files.zip`);
+      download(blob, `${(state.profile?.name || sourceAssessment()?.General?.Name || 'chatwater').replace(/[^\w-]+/g, '_')}-${state.proposal?.route===PC.ROUTE?'gcf-preliminary-concept':'chatwater-files'}.zip`);
     } catch (err) { toast(t('error') + ': ' + err.message); }
     busy(btn, false);
   }
@@ -1303,7 +1321,8 @@
     const outdated = fr.actions.length || fr.plan.length || fr.proposal.length;
     const sums = () => { const s = summed(); return s.plan || s.proposal.length > 0; };
     const blocked = outdated || sums();
-    root.innerHTML = `<div class="page-head"><h1>${esc(t('proposal_title'))}${fr.proposal.length ? ` <span class="badge-outdated">${esc(t('outdated_badge'))}</span>` : ''}</h1><p class="muted">${esc(p.title)}</p></div>
+    root.innerHTML = `<div class="page-head"><h1>${esc(p.route===PC.ROUTE?t('pc_route'):t('proposal_title'))}${fr.proposal.length ? ` <span class="badge-outdated">${esc(t('outdated_badge'))}</span>` : ''}</h1><p class="muted">${esc(p.title)}</p></div>
+      ${p.route!==PC.ROUTE?`<p class="notice">${esc(t('demo_legacy'))} ${esc(p.route||t('demo_route_unrecorded'))}. <button class="btn" data-go="finance">${esc(t('demo_start'))}</button></p>`:''}
       ${staleNotice(fr.proposal, 'proposal')}
       ${summedNotice('proposal')}
       ${state.plan ? summedNotice('plan') : ''}
@@ -1329,7 +1348,7 @@
       root.querySelectorAll('#dl-word, #dl-all').forEach(b => { b.disabled = off; });
     });
     const regenLang = root.querySelector('[data-regen-lang=proposal]');
-    if (regenLang) regenLang.onclick = e => generateProposal(e.target, state.lang);
+    if (regenLang) {regenLang.disabled=p.route!==PC.ROUTE||!PC.demoSupported(state.financing);regenLang.onclick = e => generateProposal(e.target, state.lang);}
     const reviewed = root.querySelector('#proposal-reviewed');
     if (reviewed) reviewed.onclick = () => {
       const sc = sourceAssessment();
@@ -1341,7 +1360,7 @@
       const why = exportBlockedReason();
       if (why) return toast(why);
       busy(btn, true, t('download_word'));
-      try { download(await api('/api/export/docx', exportState(exportMode), true), 'proposal.docx'); }
+      try { download(await api('/api/export/docx', exportState(exportMode), true), p.route===PC.ROUTE?(p.lang==='id'?'konsep-awal-proyek-gcf.docx':'gcf-preliminary-project-concept.docx'):'proposal.docx'); }
       catch (err) { toast(t('error') + ': ' + err.message); }
       busy(btn, false);
     };

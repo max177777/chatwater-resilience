@@ -137,6 +137,7 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
     new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: [profile?.name || results?.name, profile?.location].filter(Boolean).join(' · '), color: MD.COLORS.muted })] }),
     new Paragraph({ spacing: { after: 200 }, children: [new TextRun({ text: `${t.prepared}: ${CW.formatDate(new Date().toISOString().slice(0, 10), lang)}`, size: MD.SIZE.note, color: MD.COLORS.muted })] }),
   ];
+  if(proposal.preliminary){const p=proposal.preliminary;children.push(note(L(p.preparation_status)),note(L(p.status_notice)),note((lang==='id'?'Versi kerangka: ':'Framework version: ')+p.framework));for(const r of p.references||[])children.push(note(r.title+' · '+r.date+' · '+r.review_status));}
   children.push(note(DR.t('meaning',lang)));
   if(review){
     for(const w of review.scientificWarnings||[])children.push(note(L(w.text)));
@@ -144,7 +145,7 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
     children.push(...(review.issues.length?review.issues.map(i=>note(`${i.document} / ${i.title}: ${DR.t(i.code,lang)}${i.detail?' ('+i.detail+')':''}`)):[note(DR.t('none',lang))]));
     for(const [kind,d]of Object.entries(review.documents)){
       children.push(note(`${kind}: ${DR.t(d.status,lang)} · ${DR.t('association',lang)} ${d.association}`));
-      for(const r of d.sections)children.push(note(`${r.title}: ${DR.t(r.status,lang)}${r.review?.note?' · '+r.review.note:''}`));
+      for(const r of (proposal.preliminary&&kind==='proposal'?[]:d.sections))children.push(note(`${r.title}: ${DR.t(r.status,lang)}${r.review?.note?' · '+r.review.note:''}`));
     }
   }
   // concise overall status: how the draft was produced, what failed and what may be incomplete
@@ -165,7 +166,7 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
   sections.forEach((s, i) => {
     const st = states[i];
     children.push(new Paragraph({ heading: HeadingLevel.HEADING_1, keepNext: true, keepLines: true, children: [new TextRun(s.title)] }));
-    if(review?.documents.proposal?.sections[i]){const r=review.documents.proposal.sections[i];children.push(note(`${DR.t(r.status,lang)} · ${DR.t('association',lang)} ${r.association}${r.review?' · '+r.review.at:''}`,{keepNext:true}));}
+    if(review?.documents.proposal?.sections[i]){const r=review.documents.proposal.sections[i];children.push(note(`${DR.t(r.status,lang)} · ${DR.t('association',lang)} ${r.association}${r.review?' · '+r.review.at:''}`,{keepNext:true}));if(proposal.preliminary&&r.review?.note)children.push(note(DR.t('note',lang)+' '+r.review.note));}
     const label = exportMode==='reviewed'?(st.ai?(lang==='id'?'Teks dibuat AI':'AI-generated text'):(lang==='id'?'Teks templat terstruktur':'Structured template text')):st.ai ? t.sec_ai : st.quotesAi ? t.sec_quotes_ai : st.failed ? t.sec_template_failed : t.sec_template;
     children.push(new Paragraph({ style: 'SectionStatus', keepNext: true, children: [new TextRun(label)] }));
     if (st.incomplete) children.push(new Paragraph({ style: 'SectionWarning', keepNext: true, children: [new TextRun(t.sec_incomplete)] }));
@@ -223,15 +224,15 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
     styles: {
       default: {
         document: { run: { font: MD.FONT, size: MD.SIZE.body, language: { value: lang === 'id' ? 'id-ID' : 'en-GB' } }, paragraph: { spacing: { after: 120, line: 276 } } },
-        title: { run: { font: MD.FONT, size: 44, bold: true, color: MD.COLORS.accent }, paragraph: { spacing: { after: 80 } } },
-        heading1: { run: { font: MD.FONT, size: 30, bold: true, color: MD.COLORS.accent }, paragraph: { spacing: { before: 360, after: 80 }, keepNext: true, keepLines: true } },
-        heading2: { run: { font: MD.FONT, size: 25, bold: true, color: MD.COLORS.accent }, paragraph: { spacing: { before: 240, after: 80 }, keepNext: true, keepLines: true } },
+        title: { run: { font: MD.FONT, size: 44, bold: true, color: proposal.preliminary?'000000':MD.COLORS.accent }, paragraph: { spacing: { after: 80 } } },
+        heading1: { run: { font: MD.FONT, size: 30, bold: true, color: proposal.preliminary?'000000':MD.COLORS.accent }, paragraph: { spacing: { before: 360, after: 80 }, keepNext: true, keepLines: true } },
+        heading2: { run: { font: MD.FONT, size: 25, bold: true, color: proposal.preliminary?'000000':MD.COLORS.accent }, paragraph: { spacing: { before: 240, after: 80 }, keepNext: true, keepLines: true } },
         heading3: { run: { font: MD.FONT, size: 23, bold: true }, paragraph: { spacing: { before: 200, after: 60 }, keepNext: true, keepLines: true } },
         heading4: { run: { font: MD.FONT, size: 22, bold: true, italics: true }, paragraph: { spacing: { before: 160, after: 60 }, keepNext: true, keepLines: true } },
       },
       paragraphStyles: [
         { id: 'Caption', name: 'Caption', basedOn: 'Normal', next: 'Normal', quickFormat: true,
-          run: { size: 21, bold: true, color: MD.COLORS.accent }, paragraph: { spacing: { before: 240, after: 80 }, keepNext: true, keepLines: true } },
+          run: { size: 21, bold: true, color: proposal.preliminary?'000000':MD.COLORS.accent }, paragraph: { spacing: { before: 240, after: 80 }, keepNext: true, keepLines: true } },
         { id: 'SectionStatus', name: 'Section status', basedOn: 'Normal', next: 'Normal',
           run: { size: MD.SIZE.note, italics: true, color: MD.COLORS.muted }, paragraph: { spacing: { before: 0, after: 140 }, keepNext: true } },
         { id: 'SectionWarning', name: 'Section warning', basedOn: 'Normal', next: 'Normal',
