@@ -1,0 +1,3716 @@
+{
+  "format": "chatwater-dependency-coverage",
+  "version": 1,
+  "ecamVersion": "3.0.1",
+  "scope": "Application substage outputs, source components, inventory/stage totals, energy, population, water balance and built-in rule support. Not scientific sufficiency or every ECAM global indicator.",
+  "vendorHashes": {
+    "global": "2b571a08a508fbb96f44d8c8ff8845893d38b370122bf75dc8390bf9a6f7539d",
+    "structure": "501c00a4a95445fd826c9df3313bedfa7e300f4d384f298d9b080101fb38048c",
+    "questions": "3c92d96427b997a48d63706f620f48c41e7de03a6003ea0bf0f6728acd9e3d26",
+    "constants": "b3175c3990b3b2d9e84b39d9210acaee2657aa5f020f9485e9d725f6dd1b3d3b",
+    "tables": "ea3308a7eb7bc22d412488292278825dde83b07c3994c1f4906180cdaa1903d3",
+    "gwp_reports": "4a0e670caef6d67218e85e591029a778f64396de40277474efb56ea14c022307",
+    "info": "67f311e6b104148c3d4dcd2f6d641d39dcd3a9ec886704de2415d9d30d821b95"
+  },
+  "totals": {
+    "published": 116,
+    "methods": 148,
+    "inputs": 250
+  },
+  "aggregation": {
+    "inventory": "All substage <prefix>_KPI_GHG outputs; an unavailable substage makes the total incomplete. known_subtotal sums only complete substages.",
+    "energy": "All substage <prefix>_nrg_cons inputs; stage totals use the same rollup.",
+    "population": {
+      "ws_serv_pop": [
+        "wsd_serv_pop in every distribution substage"
+      ],
+      "ww_serv_pop": [
+        "wwt_serv_pop in every treatment substage",
+        "wwo_onsi_pop in every onsite substage"
+      ],
+      "ws_resi_pop": [
+        "Water.ws_resi_pop"
+      ],
+      "ww_resi_pop": [
+        "Waste.ww_resi_pop"
+      ]
+    },
+    "per_capita": [
+      "complete inventory",
+      "supported positive served population (water, otherwise wastewater only if water population is supported zero)",
+      "valid positive assessment duration"
+    ]
+  },
+  "applicationMetrics": {
+    "nrw_m3_per_km": [
+      "wsd_vol_dist",
+      "wsd_bill_con",
+      "wsd_main_len (positive)"
+    ],
+    "water_balance": [
+      "wsd_SL_nr_water",
+      "wsd_SL_water_loss",
+      "wsd_KPI_water_losses"
+    ],
+    "period": [
+      "General.AssessmentPeriodStart",
+      "General.AssessmentPeriodEnd (valid and later)"
+    ]
+  },
+  "actions": {
+    "pump_upgrade": [
+      "output:KPI_nrg_estm_sav",
+      "output:KPI_ghg_estm_red"
+    ],
+    "pump_audit": [
+      "input:nrg_cons"
+    ],
+    "nrw_reduction": [
+      "output:SL_water_loss",
+      "water_energy",
+      "general:conv_kwh_co2"
+    ],
+    "septic_desludging": [
+      "output:KPI_GHG_containment",
+      "input:cont_emp",
+      "input:onsi_pop",
+      "input:fdensity",
+      "input:bod_conc_fs",
+      "general:bod_pday",
+      "inventory_total"
+    ],
+    "cso_reduction": [
+      "output:KPI_GHG_cso"
+    ],
+    "biogas_capture": [
+      "output:KPI_GHG_tre"
+    ],
+    "fuel_switch": [
+      "output:KPI_GHG_fuel"
+    ],
+    "solar_pv": [
+      "utility_energy",
+      "general:conv_kwh_co2"
+    ]
+  },
+  "limitations": [
+    "Graph traces static this.field and this.method references conservatively, including both conditional branches. It does not certify equations or process sufficiency.",
+    "ECAM methods that internally coerce zero-denominator arithmetic to finite zero retain their vendor behavior; this is dependency/status tracing, not expression-level mathematical validation.",
+    "Dynamic this access and known external/global references fail closed. Changes to vendor source require review of this inventory and tests.",
+    "ECAM constants, option tables and GWP report are bundled settings, not confirmed measured inputs. Source hashes and project settings preserve their versions.",
+    "Only application-exposed rollups are listed. Other ECAM global indicators, arbitrary external custom-benefit models and narrative evidence are not dependency-certified.",
+    "All output-support status changes conservatively stale the assessment action set, plan and proposal; per-document narrower semantic dependencies are not yet tracked. Notes are not used in current output facts and do not invalidate these outputs.",
+    "Known subtotal is a sum of supported whole substages, not all individually supported components of an incomplete substage."
+  ],
+  "substages": {
+    "wsa": {
+      "published": [
+        "wsa_KPI_GHG_elec",
+        "wsa_KPI_GHG_fuel",
+        "wsa_KPI_GHG",
+        "wsa_nrg_per_abs_watr",
+        "wsa_nrg_per_pmp_watr",
+        "wsa_pmp_pw",
+        "wsa_KPI_std_nrg_cons",
+        "wsa_KPI_un_head_loss",
+        "wsa_KPI_nrg_elec_eff",
+        "wsa_KPI_ghg_estm_red",
+        "wsa_KPI_std_nrg_newp",
+        "wsa_KPI_nrg_cons_new",
+        "wsa_KPI_nrg_estm_sav"
+      ],
+      "inputs": [
+        "wsa_vol_conv",
+        "wsa_fuel_typ",
+        "wsa_vol_fuel",
+        "wsa_nrg_cons",
+        "wsa_conv_kwh",
+        "wsa_nrg_cost",
+        "wsa_run_cost",
+        "wsa_vol_pump",
+        "wsa_nrg_pump",
+        "wsa_sta_head",
+        "wsa_pmp_head",
+        "wsa_main_len",
+        "wsa_pmp_type",
+        "wsa_pmp_size",
+        "wsa_pmp_flow",
+        "wsa_pmp_volt",
+        "wsa_pmp_amps",
+        "wsa_pmp_pf",
+        "wsa_pmp_exff"
+      ],
+      "nodes": {
+        "wsa_KPI_GHG": {
+          "refs": [
+            "wsa_KPI_GHG_elec",
+            "wsa_KPI_GHG_fuel"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "6ccc75a2020928aa",
+          "inputs": [
+            "wsa_conv_kwh",
+            "wsa_fuel_typ",
+            "wsa_nrg_cons",
+            "wsa_vol_fuel"
+          ]
+        },
+        "wsa_KPI_GHG_elec": {
+          "refs": [
+            "wsa_nrg_cons",
+            "wsa_conv_kwh"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "fbcecf86de0f70e6",
+          "inputs": [
+            "wsa_conv_kwh",
+            "wsa_nrg_cons"
+          ]
+        },
+        "wsa_KPI_GHG_fuel": {
+          "refs": [
+            "wsa_vol_fuel",
+            "wsa_fuel_typ"
+          ],
+          "owners": [
+            "wsa_engines"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "087a231cf3a626c8",
+          "inputs": [
+            "wsa_fuel_typ",
+            "wsa_vol_fuel"
+          ]
+        },
+        "wsa_nrg_per_abs_watr": {
+          "refs": [
+            "wsa_nrg_cons",
+            "wsa_vol_conv"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "d3b5105f3b1074b7",
+          "inputs": [
+            "wsa_nrg_cons",
+            "wsa_vol_conv"
+          ]
+        },
+        "wsa_nrg_per_pmp_watr": {
+          "refs": [
+            "wsa_nrg_pump",
+            "wsa_vol_pump"
+          ],
+          "owners": [
+            "wsa_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "7560af4548c2c349",
+          "inputs": [
+            "wsa_nrg_pump",
+            "wsa_vol_pump"
+          ]
+        },
+        "wsa_pmp_pw": {
+          "refs": [
+            "wsa_pmp_flow",
+            "wsa_pmp_head"
+          ],
+          "owners": [
+            "wsa_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "7c7df0ba6da8f63a",
+          "inputs": [
+            "wsa_pmp_flow",
+            "wsa_pmp_head"
+          ]
+        },
+        "wsa_KPI_std_nrg_cons": {
+          "refs": [
+            "wsa_nrg_pump",
+            "wsa_vol_pump",
+            "wsa_pmp_head"
+          ],
+          "owners": [
+            "wsa_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "ce227c6dd9d32cc9",
+          "inputs": [
+            "wsa_nrg_pump",
+            "wsa_pmp_head",
+            "wsa_vol_pump"
+          ]
+        },
+        "wsa_KPI_un_head_loss": {
+          "refs": [
+            "wsa_pmp_head",
+            "wsa_sta_head",
+            "wsa_main_len"
+          ],
+          "owners": [
+            "wsa_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "c05827d8ce59eac8",
+          "inputs": [
+            "wsa_main_len",
+            "wsa_pmp_head",
+            "wsa_sta_head"
+          ]
+        },
+        "wsa_KPI_nrg_elec_eff": {
+          "refs": [
+            "wsa_pmp_pw",
+            "wsa_pmp_volt",
+            "wsa_pmp_amps",
+            "wsa_pmp_pf"
+          ],
+          "owners": [
+            "wsa_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "ed69fe40b1e93520",
+          "inputs": [
+            "wsa_pmp_amps",
+            "wsa_pmp_flow",
+            "wsa_pmp_head",
+            "wsa_pmp_pf",
+            "wsa_pmp_volt"
+          ]
+        },
+        "wsa_KPI_std_nrg_newp": {
+          "refs": [
+            "wsa_KPI_nrg_elec_eff",
+            "wsa_pmp_exff",
+            "wsa_KPI_std_nrg_cons"
+          ],
+          "owners": [
+            "wsa_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "59e54b6cb2f376f0",
+          "inputs": [
+            "wsa_nrg_pump",
+            "wsa_pmp_amps",
+            "wsa_pmp_exff",
+            "wsa_pmp_flow",
+            "wsa_pmp_head",
+            "wsa_pmp_pf",
+            "wsa_pmp_volt",
+            "wsa_vol_pump"
+          ]
+        },
+        "wsa_KPI_nrg_cons_new": {
+          "refs": [
+            "wsa_KPI_nrg_elec_eff",
+            "wsa_pmp_exff",
+            "wsa_nrg_pump"
+          ],
+          "owners": [
+            "wsa_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "cdde594f850104db",
+          "inputs": [
+            "wsa_nrg_pump",
+            "wsa_pmp_amps",
+            "wsa_pmp_exff",
+            "wsa_pmp_flow",
+            "wsa_pmp_head",
+            "wsa_pmp_pf",
+            "wsa_pmp_volt"
+          ]
+        },
+        "wsa_KPI_nrg_estm_sav": {
+          "refs": [
+            "wsa_nrg_cons",
+            "wsa_KPI_nrg_cons_new"
+          ],
+          "owners": [
+            "wsa_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "1e32e8e2c3713b6e",
+          "inputs": [
+            "wsa_nrg_cons",
+            "wsa_nrg_pump",
+            "wsa_pmp_amps",
+            "wsa_pmp_exff",
+            "wsa_pmp_flow",
+            "wsa_pmp_head",
+            "wsa_pmp_pf",
+            "wsa_pmp_volt"
+          ]
+        },
+        "wsa_KPI_ghg_estm_red": {
+          "refs": [
+            "wsa_KPI_nrg_estm_sav",
+            "wsa_conv_kwh"
+          ],
+          "owners": [
+            "wsa_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "522c223c6ab463c4",
+          "inputs": [
+            "wsa_conv_kwh",
+            "wsa_nrg_cons",
+            "wsa_nrg_pump",
+            "wsa_pmp_amps",
+            "wsa_pmp_exff",
+            "wsa_pmp_flow",
+            "wsa_pmp_head",
+            "wsa_pmp_pf",
+            "wsa_pmp_volt"
+          ]
+        }
+      }
+    },
+    "wst": {
+      "published": [
+        "wst_KPI_GHG_elec",
+        "wst_KPI_GHG_fuel",
+        "wst_KPI_GHG",
+        "wst_KPI_nrg_per_m3",
+        "wst_KPI_capac_util",
+        "wst_KPI_tst_carr",
+        "wst_KPI_std_nrg_cons",
+        "wst_KPI_un_head_loss",
+        "wst_pmp_pw",
+        "wst_KPI_nrg_elec_eff",
+        "wst_KPI_std_nrg_newp",
+        "wst_KPI_nrg_cons_new",
+        "wst_KPI_nrg_estm_sav",
+        "wst_KPI_ghg_estm_red"
+      ],
+      "inputs": [
+        "wst_vol_trea",
+        "wst_nrg_cost",
+        "wst_run_cost",
+        "wst_treatment",
+        "wst_nrg_cons",
+        "wst_conv_kwh",
+        "wst_fuel_typ",
+        "wst_vol_fuel",
+        "wst_tst_carr",
+        "wst_trea_cap",
+        "wst_nrg_pump",
+        "wst_vol_pump",
+        "wst_pmp_head",
+        "wst_sta_head",
+        "wst_coll_len",
+        "wst_pmp_flow",
+        "wst_pmp_volt",
+        "wst_pmp_amps",
+        "wst_pmp_pf",
+        "wst_pmp_exff"
+      ],
+      "nodes": {
+        "wst_KPI_GHG": {
+          "refs": [
+            "wst_KPI_GHG_elec",
+            "wst_KPI_GHG_fuel"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "417d0995285ea259",
+          "inputs": [
+            "wst_conv_kwh",
+            "wst_fuel_typ",
+            "wst_nrg_cons",
+            "wst_vol_fuel"
+          ]
+        },
+        "wst_KPI_GHG_elec": {
+          "refs": [
+            "wst_nrg_cons",
+            "wst_conv_kwh"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "059a0f899630b8ad",
+          "inputs": [
+            "wst_conv_kwh",
+            "wst_nrg_cons"
+          ]
+        },
+        "wst_KPI_GHG_fuel": {
+          "refs": [
+            "wst_vol_fuel",
+            "wst_fuel_typ"
+          ],
+          "owners": [
+            "wst_engines"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "5130044585b21439",
+          "inputs": [
+            "wst_fuel_typ",
+            "wst_vol_fuel"
+          ]
+        },
+        "wst_KPI_nrg_per_m3": {
+          "refs": [
+            "wst_nrg_cons",
+            "wst_vol_trea"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "bba72a00a36e99d8",
+          "inputs": [
+            "wst_nrg_cons",
+            "wst_vol_trea"
+          ]
+        },
+        "wst_KPI_capac_util": {
+          "refs": [
+            "wst_vol_trea",
+            "wst_trea_cap"
+          ],
+          "owners": [
+            "wst_treatment_perf"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "4c1897e419af9c5c",
+          "inputs": [
+            "wst_trea_cap",
+            "wst_vol_trea"
+          ]
+        },
+        "wst_KPI_tst_carr": {
+          "refs": [
+            "wst_tst_carr"
+          ],
+          "owners": [
+            "wst_treatment_perf"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "0e17b604028df34c",
+          "inputs": [
+            "wst_tst_carr"
+          ]
+        },
+        "wst_KPI_std_nrg_cons": {
+          "refs": [
+            "wst_nrg_pump",
+            "wst_vol_pump",
+            "wst_pmp_head"
+          ],
+          "owners": [
+            "wst_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "089a9fbc7e70e09c",
+          "inputs": [
+            "wst_nrg_pump",
+            "wst_pmp_head",
+            "wst_vol_pump"
+          ]
+        },
+        "wst_KPI_un_head_loss": {
+          "refs": [
+            "wst_pmp_head",
+            "wst_sta_head",
+            "wst_coll_len"
+          ],
+          "owners": [
+            "wst_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "a68a2bd2df99db2a",
+          "inputs": [
+            "wst_coll_len",
+            "wst_pmp_head",
+            "wst_sta_head"
+          ]
+        },
+        "wst_pmp_pw": {
+          "refs": [
+            "wst_pmp_flow",
+            "wst_pmp_head"
+          ],
+          "owners": [
+            "wst_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "422bdf3f54007dd7",
+          "inputs": [
+            "wst_pmp_flow",
+            "wst_pmp_head"
+          ]
+        },
+        "wst_KPI_nrg_elec_eff": {
+          "refs": [
+            "wst_pmp_pw",
+            "wst_pmp_volt",
+            "wst_pmp_amps",
+            "wst_pmp_pf"
+          ],
+          "owners": [
+            "wst_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "44f8851cb32fd5d8",
+          "inputs": [
+            "wst_pmp_amps",
+            "wst_pmp_flow",
+            "wst_pmp_head",
+            "wst_pmp_pf",
+            "wst_pmp_volt"
+          ]
+        },
+        "wst_KPI_std_nrg_newp": {
+          "refs": [
+            "wst_KPI_nrg_elec_eff",
+            "wst_pmp_exff",
+            "wst_KPI_std_nrg_cons"
+          ],
+          "owners": [
+            "wst_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "b8a9ce3d65cbe2d5",
+          "inputs": [
+            "wst_nrg_pump",
+            "wst_pmp_amps",
+            "wst_pmp_exff",
+            "wst_pmp_flow",
+            "wst_pmp_head",
+            "wst_pmp_pf",
+            "wst_pmp_volt",
+            "wst_vol_pump"
+          ]
+        },
+        "wst_KPI_nrg_cons_new": {
+          "refs": [
+            "wst_vol_pump",
+            "wst_KPI_std_nrg_newp",
+            "wst_pmp_head"
+          ],
+          "owners": [
+            "wst_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "0dfdbcd769cb969f",
+          "inputs": [
+            "wst_nrg_pump",
+            "wst_pmp_amps",
+            "wst_pmp_exff",
+            "wst_pmp_flow",
+            "wst_pmp_head",
+            "wst_pmp_pf",
+            "wst_pmp_volt",
+            "wst_vol_pump"
+          ]
+        },
+        "wst_KPI_nrg_estm_sav": {
+          "refs": [
+            "wst_nrg_cons",
+            "wst_KPI_nrg_cons_new"
+          ],
+          "owners": [
+            "wst_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "d47cc1385b9394dc",
+          "inputs": [
+            "wst_nrg_cons",
+            "wst_nrg_pump",
+            "wst_pmp_amps",
+            "wst_pmp_exff",
+            "wst_pmp_flow",
+            "wst_pmp_head",
+            "wst_pmp_pf",
+            "wst_pmp_volt",
+            "wst_vol_pump"
+          ]
+        },
+        "wst_KPI_ghg_estm_red": {
+          "refs": [
+            "wst_KPI_nrg_estm_sav",
+            "wst_conv_kwh"
+          ],
+          "owners": [
+            "wst_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "fce088e193c4a681",
+          "inputs": [
+            "wst_conv_kwh",
+            "wst_nrg_cons",
+            "wst_nrg_pump",
+            "wst_pmp_amps",
+            "wst_pmp_exff",
+            "wst_pmp_flow",
+            "wst_pmp_head",
+            "wst_pmp_pf",
+            "wst_pmp_volt",
+            "wst_vol_pump"
+          ]
+        }
+      }
+    },
+    "wsd": {
+      "published": [
+        "wsd_KPI_GHG_elec",
+        "wsd_KPI_GHG_fuel",
+        "wsd_KPI_GHG_trck",
+        "wsd_KPI_GHG",
+        "wsd_KPI_nrg_per_vd",
+        "wsd_KPI_ghg_estm_red",
+        "wsd_KPI_nrg_cons_new",
+        "wsd_KPI_nrg_efficien",
+        "wsd_KPI_nrg_elec_eff",
+        "wsd_KPI_nrg_estm_sav",
+        "wsd_KPI_nrg_per_m3",
+        "wsd_KPI_nrg_topgraph",
+        "wsd_KPI_std_nrg_cons",
+        "wsd_KPI_std_nrg_newp",
+        "wsd_KPI_un_head_loss",
+        "wsd_KPI_water_losses",
+        "wsd_SL_cont_sup",
+        "wsd_SL_nr_water",
+        "wsd_SL_pres_ade",
+        "wsd_SL_water_loss",
+        "wsd_nrg_mini",
+        "wsd_nrg_natu",
+        "wsd_nrg_supp",
+        "wsd_nrg_topo",
+        "wsd_pmp_pw"
+      ],
+      "inputs": [
+        "wsd_serv_pop",
+        "wsd_vol_dist",
+        "wsd_nrg_cons",
+        "wsd_conv_kwh",
+        "wsd_nrg_cost",
+        "wsd_run_cost",
+        "wsd_auth_con",
+        "wsd_bill_con",
+        "wsd_fuel_typ",
+        "wsd_vol_fuel",
+        "wsd_trck_typ",
+        "wsd_vol_trck",
+        "wsd_deli_pts",
+        "wsd_ser_cons",
+        "wsd_time_pre",
+        "wsd_min_pres",
+        "wsd_hi_no_el",
+        "wsd_lo_no_el",
+        "wsd_av_no_el",
+        "wsd_wt_el_no",
+        "wsd_vol_pump",
+        "wsd_nrg_pump",
+        "wsd_pmp_size",
+        "wsd_sta_head",
+        "wsd_pmp_head",
+        "wsd_main_len",
+        "wsd_pmp_flow",
+        "wsd_pmp_volt",
+        "wsd_pmp_amps",
+        "wsd_pmp_exff",
+        "wsd_pmp_pf"
+      ],
+      "nodes": {
+        "wsd_KPI_GHG": {
+          "refs": [
+            "wsd_KPI_GHG_elec",
+            "wsd_KPI_GHG_fuel",
+            "wsd_KPI_GHG_trck"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "25a26eab8b3a0487",
+          "inputs": [
+            "wsd_conv_kwh",
+            "wsd_fuel_typ",
+            "wsd_nrg_cons",
+            "wsd_trck_typ",
+            "wsd_vol_fuel",
+            "wsd_vol_trck"
+          ]
+        },
+        "wsd_KPI_GHG_elec": {
+          "refs": [
+            "wsd_nrg_cons",
+            "wsd_conv_kwh"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "f0c209d9a806003d",
+          "inputs": [
+            "wsd_conv_kwh",
+            "wsd_nrg_cons"
+          ]
+        },
+        "wsd_KPI_GHG_fuel": {
+          "refs": [
+            "wsd_vol_fuel",
+            "wsd_fuel_typ"
+          ],
+          "owners": [
+            "wsd_engines"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "d48814b58e4b9e69",
+          "inputs": [
+            "wsd_fuel_typ",
+            "wsd_vol_fuel"
+          ]
+        },
+        "wsd_KPI_GHG_trck": {
+          "refs": [
+            "wsd_vol_trck",
+            "wsd_trck_typ"
+          ],
+          "owners": [
+            "wsd_trucks"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_n2o_eq",
+            "ct_ch4_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "8b9841711709fc6d",
+          "inputs": [
+            "wsd_trck_typ",
+            "wsd_vol_trck"
+          ]
+        },
+        "wsd_KPI_nrg_per_vd": {
+          "refs": [
+            "wsd_nrg_cons",
+            "wsd_vol_dist"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "defce20aa672c09e",
+          "inputs": [
+            "wsd_nrg_cons",
+            "wsd_vol_dist"
+          ]
+        },
+        "wsd_KPI_nrg_per_m3": {
+          "refs": [
+            "wsd_nrg_cons",
+            "wsd_auth_con"
+          ],
+          "owners": [
+            "wsd_water_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "6cc01efd092f10b5",
+          "inputs": [
+            "wsd_auth_con",
+            "wsd_nrg_cons"
+          ]
+        },
+        "wsd_SL_nr_water": {
+          "refs": [
+            "wsd_vol_dist",
+            "wsd_bill_con"
+          ],
+          "owners": [
+            "wsd_water_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "965a57f1dd8078c9",
+          "inputs": [
+            "wsd_bill_con",
+            "wsd_vol_dist"
+          ]
+        },
+        "wsd_SL_water_loss": {
+          "refs": [
+            "wsd_vol_dist",
+            "wsd_auth_con"
+          ],
+          "owners": [
+            "wsd_water_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "488e320be9e3ef5f",
+          "inputs": [
+            "wsd_auth_con",
+            "wsd_vol_dist"
+          ]
+        },
+        "wsd_pmp_pw": {
+          "refs": [
+            "wsd_pmp_flow",
+            "wsd_pmp_head"
+          ],
+          "owners": [
+            "wsd_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "02c42d6fc520d5c7",
+          "inputs": [
+            "wsd_pmp_flow",
+            "wsd_pmp_head"
+          ]
+        },
+        "wsd_SL_pres_ade": {
+          "refs": [
+            "wsd_deli_pts",
+            "wsd_ser_cons"
+          ],
+          "owners": [
+            "wsd_service_perf"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "c39a9648ac611498",
+          "inputs": [
+            "wsd_deli_pts",
+            "wsd_ser_cons"
+          ]
+        },
+        "wsd_SL_cont_sup": {
+          "refs": [
+            "wsd_time_pre"
+          ],
+          "owners": [
+            "wsd_service_perf"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "4b0261e06f937944",
+          "inputs": [
+            "wsd_time_pre"
+          ]
+        },
+        "wsd_nrg_topo": {
+          "refs": [
+            "wsd_vol_dist",
+            "wsd_hi_no_el",
+            "wsd_av_no_el"
+          ],
+          "owners": [
+            "wsd_topographic"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "065018f63cb5bdce",
+          "inputs": [
+            "wsd_av_no_el",
+            "wsd_hi_no_el",
+            "wsd_vol_dist"
+          ]
+        },
+        "wsd_nrg_natu": {
+          "refs": [
+            "wsd_vol_dist",
+            "wsd_wt_el_no",
+            "wsd_lo_no_el"
+          ],
+          "owners": [
+            "wsd_topographic"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "e32abaca65f73f12",
+          "inputs": [
+            "wsd_lo_no_el",
+            "wsd_vol_dist",
+            "wsd_wt_el_no"
+          ]
+        },
+        "wsd_nrg_mini": {
+          "refs": [
+            "wsd_auth_con",
+            "wsd_min_pres",
+            "wsd_av_no_el",
+            "wsd_lo_no_el"
+          ],
+          "owners": [
+            "wsd_topographic"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "86a42a8f1759f2af",
+          "inputs": [
+            "wsd_auth_con",
+            "wsd_av_no_el",
+            "wsd_lo_no_el",
+            "wsd_min_pres"
+          ]
+        },
+        "wsd_nrg_supp": {
+          "refs": [
+            "wsd_nrg_cons",
+            "wsd_nrg_natu"
+          ],
+          "owners": [
+            "wsd_topographic"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "d4c0bbfc02b1be10",
+          "inputs": [
+            "wsd_lo_no_el",
+            "wsd_nrg_cons",
+            "wsd_vol_dist",
+            "wsd_wt_el_no"
+          ]
+        },
+        "wsd_KPI_nrg_efficien": {
+          "refs": [
+            "wsd_nrg_mini",
+            "wsd_nrg_supp"
+          ],
+          "owners": [
+            "wsd_topographic"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "8cc9323077e7e0a8",
+          "inputs": [
+            "wsd_auth_con",
+            "wsd_av_no_el",
+            "wsd_lo_no_el",
+            "wsd_min_pres",
+            "wsd_nrg_cons",
+            "wsd_vol_dist",
+            "wsd_wt_el_no"
+          ]
+        },
+        "wsd_KPI_nrg_topgraph": {
+          "refs": [
+            "wsd_nrg_topo",
+            "wsd_nrg_supp"
+          ],
+          "owners": [
+            "wsd_topographic"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "cc3220f98f948e59",
+          "inputs": [
+            "wsd_av_no_el",
+            "wsd_hi_no_el",
+            "wsd_lo_no_el",
+            "wsd_nrg_cons",
+            "wsd_vol_dist",
+            "wsd_wt_el_no"
+          ]
+        },
+        "wsd_KPI_std_nrg_cons": {
+          "refs": [
+            "wsd_nrg_pump",
+            "wsd_vol_pump",
+            "wsd_pmp_head"
+          ],
+          "owners": [
+            "wsd_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "2940f9fa6ff37916",
+          "inputs": [
+            "wsd_nrg_pump",
+            "wsd_pmp_head",
+            "wsd_vol_pump"
+          ]
+        },
+        "wsd_KPI_un_head_loss": {
+          "refs": [
+            "wsd_pmp_head",
+            "wsd_sta_head",
+            "wsd_main_len"
+          ],
+          "owners": [
+            "wsd_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "58e566732f0530ab",
+          "inputs": [
+            "wsd_main_len",
+            "wsd_pmp_head",
+            "wsd_sta_head"
+          ]
+        },
+        "wsd_KPI_water_losses": {
+          "refs": [
+            "wsd_vol_dist",
+            "wsd_auth_con",
+            "wsd_main_len"
+          ],
+          "owners": [
+            "wsd_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "bfc9f02af800b44e",
+          "inputs": [
+            "wsd_auth_con",
+            "wsd_main_len",
+            "wsd_vol_dist"
+          ]
+        },
+        "wsd_KPI_nrg_elec_eff": {
+          "refs": [
+            "wsd_pmp_pw",
+            "wsd_pmp_volt",
+            "wsd_pmp_amps",
+            "wsd_pmp_pf"
+          ],
+          "owners": [
+            "wsd_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "8d38886cebf3c1e8",
+          "inputs": [
+            "wsd_pmp_amps",
+            "wsd_pmp_flow",
+            "wsd_pmp_head",
+            "wsd_pmp_pf",
+            "wsd_pmp_volt"
+          ]
+        },
+        "wsd_KPI_std_nrg_newp": {
+          "refs": [
+            "wsd_KPI_nrg_elec_eff",
+            "wsd_pmp_exff",
+            "wsd_KPI_std_nrg_cons"
+          ],
+          "owners": [
+            "wsd_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "be6bde5d38262c35",
+          "inputs": [
+            "wsd_nrg_pump",
+            "wsd_pmp_amps",
+            "wsd_pmp_exff",
+            "wsd_pmp_flow",
+            "wsd_pmp_head",
+            "wsd_pmp_pf",
+            "wsd_pmp_volt",
+            "wsd_vol_pump"
+          ]
+        },
+        "wsd_KPI_nrg_cons_new": {
+          "refs": [
+            "wsd_KPI_nrg_elec_eff",
+            "wsd_pmp_exff",
+            "wsd_nrg_pump"
+          ],
+          "owners": [
+            "wsd_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "2347b2eefea53896",
+          "inputs": [
+            "wsd_nrg_pump",
+            "wsd_pmp_amps",
+            "wsd_pmp_exff",
+            "wsd_pmp_flow",
+            "wsd_pmp_head",
+            "wsd_pmp_pf",
+            "wsd_pmp_volt"
+          ]
+        },
+        "wsd_KPI_nrg_estm_sav": {
+          "refs": [
+            "wsd_nrg_cons",
+            "wsd_KPI_nrg_cons_new"
+          ],
+          "owners": [
+            "wsd_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "1c334668b69259ac",
+          "inputs": [
+            "wsd_nrg_cons",
+            "wsd_nrg_pump",
+            "wsd_pmp_amps",
+            "wsd_pmp_exff",
+            "wsd_pmp_flow",
+            "wsd_pmp_head",
+            "wsd_pmp_pf",
+            "wsd_pmp_volt"
+          ]
+        },
+        "wsd_KPI_ghg_estm_red": {
+          "refs": [
+            "wsd_KPI_nrg_estm_sav",
+            "wsd_conv_kwh"
+          ],
+          "owners": [
+            "wsd_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "8a4a4c1179e64e11",
+          "inputs": [
+            "wsd_conv_kwh",
+            "wsd_nrg_cons",
+            "wsd_nrg_pump",
+            "wsd_pmp_amps",
+            "wsd_pmp_exff",
+            "wsd_pmp_flow",
+            "wsd_pmp_head",
+            "wsd_pmp_pf",
+            "wsd_pmp_volt"
+          ]
+        }
+      }
+    },
+    "wwc": {
+      "published": [
+        "wwc_KPI_GHG_elec",
+        "wwc_KPI_GHG_fuel",
+        "wwc_KPI_GHG_cso",
+        "wwc_KPI_GHG_col",
+        "wwc_KPI_GHG",
+        "wwc_KPI_nrg_per_m3",
+        "wwc_KPI_std_nrg_cons",
+        "wwc_KPI_un_head_loss",
+        "wwc_KPI_nrg_elec_eff",
+        "wwc_KPI_std_nrg_newp",
+        "wwc_KPI_nrg_cons_new",
+        "wwc_KPI_nrg_estm_sav",
+        "wwc_KPI_ghg_estm_red"
+      ],
+      "inputs": [
+        "wwc_conn_pop",
+        "wwc_vol_coll",
+        "wwc_vol_coll_unt",
+        "wwc_vol_coll_tre",
+        "wwc_bod",
+        "wwc_tn",
+        "wwc_ch4_efac_cso",
+        "wwc_ch4_efac_col",
+        "wwc_n2o_efac_cso",
+        "wwc_n2o_efac_col",
+        "wwc_fuel_typ",
+        "wwc_vol_fuel",
+        "wwc_nrg_cons",
+        "wwc_conv_kwh",
+        "wwc_nrg_cost",
+        "wwc_run_cost",
+        "wwc_vol_pump",
+        "wwc_nrg_pump",
+        "wwc_pmp_head",
+        "wwc_sta_head",
+        "wwc_coll_len",
+        "wwc_pmp_flow",
+        "wwc_pmp_volt",
+        "wwc_pmp_amps",
+        "wwc_pmp_exff",
+        "wwc_pmp_pf"
+      ],
+      "nodes": {
+        "wwc_KPI_GHG": {
+          "refs": [
+            "wwc_KPI_GHG_elec",
+            "wwc_KPI_GHG_fuel",
+            "wwc_KPI_GHG_cso",
+            "wwc_KPI_GHG_col"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "1a935c1734e53f4b",
+          "inputs": [
+            "wwc_bod",
+            "wwc_ch4_efac_col",
+            "wwc_ch4_efac_cso",
+            "wwc_conv_kwh",
+            "wwc_fuel_typ",
+            "wwc_n2o_efac_col",
+            "wwc_n2o_efac_cso",
+            "wwc_nrg_cons",
+            "wwc_tn",
+            "wwc_vol_coll",
+            "wwc_vol_coll_tre",
+            "wwc_vol_coll_unt",
+            "wwc_vol_fuel"
+          ]
+        },
+        "wwc_KPI_GHG_elec": {
+          "refs": [
+            "wwc_nrg_cons",
+            "wwc_conv_kwh"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "969a986c35aa1dd4",
+          "inputs": [
+            "wwc_conv_kwh",
+            "wwc_nrg_cons"
+          ]
+        },
+        "wwc_KPI_GHG_fuel": {
+          "refs": [
+            "wwc_vol_fuel",
+            "wwc_fuel_typ"
+          ],
+          "owners": [
+            "wwc_engines"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "179b9bea0bdfab7e",
+          "inputs": [
+            "wwc_fuel_typ",
+            "wwc_vol_fuel"
+          ]
+        },
+        "wwc_KPI_GHG_cso": {
+          "refs": [
+            "wwc_bod",
+            "wwc_vol_coll_unt",
+            "wwc_vol_coll",
+            "wwc_tn",
+            "wwc_ch4_efac_cso",
+            "wwc_n2o_efac_cso"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "9ebfd7a6c2ed5646",
+          "inputs": [
+            "wwc_bod",
+            "wwc_ch4_efac_cso",
+            "wwc_n2o_efac_cso",
+            "wwc_tn",
+            "wwc_vol_coll",
+            "wwc_vol_coll_unt"
+          ]
+        },
+        "wwc_KPI_GHG_col": {
+          "refs": [
+            "wwc_bod",
+            "wwc_vol_coll_tre",
+            "wwc_vol_coll",
+            "wwc_tn",
+            "wwc_ch4_efac_col",
+            "wwc_n2o_efac_col"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "2afb82ff7506dd33",
+          "inputs": [
+            "wwc_bod",
+            "wwc_ch4_efac_col",
+            "wwc_n2o_efac_col",
+            "wwc_tn",
+            "wwc_vol_coll",
+            "wwc_vol_coll_tre"
+          ]
+        },
+        "wwc_KPI_nrg_per_m3": {
+          "refs": [
+            "wwc_nrg_cons",
+            "wwc_vol_coll_tre"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "968abbbf8f45a16b",
+          "inputs": [
+            "wwc_nrg_cons",
+            "wwc_vol_coll_tre"
+          ]
+        },
+        "wwc_pmp_pw": {
+          "refs": [
+            "wwc_pmp_flow",
+            "wwc_pmp_head"
+          ],
+          "owners": [
+            "wwc_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "e9bf5dd41d4fb47c",
+          "inputs": [
+            "wwc_pmp_flow",
+            "wwc_pmp_head"
+          ]
+        },
+        "wwc_KPI_std_nrg_cons": {
+          "refs": [
+            "wwc_nrg_pump",
+            "wwc_vol_pump",
+            "wwc_pmp_head"
+          ],
+          "owners": [
+            "wwc_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "811c37528ab577a6",
+          "inputs": [
+            "wwc_nrg_pump",
+            "wwc_pmp_head",
+            "wwc_vol_pump"
+          ]
+        },
+        "wwc_KPI_un_head_loss": {
+          "refs": [
+            "wwc_pmp_head",
+            "wwc_sta_head",
+            "wwc_coll_len"
+          ],
+          "owners": [
+            "wwc_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "5e0a687a36a5e4be",
+          "inputs": [
+            "wwc_coll_len",
+            "wwc_pmp_head",
+            "wwc_sta_head"
+          ]
+        },
+        "wwc_KPI_nrg_elec_eff": {
+          "refs": [
+            "wwc_pmp_pw",
+            "wwc_pmp_volt",
+            "wwc_pmp_amps",
+            "wwc_pmp_pf"
+          ],
+          "owners": [
+            "wwc_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "5773f49b6620fd6f",
+          "inputs": [
+            "wwc_pmp_amps",
+            "wwc_pmp_flow",
+            "wwc_pmp_head",
+            "wwc_pmp_pf",
+            "wwc_pmp_volt"
+          ]
+        },
+        "wwc_KPI_std_nrg_newp": {
+          "refs": [
+            "wwc_KPI_nrg_elec_eff",
+            "wwc_pmp_exff",
+            "wwc_KPI_std_nrg_cons"
+          ],
+          "owners": [
+            "wwc_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "f7dbbcabaa692207",
+          "inputs": [
+            "wwc_nrg_pump",
+            "wwc_pmp_amps",
+            "wwc_pmp_exff",
+            "wwc_pmp_flow",
+            "wwc_pmp_head",
+            "wwc_pmp_pf",
+            "wwc_pmp_volt",
+            "wwc_vol_pump"
+          ]
+        },
+        "wwc_KPI_nrg_cons_new": {
+          "refs": [
+            "wwc_vol_pump",
+            "wwc_KPI_std_nrg_newp",
+            "wwc_pmp_head"
+          ],
+          "owners": [
+            "wwc_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "26f64eb956b54815",
+          "inputs": [
+            "wwc_nrg_pump",
+            "wwc_pmp_amps",
+            "wwc_pmp_exff",
+            "wwc_pmp_flow",
+            "wwc_pmp_head",
+            "wwc_pmp_pf",
+            "wwc_pmp_volt",
+            "wwc_vol_pump"
+          ]
+        },
+        "wwc_KPI_nrg_estm_sav": {
+          "refs": [
+            "wwc_nrg_cons",
+            "wwc_KPI_nrg_cons_new"
+          ],
+          "owners": [
+            "wwc_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "95e10cf3b77a567f",
+          "inputs": [
+            "wwc_nrg_cons",
+            "wwc_nrg_pump",
+            "wwc_pmp_amps",
+            "wwc_pmp_exff",
+            "wwc_pmp_flow",
+            "wwc_pmp_head",
+            "wwc_pmp_pf",
+            "wwc_pmp_volt",
+            "wwc_vol_pump"
+          ]
+        },
+        "wwc_KPI_ghg_estm_red": {
+          "refs": [
+            "wwc_KPI_nrg_estm_sav",
+            "wwc_conv_kwh"
+          ],
+          "owners": [
+            "wwc_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "82c79a166f93a6be",
+          "inputs": [
+            "wwc_conv_kwh",
+            "wwc_nrg_cons",
+            "wwc_nrg_pump",
+            "wwc_pmp_amps",
+            "wwc_pmp_exff",
+            "wwc_pmp_flow",
+            "wwc_pmp_head",
+            "wwc_pmp_pf",
+            "wwc_pmp_volt",
+            "wwc_vol_pump"
+          ]
+        }
+      }
+    },
+    "wwt": {
+      "published": [
+        "wwt_KPI_GHG_elec",
+        "wwt_KPI_GHG_fuel",
+        "wwt_KPI_GHG_tre",
+        "wwt_KPI_GHG_biog",
+        "wwt_KPI_GHG_dig_fuel",
+        "wwt_KPI_GHG_slu",
+        "wwt_KPI_GHG_disc",
+        "wwt_KPI_GHG_reus_trck",
+        "wwt_KPI_GHG",
+        "wwt_bod_rmvd",
+        "wwt_KPI_nrg_per_m3",
+        "wwt_KPI_nrg_per_kg",
+        "wwt_KPI_capac_util",
+        "wwt_SL_qual_com",
+        "wwt_KPI_nrg_per_pump",
+        "wwt_KPI_std_nrg_cons",
+        "wwt_KPI_un_head_loss",
+        "wwt_KPI_nrg_elec_eff",
+        "wwt_KPI_std_nrg_newp",
+        "wwt_KPI_nrg_cons_new",
+        "wwt_KPI_nrg_estm_sav",
+        "wwt_KPI_ghg_estm_red",
+        "wwt_moles_biogas_produced",
+        "wwt_biogas_usage",
+        "wwt_nrg_biog_val",
+        "wwt_KPI_nrg_biogas",
+        "wwt_KPI_nrg_x_biog",
+        "wwt_KPI_sludg_prod",
+        "wwt_total_m3",
+        "wwt_ghg_avoided"
+      ],
+      "inputs": [
+        "wwt_serv_pop",
+        "wwt_vol_trea",
+        "wwt_vol_nonp",
+        "wwt_vol_disc",
+        "wwt_bod_infl",
+        "wwt_bod_effl",
+        "wwt_tn_infl",
+        "wwt_tn_effl",
+        "wwt_ch4_efac_tre",
+        "wwt_n2o_efac_tre",
+        "wwt_ch4_efac_dis",
+        "wwt_n2o_efac_dis",
+        "wwt_fuel_typ",
+        "wwt_vol_fuel",
+        "wwt_trea_cap",
+        "wwt_tst_cmpl",
+        "wwt_tst_cond",
+        "wwt_nrg_cons",
+        "wwt_conv_kwh",
+        "wwt_nrg_cost",
+        "wwt_run_cost",
+        "wwt_vol_pump",
+        "wwt_nrg_pump",
+        "wwt_pmp_head",
+        "wwt_sta_head",
+        "wwt_coll_len",
+        "wwt_pmp_flow",
+        "wwt_pmp_volt",
+        "wwt_pmp_amps",
+        "wwt_pmp_pf",
+        "wwt_pmp_exff",
+        "wwt_biog_pro",
+        "wwt_biog_fla",
+        "wwt_biog_val",
+        "wwt_biog_lkd",
+        "wwt_biog_sold",
+        "wwt_ch4_biog",
+        "wwt_dige_typ",
+        "wwt_fuel_dig",
+        "wwt_nrg_biog_eff",
+        "wwt_nrg_biog",
+        "wwt_reus_trck_typ",
+        "wwt_reus_vol_trck",
+        "wwt_wr_N_rec",
+        "wwt_wr_P_rec",
+        "wwt_mass_slu",
+        "wwt_bod_slud",
+        "wwt_mass_slu_sto",
+        "wwt_time_slu_sto",
+        "wwt_slu_sto_TVS",
+        "wwt_slu_sto_f_CH4",
+        "wwt_slu_sto_EF",
+        "wwt_mass_slu_comp",
+        "wwt_slu_comp_emis_treated_or_piles_covered",
+        "wwt_slu_comp_solids_content",
+        "wwt_slu_comp_TVS",
+        "wwt_slu_comp_N_cont",
+        "wwt_slu_comp_low_CN_EF",
+        "wwt_slu_comp_uncovered_pile_EF",
+        "wwt_slu_comp_seqst_rate",
+        "wwt_mass_slu_inc",
+        "wwt_temp_inc",
+        "wwt_slu_inc_N_cont",
+        "wwt_slu_inc_SNCR",
+        "wwt_mass_slu_app",
+        "wwt_slu_la_solids_content",
+        "wwt_slu_la_TVS",
+        "wwt_slu_la_N_cont",
+        "wwt_slu_la_EF",
+        "wwt_slu_la_seqst_rate",
+        "wwt_mass_slu_land",
+        "wwt_slu_lf_TVS",
+        "wwt_slu_lf_uncertainty",
+        "wwt_slu_lf_CH4_in_gas",
+        "wwt_slu_lf_DOCf",
+        "wwt_slu_lf_decomp_3yr",
+        "wwt_slu_lf_MCF",
+        "wwt_slu_lf_N_cont",
+        "wwt_slu_lf_low_CN_EF",
+        "wwt_mass_slu_stock",
+        "wwt_slu_sp_lifespan",
+        "wwt_trck_typ",
+        "wwt_vol_tslu"
+      ],
+      "nodes": {
+        "wwt_KPI_GHG": {
+          "refs": [
+            "wwt_KPI_GHG_elec",
+            "wwt_KPI_GHG_fuel",
+            "wwt_KPI_GHG_tre",
+            "wwt_KPI_GHG_biog",
+            "wwt_KPI_GHG_dig_fuel",
+            "wwt_KPI_GHG_slu",
+            "wwt_KPI_GHG_reus_trck",
+            "wwt_KPI_GHG_disc"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "9e52abb30f1bb797",
+          "inputs": [
+            "wwt_biog_lkd",
+            "wwt_biog_pro",
+            "wwt_bod_effl",
+            "wwt_bod_infl",
+            "wwt_bod_slud",
+            "wwt_ch4_biog",
+            "wwt_ch4_efac_dis",
+            "wwt_ch4_efac_tre",
+            "wwt_conv_kwh",
+            "wwt_dige_typ",
+            "wwt_fuel_dig",
+            "wwt_fuel_typ",
+            "wwt_mass_slu_app",
+            "wwt_mass_slu_comp",
+            "wwt_mass_slu_inc",
+            "wwt_mass_slu_land",
+            "wwt_mass_slu_sto",
+            "wwt_mass_slu_stock",
+            "wwt_n2o_efac_dis",
+            "wwt_n2o_efac_tre",
+            "wwt_nrg_cons",
+            "wwt_reus_trck_typ",
+            "wwt_reus_vol_trck",
+            "wwt_slu_comp_N_cont",
+            "wwt_slu_comp_TVS",
+            "wwt_slu_comp_emis_treated_or_piles_covered",
+            "wwt_slu_comp_low_CN_EF",
+            "wwt_slu_comp_solids_content",
+            "wwt_slu_comp_uncovered_pile_EF",
+            "wwt_slu_inc_N_cont",
+            "wwt_slu_inc_SNCR",
+            "wwt_slu_la_EF",
+            "wwt_slu_la_N_cont",
+            "wwt_slu_la_TVS",
+            "wwt_slu_la_solids_content",
+            "wwt_slu_lf_CH4_in_gas",
+            "wwt_slu_lf_DOCf",
+            "wwt_slu_lf_MCF",
+            "wwt_slu_lf_N_cont",
+            "wwt_slu_lf_TVS",
+            "wwt_slu_lf_decomp_3yr",
+            "wwt_slu_lf_low_CN_EF",
+            "wwt_slu_lf_uncertainty",
+            "wwt_slu_sp_lifespan",
+            "wwt_slu_sto_EF",
+            "wwt_slu_sto_TVS",
+            "wwt_slu_sto_f_CH4",
+            "wwt_temp_inc",
+            "wwt_tn_effl",
+            "wwt_tn_infl",
+            "wwt_trck_typ",
+            "wwt_vol_fuel",
+            "wwt_vol_tslu"
+          ]
+        },
+        "wwt_KPI_GHG_elec": {
+          "refs": [
+            "wwt_nrg_cons",
+            "wwt_conv_kwh"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "62ad3925442d8e91",
+          "inputs": [
+            "wwt_conv_kwh",
+            "wwt_nrg_cons"
+          ]
+        },
+        "wwt_KPI_GHG_fuel": {
+          "refs": [
+            "wwt_vol_fuel",
+            "wwt_fuel_typ"
+          ],
+          "owners": [
+            "wwt_engines"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "f333f3c90d21d38d",
+          "inputs": [
+            "wwt_fuel_typ",
+            "wwt_vol_fuel"
+          ]
+        },
+        "wwt_KPI_GHG_dig_fuel": {
+          "refs": [
+            "wwt_fuel_dig",
+            "wwt_dige_typ"
+          ],
+          "owners": [
+            "wwt_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "1c56cc61132eeded",
+          "inputs": [
+            "wwt_dige_typ",
+            "wwt_fuel_dig"
+          ]
+        },
+        "wwt_KPI_GHG_tre": {
+          "refs": [
+            "wwt_bod_infl",
+            "wwt_bod_slud",
+            "wwt_ch4_efac_tre",
+            "wwt_tn_infl",
+            "wwt_n2o_efac_tre"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "a4252bbbe799883b",
+          "inputs": [
+            "wwt_bod_infl",
+            "wwt_bod_slud",
+            "wwt_ch4_efac_tre",
+            "wwt_n2o_efac_tre",
+            "wwt_tn_infl"
+          ]
+        },
+        "wwt_KPI_GHG_biog": {
+          "refs": [
+            "wwt_KPI_GHG_biog_leaked"
+          ],
+          "owners": [
+            "wwt_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "7c56511c24040148",
+          "inputs": [
+            "wwt_biog_lkd",
+            "wwt_biog_pro",
+            "wwt_ch4_biog"
+          ]
+        },
+        "wwt_moles_biogas_produced": {
+          "refs": [
+            "wwt_biog_pro"
+          ],
+          "owners": [
+            "wwt_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "74f24824ad772214",
+          "inputs": [
+            "wwt_biog_pro"
+          ]
+        },
+        "wwt_KPI_GHG_biog_flared": {
+          "refs": [
+            "wwt_moles_biogas_produced",
+            "wwt_biog_fla",
+            "wwt_ch4_biog"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "7c743a15296f2521",
+          "inputs": [
+            "wwt_biog_fla",
+            "wwt_biog_pro",
+            "wwt_ch4_biog"
+          ]
+        },
+        "wwt_KPI_GHG_biog_valorized": {
+          "refs": [
+            "wwt_moles_biogas_produced",
+            "wwt_biog_val",
+            "wwt_ch4_biog"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "8b5fc061257f9e95",
+          "inputs": [
+            "wwt_biog_pro",
+            "wwt_biog_val",
+            "wwt_ch4_biog"
+          ]
+        },
+        "wwt_KPI_GHG_biog_leaked": {
+          "refs": [
+            "wwt_moles_biogas_produced",
+            "wwt_biog_lkd",
+            "wwt_ch4_biog"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq"
+          ],
+          "tables": [],
+          "sourceHash": "57c84ba8fac06e5c",
+          "inputs": [
+            "wwt_biog_lkd",
+            "wwt_biog_pro",
+            "wwt_ch4_biog"
+          ]
+        },
+        "wwt_KPI_GHG_slu": {
+          "refs": [
+            "wwt_KPI_GHG_slu_storage",
+            "wwt_KPI_GHG_slu_composting",
+            "wwt_KPI_GHG_slu_incineration",
+            "wwt_KPI_GHG_slu_land_application",
+            "wwt_KPI_GHG_slu_landfilling",
+            "wwt_KPI_GHG_slu_stockpilling",
+            "wwt_KPI_GHG_slu_transport"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "2d2fb7e903289bc1",
+          "inputs": [
+            "wwt_mass_slu_app",
+            "wwt_mass_slu_comp",
+            "wwt_mass_slu_inc",
+            "wwt_mass_slu_land",
+            "wwt_mass_slu_sto",
+            "wwt_mass_slu_stock",
+            "wwt_slu_comp_N_cont",
+            "wwt_slu_comp_TVS",
+            "wwt_slu_comp_emis_treated_or_piles_covered",
+            "wwt_slu_comp_low_CN_EF",
+            "wwt_slu_comp_solids_content",
+            "wwt_slu_comp_uncovered_pile_EF",
+            "wwt_slu_inc_N_cont",
+            "wwt_slu_inc_SNCR",
+            "wwt_slu_la_EF",
+            "wwt_slu_la_N_cont",
+            "wwt_slu_la_TVS",
+            "wwt_slu_la_solids_content",
+            "wwt_slu_lf_CH4_in_gas",
+            "wwt_slu_lf_DOCf",
+            "wwt_slu_lf_MCF",
+            "wwt_slu_lf_N_cont",
+            "wwt_slu_lf_TVS",
+            "wwt_slu_lf_decomp_3yr",
+            "wwt_slu_lf_low_CN_EF",
+            "wwt_slu_lf_uncertainty",
+            "wwt_slu_sp_lifespan",
+            "wwt_slu_sto_EF",
+            "wwt_slu_sto_TVS",
+            "wwt_slu_sto_f_CH4",
+            "wwt_temp_inc",
+            "wwt_trck_typ",
+            "wwt_vol_tslu"
+          ]
+        },
+        "wwt_KPI_GHG_slu_storage": {
+          "refs": [
+            "wwt_mass_slu_sto",
+            "wwt_slu_sto_TVS",
+            "wwt_slu_sto_f_CH4",
+            "wwt_slu_sto_EF"
+          ],
+          "owners": [
+            "wwt_slu_storage"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_C_to_CH4_16_12",
+            "ct_ch4_eq"
+          ],
+          "tables": [],
+          "sourceHash": "020d2f79c6314a09",
+          "inputs": [
+            "wwt_mass_slu_sto",
+            "wwt_slu_sto_EF",
+            "wwt_slu_sto_TVS",
+            "wwt_slu_sto_f_CH4"
+          ]
+        },
+        "wwt_KPI_GHG_slu_composting": {
+          "refs": [
+            "wwt_mass_slu_comp",
+            "wwt_slu_comp_emis_treated_or_piles_covered",
+            "wwt_slu_comp_solids_content",
+            "wwt_slu_comp_TVS",
+            "wwt_slu_comp_N_cont",
+            "wwt_slu_comp_low_CN_EF",
+            "wwt_slu_comp_uncovered_pile_EF"
+          ],
+          "owners": [
+            "wwt_composting"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_C_to_CH4_16_12",
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "53cbb26afec46b6e",
+          "inputs": [
+            "wwt_mass_slu_comp",
+            "wwt_slu_comp_N_cont",
+            "wwt_slu_comp_TVS",
+            "wwt_slu_comp_emis_treated_or_piles_covered",
+            "wwt_slu_comp_low_CN_EF",
+            "wwt_slu_comp_solids_content",
+            "wwt_slu_comp_uncovered_pile_EF"
+          ]
+        },
+        "wwt_KPI_GHG_slu_incineration": {
+          "refs": [
+            "wwt_mass_slu_inc",
+            "wwt_temp_inc",
+            "wwt_slu_inc_N_cont",
+            "wwt_slu_inc_SNCR"
+          ],
+          "owners": [
+            "wwt_incineration"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "b883b08e40e39716",
+          "inputs": [
+            "wwt_mass_slu_inc",
+            "wwt_slu_inc_N_cont",
+            "wwt_slu_inc_SNCR",
+            "wwt_temp_inc"
+          ]
+        },
+        "wwt_KPI_GHG_slu_land_application": {
+          "refs": [
+            "wwt_mass_slu_app",
+            "wwt_slu_la_solids_content",
+            "wwt_slu_la_TVS",
+            "wwt_slu_la_N_cont",
+            "wwt_slu_la_EF"
+          ],
+          "owners": [
+            "wwt_land_application"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "4919389e4b8ea51e",
+          "inputs": [
+            "wwt_mass_slu_app",
+            "wwt_slu_la_EF",
+            "wwt_slu_la_N_cont",
+            "wwt_slu_la_TVS",
+            "wwt_slu_la_solids_content"
+          ]
+        },
+        "wwt_KPI_GHG_slu_landfilling": {
+          "refs": [
+            "wwt_mass_slu_land",
+            "wwt_slu_lf_TVS",
+            "wwt_slu_lf_uncertainty",
+            "wwt_slu_lf_CH4_in_gas",
+            "wwt_slu_lf_DOCf",
+            "wwt_slu_lf_decomp_3yr",
+            "wwt_slu_lf_MCF",
+            "wwt_slu_lf_N_cont",
+            "wwt_slu_lf_low_CN_EF"
+          ],
+          "owners": [
+            "wwt_landfilling"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_C_to_CH4_16_12",
+            "ct_N_to_N2O_44_28",
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "755b457d9fcb307d",
+          "inputs": [
+            "wwt_mass_slu_land",
+            "wwt_slu_lf_CH4_in_gas",
+            "wwt_slu_lf_DOCf",
+            "wwt_slu_lf_MCF",
+            "wwt_slu_lf_N_cont",
+            "wwt_slu_lf_TVS",
+            "wwt_slu_lf_decomp_3yr",
+            "wwt_slu_lf_low_CN_EF",
+            "wwt_slu_lf_uncertainty"
+          ]
+        },
+        "wwt_KPI_GHG_slu_stockpilling": {
+          "refs": [
+            "wwt_mass_slu_stock",
+            "wwt_slu_sp_lifespan"
+          ],
+          "owners": [
+            "wwt_stockpiling"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "c10f866371e2ae87",
+          "inputs": [
+            "wwt_mass_slu_stock",
+            "wwt_slu_sp_lifespan"
+          ]
+        },
+        "wwt_KPI_GHG_slu_transport": {
+          "refs": [
+            "wwt_vol_tslu",
+            "wwt_trck_typ"
+          ],
+          "owners": [
+            "wwt_trucks"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_n2o_eq",
+            "ct_ch4_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "62d69f27a738dcdf",
+          "inputs": [
+            "wwt_trck_typ",
+            "wwt_vol_tslu"
+          ]
+        },
+        "wwt_KPI_GHG_reus_trck": {
+          "refs": [
+            "wwt_reus_vol_trck",
+            "wwt_reus_trck_typ"
+          ],
+          "owners": [
+            "wwt_reuse_trucks"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "09315f1b0cd9f8a7",
+          "inputs": [
+            "wwt_reus_trck_typ",
+            "wwt_reus_vol_trck"
+          ]
+        },
+        "wwt_KPI_GHG_disc": {
+          "refs": [
+            "wwt_bod_effl",
+            "wwt_ch4_efac_dis",
+            "wwt_tn_effl",
+            "wwt_n2o_efac_dis"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "94f8553dcc467961",
+          "inputs": [
+            "wwt_bod_effl",
+            "wwt_ch4_efac_dis",
+            "wwt_n2o_efac_dis",
+            "wwt_tn_effl"
+          ]
+        },
+        "wwt_biogas_usage": {
+          "refs": [
+            "wwt_biog_fla",
+            "wwt_biog_val",
+            "wwt_biog_lkd",
+            "wwt_biog_sold"
+          ],
+          "owners": [
+            "wwt_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "8404e9131ae0b95f",
+          "inputs": [
+            "wwt_biog_fla",
+            "wwt_biog_lkd",
+            "wwt_biog_sold",
+            "wwt_biog_val"
+          ]
+        },
+        "wwt_bod_rmvd": {
+          "refs": [
+            "wwt_bod_infl",
+            "wwt_bod_effl"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "020df395abb4c189",
+          "inputs": [
+            "wwt_bod_effl",
+            "wwt_bod_infl"
+          ]
+        },
+        "wwt_KPI_nrg_per_m3": {
+          "refs": [
+            "wwt_nrg_cons",
+            "wwt_vol_trea"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "be7ffaccbe8f4cb4",
+          "inputs": [
+            "wwt_nrg_cons",
+            "wwt_vol_trea"
+          ]
+        },
+        "wwt_KPI_nrg_per_kg": {
+          "refs": [
+            "wwt_nrg_cons",
+            "wwt_bod_rmvd"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "1096740650c0f53a",
+          "inputs": [
+            "wwt_bod_effl",
+            "wwt_bod_infl",
+            "wwt_nrg_cons"
+          ]
+        },
+        "wwt_KPI_capac_util": {
+          "refs": [
+            "wwt_vol_trea",
+            "wwt_trea_cap"
+          ],
+          "owners": [
+            "wwt_treatment_perf"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "4375b5f0dbbe2ef0",
+          "inputs": [
+            "wwt_trea_cap",
+            "wwt_vol_trea"
+          ]
+        },
+        "wwt_SL_qual_com": {
+          "refs": [
+            "wwt_tst_cmpl",
+            "wwt_tst_cond"
+          ],
+          "owners": [
+            "wwt_treatment_perf"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "b0d3647c98d208e0",
+          "inputs": [
+            "wwt_tst_cmpl",
+            "wwt_tst_cond"
+          ]
+        },
+        "wwt_KPI_nrg_per_pump": {
+          "refs": [
+            "wwt_nrg_pump",
+            "wwt_vol_pump"
+          ],
+          "owners": [
+            "wwt_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "c0e2338529414f5d",
+          "inputs": [
+            "wwt_nrg_pump",
+            "wwt_vol_pump"
+          ]
+        },
+        "wwt_KPI_std_nrg_cons": {
+          "refs": [
+            "wwt_nrg_pump",
+            "wwt_vol_pump",
+            "wwt_pmp_head"
+          ],
+          "owners": [
+            "wwt_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "73d6d3fc5702dd34",
+          "inputs": [
+            "wwt_nrg_pump",
+            "wwt_pmp_head",
+            "wwt_vol_pump"
+          ]
+        },
+        "wwt_KPI_un_head_loss": {
+          "refs": [
+            "wwt_pmp_head",
+            "wwt_sta_head",
+            "wwt_coll_len"
+          ],
+          "owners": [
+            "wwt_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "290e457ea2683682",
+          "inputs": [
+            "wwt_coll_len",
+            "wwt_pmp_head",
+            "wwt_sta_head"
+          ]
+        },
+        "wwt_pmp_pw": {
+          "refs": [
+            "wwt_pmp_flow",
+            "wwt_pmp_head"
+          ],
+          "owners": [
+            "wwt_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "860950b37b0c6cdb",
+          "inputs": [
+            "wwt_pmp_flow",
+            "wwt_pmp_head"
+          ]
+        },
+        "wwt_KPI_nrg_elec_eff": {
+          "refs": [
+            "wwt_pmp_pw",
+            "wwt_pmp_volt",
+            "wwt_pmp_amps",
+            "wwt_pmp_pf"
+          ],
+          "owners": [
+            "wwt_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "97dbce508bd074ac",
+          "inputs": [
+            "wwt_pmp_amps",
+            "wwt_pmp_flow",
+            "wwt_pmp_head",
+            "wwt_pmp_pf",
+            "wwt_pmp_volt"
+          ]
+        },
+        "wwt_KPI_std_nrg_newp": {
+          "refs": [
+            "wwt_KPI_nrg_elec_eff",
+            "wwt_pmp_exff",
+            "wwt_KPI_std_nrg_cons"
+          ],
+          "owners": [
+            "wwt_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "1be83915abb65fed",
+          "inputs": [
+            "wwt_nrg_pump",
+            "wwt_pmp_amps",
+            "wwt_pmp_exff",
+            "wwt_pmp_flow",
+            "wwt_pmp_head",
+            "wwt_pmp_pf",
+            "wwt_pmp_volt",
+            "wwt_vol_pump"
+          ]
+        },
+        "wwt_KPI_nrg_cons_new": {
+          "refs": [
+            "wwt_vol_pump",
+            "wwt_KPI_std_nrg_newp",
+            "wwt_pmp_head"
+          ],
+          "owners": [
+            "wwt_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "34edeab790a3f61f",
+          "inputs": [
+            "wwt_nrg_pump",
+            "wwt_pmp_amps",
+            "wwt_pmp_exff",
+            "wwt_pmp_flow",
+            "wwt_pmp_head",
+            "wwt_pmp_pf",
+            "wwt_pmp_volt",
+            "wwt_vol_pump"
+          ]
+        },
+        "wwt_KPI_nrg_estm_sav": {
+          "refs": [
+            "wwt_nrg_cons",
+            "wwt_KPI_nrg_cons_new"
+          ],
+          "owners": [
+            "wwt_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "9d417624bf45f2a8",
+          "inputs": [
+            "wwt_nrg_cons",
+            "wwt_nrg_pump",
+            "wwt_pmp_amps",
+            "wwt_pmp_exff",
+            "wwt_pmp_flow",
+            "wwt_pmp_head",
+            "wwt_pmp_pf",
+            "wwt_pmp_volt",
+            "wwt_vol_pump"
+          ]
+        },
+        "wwt_KPI_ghg_estm_red": {
+          "refs": [
+            "wwt_KPI_nrg_estm_sav",
+            "wwt_conv_kwh"
+          ],
+          "owners": [
+            "wwt_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "7ed507bdcdd4d2f5",
+          "inputs": [
+            "wwt_conv_kwh",
+            "wwt_nrg_cons",
+            "wwt_nrg_pump",
+            "wwt_pmp_amps",
+            "wwt_pmp_exff",
+            "wwt_pmp_flow",
+            "wwt_pmp_head",
+            "wwt_pmp_pf",
+            "wwt_pmp_volt",
+            "wwt_vol_pump"
+          ]
+        },
+        "wwt_nrg_biog_val": {
+          "refs": [
+            "wwt_biog_pro",
+            "wwt_biog_val",
+            "wwt_ch4_biog"
+          ],
+          "owners": [
+            "wwt_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_nrg"
+          ],
+          "tables": [],
+          "sourceHash": "37f3eec834e4e3e8",
+          "inputs": [
+            "wwt_biog_pro",
+            "wwt_biog_val",
+            "wwt_ch4_biog"
+          ]
+        },
+        "wwt_KPI_nrg_biogas": {
+          "refs": [
+            "wwt_nrg_biog",
+            "wwt_vol_trea"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "a96116053bb4cee5",
+          "inputs": [
+            "wwt_nrg_biog",
+            "wwt_vol_trea"
+          ]
+        },
+        "wwt_KPI_nrg_x_biog": {
+          "refs": [
+            "wwt_nrg_biog",
+            "wwt_nrg_biog_val"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "d847e0738ac6adaf",
+          "inputs": [
+            "wwt_biog_pro",
+            "wwt_biog_val",
+            "wwt_ch4_biog",
+            "wwt_nrg_biog"
+          ]
+        },
+        "wwt_total_m3": {
+          "refs": [
+            "wwt_vol_disc",
+            "wwt_vol_nonp"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "854344a64fa72eaa",
+          "inputs": [
+            "wwt_vol_disc",
+            "wwt_vol_nonp"
+          ]
+        },
+        "wwt_KPI_sludg_prod": {
+          "refs": [
+            "wwt_mass_slu",
+            "wwt_vol_trea"
+          ],
+          "owners": [
+            "wwt_sludge_mgmt"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "768e2b8e7cc52afe",
+          "inputs": [
+            "wwt_mass_slu",
+            "wwt_vol_trea"
+          ]
+        },
+        "wwt_ghg_avoided": {
+          "refs": [
+            "wwt_ghg_avoided_biogas",
+            "wwt_ghg_avoided_reuse_nutrient",
+            "wwt_ghg_avoided_reuse_water",
+            "wwt_ghg_avoided_sequestration"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "35fb7b1f076d4afb",
+          "inputs": [
+            "wwt_conv_kwh",
+            "wwt_mass_slu_app",
+            "wwt_mass_slu_comp",
+            "wwt_mass_slu_land",
+            "wwt_n2o_efac_dis",
+            "wwt_nrg_biog",
+            "wwt_slu_comp_seqst_rate",
+            "wwt_slu_la_seqst_rate",
+            "wwt_slu_lf_DOCf",
+            "wwt_slu_lf_TVS",
+            "wwt_tn_effl",
+            "wwt_vol_disc",
+            "wwt_vol_nonp",
+            "wwt_wr_N_rec",
+            "wwt_wr_P_rec"
+          ]
+        },
+        "wwt_ghg_avoided_biogas": {
+          "refs": [
+            "wwt_nrg_biog",
+            "wwt_conv_kwh"
+          ],
+          "owners": [
+            "wwt_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "5cbefbffbe6952ab",
+          "inputs": [
+            "wwt_conv_kwh",
+            "wwt_nrg_biog"
+          ]
+        },
+        "wwt_ghg_avoided_reuse_nutrient": {
+          "refs": [
+            "wwt_wr_N_rec",
+            "wwt_wr_P_rec"
+          ],
+          "owners": [
+            "wwt_water_reuse"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_N_reused_credit",
+            "ct_P_reused_credit"
+          ],
+          "tables": [],
+          "sourceHash": "0485b5a1c32da459",
+          "inputs": [
+            "wwt_wr_N_rec",
+            "wwt_wr_P_rec"
+          ]
+        },
+        "wwt_ghg_avoided_reuse_water": {
+          "refs": [
+            "wwt_vol_nonp",
+            "wwt_tn_effl",
+            "wwt_vol_disc",
+            "wwt_n2o_efac_dis"
+          ],
+          "owners": [
+            "wwt_water_reuse"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "77eb6b3881d93784",
+          "inputs": [
+            "wwt_n2o_efac_dis",
+            "wwt_tn_effl",
+            "wwt_vol_disc",
+            "wwt_vol_nonp"
+          ]
+        },
+        "wwt_ghg_avoided_sequestration": {
+          "refs": [
+            "wwt_ghg_avoided_sequestration_composting",
+            "wwt_ghg_avoided_sequestration_landapp",
+            "wwt_ghg_avoided_sequestration_landfil"
+          ],
+          "owners": [
+            "wwt_sludge_mgmt"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "312eeff49bbd35a8",
+          "inputs": [
+            "wwt_mass_slu_app",
+            "wwt_mass_slu_comp",
+            "wwt_mass_slu_land",
+            "wwt_slu_comp_seqst_rate",
+            "wwt_slu_la_seqst_rate",
+            "wwt_slu_lf_DOCf",
+            "wwt_slu_lf_TVS"
+          ]
+        },
+        "wwt_ghg_avoided_sequestration_composting": {
+          "refs": [
+            "wwt_mass_slu_comp",
+            "wwt_slu_comp_seqst_rate"
+          ],
+          "owners": [
+            "wwt_composting"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "5369d6d845fc3f08",
+          "inputs": [
+            "wwt_mass_slu_comp",
+            "wwt_slu_comp_seqst_rate"
+          ]
+        },
+        "wwt_ghg_avoided_sequestration_landapp": {
+          "refs": [
+            "wwt_mass_slu_app",
+            "wwt_slu_la_seqst_rate"
+          ],
+          "owners": [
+            "wwt_land_application"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "4fbbbf19ba27a80d",
+          "inputs": [
+            "wwt_mass_slu_app",
+            "wwt_slu_la_seqst_rate"
+          ]
+        },
+        "wwt_ghg_avoided_sequestration_landfil": {
+          "refs": [
+            "wwt_mass_slu_land",
+            "wwt_slu_lf_TVS",
+            "wwt_slu_lf_DOCf"
+          ],
+          "owners": [
+            "wwt_landfilling"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_C_to_CO2_44_12"
+          ],
+          "tables": [],
+          "sourceHash": "4885cbf8ab5718c0",
+          "inputs": [
+            "wwt_mass_slu_land",
+            "wwt_slu_lf_DOCf",
+            "wwt_slu_lf_TVS"
+          ]
+        }
+      }
+    },
+    "wwo": {
+      "published": [
+        "wwo_KPI_GHG_elec",
+        "wwo_KPI_GHG_fuel",
+        "wwo_KPI_GHG_containment",
+        "wwo_KPI_GHG_biog",
+        "wwo_KPI_GHG_dig_fuel",
+        "wwo_KPI_GHG_tre",
+        "wwo_KPI_GHG_sludge",
+        "wwo_KPI_GHG_dis",
+        "wwo_KPI_GHG_unt_opd",
+        "wwo_KPI_GHG",
+        "wwo_ghg_avoided",
+        "wwo_pmp_pw",
+        "wwo_KPI_std_nrg_cons",
+        "wwo_KPI_un_head_loss",
+        "wwo_KPI_nrg_elec_eff",
+        "wwo_KPI_ghg_estm_red",
+        "wwo_KPI_std_nrg_newp",
+        "wwo_KPI_nrg_cons_new",
+        "wwo_KPI_nrg_estm_sav",
+        "wwo_moles_biogas_produced",
+        "wwo_biogas_usage"
+      ],
+      "inputs": [
+        "wwo_onsi_pop",
+        "wwo_bod_cont",
+        "wwo_flooding",
+        "wwo_ch4_efac_con",
+        "wwo_cont_emp",
+        "wwo_fdensity",
+        "wwo_fslu_emp",
+        "wwo_bod_conc_fs",
+        "wwo_bod_rmvd",
+        "wwo_bod_infl",
+        "wwo_tn_infl",
+        "wwo_ch4_efac_tre",
+        "wwo_n2o_efac_tre",
+        "wwo_bod_effl",
+        "wwo_tn_effl",
+        "wwo_bod_slud",
+        "wwo_ch4_efac_dis",
+        "wwo_n2o_efac_dis",
+        "wwo_open_pop",
+        "wwo_opd_tn",
+        "wwo_n2o_efac_opd",
+        "wwo_nrg_pump",
+        "wwo_vol_pump",
+        "wwo_pmp_head",
+        "wwo_sta_head",
+        "wwo_coll_len",
+        "wwo_pmp_flow",
+        "wwo_pmp_volt",
+        "wwo_pmp_amps",
+        "wwo_pmp_pf",
+        "wwo_pmp_exff",
+        "wwo_vol_fuel",
+        "wwo_fuel_typ",
+        "wwo_trck_typ",
+        "wwo_vol_trck",
+        "wwo_biog_pro",
+        "wwo_biog_fla",
+        "wwo_biog_val",
+        "wwo_biog_lkd",
+        "wwo_biog_sold",
+        "wwo_ch4_biog",
+        "wwo_dige_typ",
+        "wwo_fuel_dig",
+        "wwo_nrg_biog",
+        "wwo_mass_landapp",
+        "wwo_la_solids_content",
+        "wwo_la_TVS",
+        "wwo_la_N_cont",
+        "wwo_la_N_to_N2O",
+        "wwo_la_seqst_rate",
+        "wwo_mass_landfil",
+        "wwo_lf_TVS",
+        "wwo_lf_N_cont",
+        "wwo_lf_MCF",
+        "wwo_lf_low_CN_EF",
+        "wwo_lf_uncertainty",
+        "wwo_lf_CH4_in_gas",
+        "wwo_lf_decomp_3yr",
+        "wwo_lf_DOCf",
+        "wwo_vol_dumping",
+        "wwo_N_dumping",
+        "wwo_ch4_efac_dumping",
+        "wwo_n2o_efac_dumping",
+        "wwo_N_urine",
+        "wwo_N_urine_EF",
+        "wwo_reused_N",
+        "wwo_reused_P",
+        "wwo_nrg_cons",
+        "wwo_conv_kwh",
+        "wwo_nrg_cost",
+        "wwo_run_cost"
+      ],
+      "nodes": {
+        "wwo_KPI_GHG": {
+          "refs": [
+            "wwo_KPI_GHG_elec",
+            "wwo_KPI_GHG_fuel",
+            "wwo_KPI_GHG_unt_opd",
+            "wwo_KPI_GHG_containment",
+            "wwo_KPI_GHG_tre",
+            "wwo_KPI_GHG_dis",
+            "wwo_KPI_GHG_biog",
+            "wwo_KPI_GHG_dig_fuel",
+            "wwo_KPI_GHG_sludge"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "10451577e5b0bd77",
+          "inputs": [
+            "wwo_N_dumping",
+            "wwo_N_urine",
+            "wwo_N_urine_EF",
+            "wwo_biog_lkd",
+            "wwo_biog_pro",
+            "wwo_bod_conc_fs",
+            "wwo_bod_cont",
+            "wwo_bod_effl",
+            "wwo_bod_infl",
+            "wwo_bod_rmvd",
+            "wwo_bod_slud",
+            "wwo_ch4_biog",
+            "wwo_ch4_efac_con",
+            "wwo_ch4_efac_dis",
+            "wwo_ch4_efac_dumping",
+            "wwo_ch4_efac_tre",
+            "wwo_conv_kwh",
+            "wwo_dige_typ",
+            "wwo_fuel_dig",
+            "wwo_fuel_typ",
+            "wwo_la_N_cont",
+            "wwo_la_N_to_N2O",
+            "wwo_la_TVS",
+            "wwo_la_solids_content",
+            "wwo_lf_CH4_in_gas",
+            "wwo_lf_DOCf",
+            "wwo_lf_MCF",
+            "wwo_lf_N_cont",
+            "wwo_lf_TVS",
+            "wwo_lf_decomp_3yr",
+            "wwo_lf_low_CN_EF",
+            "wwo_lf_uncertainty",
+            "wwo_mass_landapp",
+            "wwo_mass_landfil",
+            "wwo_n2o_efac_dis",
+            "wwo_n2o_efac_dumping",
+            "wwo_n2o_efac_opd",
+            "wwo_n2o_efac_tre",
+            "wwo_nrg_cons",
+            "wwo_opd_tn",
+            "wwo_tn_effl",
+            "wwo_tn_infl",
+            "wwo_trck_typ",
+            "wwo_vol_dumping",
+            "wwo_vol_fuel",
+            "wwo_vol_trck"
+          ]
+        },
+        "wwo_KPI_GHG_sludge": {
+          "refs": [
+            "wwo_KPI_GHG_landfil",
+            "wwo_KPI_GHG_landapp",
+            "wwo_KPI_GHG_dumping",
+            "wwo_KPI_GHG_urine",
+            "wwo_KPI_GHG_trck"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "49f62076baadc31a",
+          "inputs": [
+            "wwo_N_dumping",
+            "wwo_N_urine",
+            "wwo_N_urine_EF",
+            "wwo_bod_conc_fs",
+            "wwo_ch4_efac_dumping",
+            "wwo_la_N_cont",
+            "wwo_la_N_to_N2O",
+            "wwo_la_TVS",
+            "wwo_la_solids_content",
+            "wwo_lf_CH4_in_gas",
+            "wwo_lf_DOCf",
+            "wwo_lf_MCF",
+            "wwo_lf_N_cont",
+            "wwo_lf_TVS",
+            "wwo_lf_decomp_3yr",
+            "wwo_lf_low_CN_EF",
+            "wwo_lf_uncertainty",
+            "wwo_mass_landapp",
+            "wwo_mass_landfil",
+            "wwo_n2o_efac_dumping",
+            "wwo_trck_typ",
+            "wwo_vol_dumping",
+            "wwo_vol_trck"
+          ]
+        },
+        "wwo_KPI_GHG_elec": {
+          "refs": [
+            "wwo_nrg_cons",
+            "wwo_conv_kwh"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "eab131380bd43450",
+          "inputs": [
+            "wwo_conv_kwh",
+            "wwo_nrg_cons"
+          ]
+        },
+        "wwo_KPI_GHG_fuel": {
+          "refs": [
+            "wwo_vol_fuel",
+            "wwo_fuel_typ"
+          ],
+          "owners": [
+            "wwo_engines"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_n2o_eq",
+            "ct_ch4_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "8262ed82a5464d5e",
+          "inputs": [
+            "wwo_fuel_typ",
+            "wwo_vol_fuel"
+          ]
+        },
+        "wwo_KPI_GHG_unt_opd": {
+          "refs": [
+            "wwo_opd_tn",
+            "wwo_n2o_efac_opd"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "46ac9a091d9c09bd",
+          "inputs": [
+            "wwo_n2o_efac_opd",
+            "wwo_opd_tn"
+          ]
+        },
+        "wwo_KPI_GHG_trck": {
+          "refs": [
+            "wwo_vol_trck",
+            "wwo_trck_typ"
+          ],
+          "owners": [
+            "wwo_transport"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_n2o_eq",
+            "ct_ch4_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "11cd987aa0e5d53e",
+          "inputs": [
+            "wwo_trck_typ",
+            "wwo_vol_trck"
+          ]
+        },
+        "wwo_KPI_GHG_containment": {
+          "refs": [
+            "wwo_bod_cont",
+            "wwo_bod_rmvd",
+            "wwo_ch4_efac_con"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq"
+          ],
+          "tables": [],
+          "sourceHash": "7bbfed63710e1b5f",
+          "inputs": [
+            "wwo_bod_cont",
+            "wwo_bod_rmvd",
+            "wwo_ch4_efac_con"
+          ]
+        },
+        "wwo_KPI_GHG_biog": {
+          "refs": [
+            "wwo_KPI_GHG_biog_leaked"
+          ],
+          "owners": [
+            "wwo_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "937f1c0eb68a25e6",
+          "inputs": [
+            "wwo_biog_lkd",
+            "wwo_biog_pro",
+            "wwo_ch4_biog"
+          ]
+        },
+        "wwo_moles_biogas_produced": {
+          "refs": [
+            "wwo_biog_pro"
+          ],
+          "owners": [
+            "wwo_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "77c0fce61f9f756a",
+          "inputs": [
+            "wwo_biog_pro"
+          ]
+        },
+        "wwo_KPI_GHG_biog_flared": {
+          "refs": [
+            "wwo_moles_biogas_produced",
+            "wwo_biog_fla",
+            "wwo_ch4_biog"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "961f276dbccbf2b9",
+          "inputs": [
+            "wwo_biog_fla",
+            "wwo_biog_pro",
+            "wwo_ch4_biog"
+          ]
+        },
+        "wwo_KPI_GHG_biog_valorized": {
+          "refs": [
+            "wwo_moles_biogas_produced",
+            "wwo_biog_val",
+            "wwo_ch4_biog"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "f28b08bd3871c4e9",
+          "inputs": [
+            "wwo_biog_pro",
+            "wwo_biog_val",
+            "wwo_ch4_biog"
+          ]
+        },
+        "wwo_KPI_GHG_biog_leaked": {
+          "refs": [
+            "wwo_moles_biogas_produced",
+            "wwo_biog_lkd",
+            "wwo_ch4_biog"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq"
+          ],
+          "tables": [],
+          "sourceHash": "9b2a85d81d44d4d4",
+          "inputs": [
+            "wwo_biog_lkd",
+            "wwo_biog_pro",
+            "wwo_ch4_biog"
+          ]
+        },
+        "wwo_KPI_GHG_dig_fuel": {
+          "refs": [
+            "wwo_fuel_dig",
+            "wwo_dige_typ"
+          ],
+          "owners": [
+            "wwo_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_n2o_eq"
+          ],
+          "tables": [
+            "Fuel type"
+          ],
+          "sourceHash": "70a93cc82bc7e038",
+          "inputs": [
+            "wwo_dige_typ",
+            "wwo_fuel_dig"
+          ]
+        },
+        "wwo_KPI_GHG_tre": {
+          "refs": [
+            "wwo_bod_infl",
+            "wwo_bod_slud",
+            "wwo_ch4_efac_tre",
+            "wwo_tn_infl",
+            "wwo_n2o_efac_tre"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "507c8b5dd5804209",
+          "inputs": [
+            "wwo_bod_infl",
+            "wwo_bod_slud",
+            "wwo_ch4_efac_tre",
+            "wwo_n2o_efac_tre",
+            "wwo_tn_infl"
+          ]
+        },
+        "wwo_KPI_GHG_dis": {
+          "refs": [
+            "wwo_bod_effl",
+            "wwo_ch4_efac_dis",
+            "wwo_tn_effl",
+            "wwo_n2o_efac_dis"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "40573f0d2d69bd29",
+          "inputs": [
+            "wwo_bod_effl",
+            "wwo_ch4_efac_dis",
+            "wwo_n2o_efac_dis",
+            "wwo_tn_effl"
+          ]
+        },
+        "wwo_KPI_GHG_landapp": {
+          "refs": [
+            "wwo_mass_landapp",
+            "wwo_la_solids_content",
+            "wwo_la_TVS",
+            "wwo_la_N_cont",
+            "wwo_la_N_to_N2O"
+          ],
+          "owners": [
+            "wwo_landapp"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "b0d96543d1be803b",
+          "inputs": [
+            "wwo_la_N_cont",
+            "wwo_la_N_to_N2O",
+            "wwo_la_TVS",
+            "wwo_la_solids_content",
+            "wwo_mass_landapp"
+          ]
+        },
+        "wwo_KPI_GHG_landfil": {
+          "refs": [
+            "wwo_mass_landfil",
+            "wwo_lf_TVS",
+            "wwo_lf_N_cont",
+            "wwo_lf_MCF",
+            "wwo_lf_CH4_in_gas",
+            "wwo_lf_low_CN_EF",
+            "wwo_lf_uncertainty",
+            "wwo_lf_decomp_3yr",
+            "wwo_lf_DOCf"
+          ],
+          "owners": [
+            "wwo_landfil"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_C_to_CH4_16_12",
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "17fdd34154af293d",
+          "inputs": [
+            "wwo_lf_CH4_in_gas",
+            "wwo_lf_DOCf",
+            "wwo_lf_MCF",
+            "wwo_lf_N_cont",
+            "wwo_lf_TVS",
+            "wwo_lf_decomp_3yr",
+            "wwo_lf_low_CN_EF",
+            "wwo_lf_uncertainty",
+            "wwo_mass_landfil"
+          ]
+        },
+        "wwo_KPI_GHG_dumping": {
+          "refs": [
+            "wwo_vol_dumping",
+            "wwo_bod_conc_fs",
+            "wwo_ch4_efac_dumping",
+            "wwo_N_dumping",
+            "wwo_n2o_efac_dumping"
+          ],
+          "owners": [
+            "wwo_dumping"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_eq",
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "9eba12bc55228ef0",
+          "inputs": [
+            "wwo_N_dumping",
+            "wwo_bod_conc_fs",
+            "wwo_ch4_efac_dumping",
+            "wwo_n2o_efac_dumping",
+            "wwo_vol_dumping"
+          ]
+        },
+        "wwo_KPI_GHG_urine": {
+          "refs": [
+            "wwo_N_urine",
+            "wwo_N_urine_EF"
+          ],
+          "owners": [
+            "wwo_urine"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_N_to_N2O_44_28",
+            "ct_n2o_eq"
+          ],
+          "tables": [],
+          "sourceHash": "e219b3c6d96634f2",
+          "inputs": [
+            "wwo_N_urine",
+            "wwo_N_urine_EF"
+          ]
+        },
+        "wwo_nrg_biog_val": {
+          "refs": [
+            "wwo_biog_pro",
+            "wwo_biog_val",
+            "wwo_ch4_biog"
+          ],
+          "owners": [
+            "wwo_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_ch4_nrg"
+          ],
+          "tables": [],
+          "sourceHash": "b298f7a487b285c4",
+          "inputs": [
+            "wwo_biog_pro",
+            "wwo_biog_val",
+            "wwo_ch4_biog"
+          ]
+        },
+        "wwo_biogas_usage": {
+          "refs": [
+            "wwo_biog_fla",
+            "wwo_biog_val",
+            "wwo_biog_lkd",
+            "wwo_biog_sold"
+          ],
+          "owners": [
+            "wwo_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "a968eaeaaff33e72",
+          "inputs": [
+            "wwo_biog_fla",
+            "wwo_biog_lkd",
+            "wwo_biog_sold",
+            "wwo_biog_val"
+          ]
+        },
+        "wwo_ghg_avoided": {
+          "refs": [
+            "wwo_ghg_avoided_biogas",
+            "wwo_ghg_avoided_landapp",
+            "wwo_ghg_avoided_landfil",
+            "wwo_ghg_avoided_reuse"
+          ],
+          "owners": [],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "c1cd5b538906b9af",
+          "inputs": [
+            "wwo_conv_kwh",
+            "wwo_la_seqst_rate",
+            "wwo_lf_DOCf",
+            "wwo_lf_TVS",
+            "wwo_mass_landapp",
+            "wwo_mass_landfil",
+            "wwo_nrg_biog",
+            "wwo_reused_N",
+            "wwo_reused_P"
+          ]
+        },
+        "wwo_ghg_avoided_biogas": {
+          "refs": [
+            "wwo_nrg_biog",
+            "wwo_conv_kwh"
+          ],
+          "owners": [
+            "wwo_producing_biogas"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "0d7e6ce62a6d246e",
+          "inputs": [
+            "wwo_conv_kwh",
+            "wwo_nrg_biog"
+          ]
+        },
+        "wwo_ghg_avoided_landapp": {
+          "refs": [
+            "wwo_mass_landapp",
+            "wwo_la_seqst_rate"
+          ],
+          "owners": [
+            "wwo_landapp"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "00eced5bee54571b",
+          "inputs": [
+            "wwo_la_seqst_rate",
+            "wwo_mass_landapp"
+          ]
+        },
+        "wwo_ghg_avoided_landfil": {
+          "refs": [
+            "wwo_mass_landfil",
+            "wwo_lf_TVS",
+            "wwo_lf_DOCf"
+          ],
+          "owners": [
+            "wwo_landfil"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_VS_to_OC",
+            "ct_C_to_CO2_44_12"
+          ],
+          "tables": [],
+          "sourceHash": "6abaf50eef587e7e",
+          "inputs": [
+            "wwo_lf_DOCf",
+            "wwo_lf_TVS",
+            "wwo_mass_landfil"
+          ]
+        },
+        "wwo_ghg_avoided_reuse": {
+          "refs": [
+            "wwo_reused_N",
+            "wwo_reused_P"
+          ],
+          "owners": [
+            "wwo_reuse"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_N_reused_credit",
+            "ct_P_reused_credit"
+          ],
+          "tables": [],
+          "sourceHash": "d6716c8cdaa88d18",
+          "inputs": [
+            "wwo_reused_N",
+            "wwo_reused_P"
+          ]
+        },
+        "wwo_pmp_pw": {
+          "refs": [
+            "wwo_pmp_flow",
+            "wwo_pmp_head"
+          ],
+          "owners": [
+            "wwo_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [
+            "ct_gravit"
+          ],
+          "tables": [],
+          "sourceHash": "593a9dc82afd72b0",
+          "inputs": [
+            "wwo_pmp_flow",
+            "wwo_pmp_head"
+          ]
+        },
+        "wwo_KPI_std_nrg_cons": {
+          "refs": [
+            "wwo_nrg_pump",
+            "wwo_vol_pump",
+            "wwo_pmp_head"
+          ],
+          "owners": [
+            "wwo_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "8debbae76718729f",
+          "inputs": [
+            "wwo_nrg_pump",
+            "wwo_pmp_head",
+            "wwo_vol_pump"
+          ]
+        },
+        "wwo_KPI_un_head_loss": {
+          "refs": [
+            "wwo_pmp_head",
+            "wwo_sta_head",
+            "wwo_coll_len"
+          ],
+          "owners": [
+            "wwo_pumping"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "9ee87e31090cc20d",
+          "inputs": [
+            "wwo_coll_len",
+            "wwo_pmp_head",
+            "wwo_sta_head"
+          ]
+        },
+        "wwo_KPI_nrg_elec_eff": {
+          "refs": [
+            "wwo_pmp_pw",
+            "wwo_pmp_volt",
+            "wwo_pmp_amps",
+            "wwo_pmp_pf"
+          ],
+          "owners": [
+            "wwo_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "61c83ce277161b92",
+          "inputs": [
+            "wwo_pmp_amps",
+            "wwo_pmp_flow",
+            "wwo_pmp_head",
+            "wwo_pmp_pf",
+            "wwo_pmp_volt"
+          ]
+        },
+        "wwo_KPI_ghg_estm_red": {
+          "refs": [
+            "wwo_KPI_nrg_estm_sav",
+            "wwo_conv_kwh"
+          ],
+          "owners": [
+            "wwo_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "47010bd7cf999c43",
+          "inputs": [
+            "wwo_conv_kwh",
+            "wwo_nrg_cons",
+            "wwo_nrg_pump",
+            "wwo_pmp_amps",
+            "wwo_pmp_exff",
+            "wwo_pmp_flow",
+            "wwo_pmp_head",
+            "wwo_pmp_pf",
+            "wwo_pmp_volt"
+          ]
+        },
+        "wwo_KPI_std_nrg_newp": {
+          "refs": [
+            "wwo_KPI_nrg_elec_eff",
+            "wwo_pmp_exff",
+            "wwo_KPI_std_nrg_cons"
+          ],
+          "owners": [
+            "wwo_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "6cb4cc8057ff4c2c",
+          "inputs": [
+            "wwo_nrg_pump",
+            "wwo_pmp_amps",
+            "wwo_pmp_exff",
+            "wwo_pmp_flow",
+            "wwo_pmp_head",
+            "wwo_pmp_pf",
+            "wwo_pmp_volt",
+            "wwo_vol_pump"
+          ]
+        },
+        "wwo_KPI_nrg_cons_new": {
+          "refs": [
+            "wwo_KPI_nrg_elec_eff",
+            "wwo_pmp_exff",
+            "wwo_nrg_pump"
+          ],
+          "owners": [
+            "wwo_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "588eceb768ebc17b",
+          "inputs": [
+            "wwo_nrg_pump",
+            "wwo_pmp_amps",
+            "wwo_pmp_exff",
+            "wwo_pmp_flow",
+            "wwo_pmp_head",
+            "wwo_pmp_pf",
+            "wwo_pmp_volt"
+          ]
+        },
+        "wwo_KPI_nrg_estm_sav": {
+          "refs": [
+            "wwo_nrg_cons",
+            "wwo_KPI_nrg_cons_new"
+          ],
+          "owners": [
+            "wwo_pumping_eff"
+          ],
+          "unresolved": [],
+          "constants": [],
+          "tables": [],
+          "sourceHash": "6772b194c7dd11e0",
+          "inputs": [
+            "wwo_nrg_cons",
+            "wwo_nrg_pump",
+            "wwo_pmp_amps",
+            "wwo_pmp_exff",
+            "wwo_pmp_flow",
+            "wwo_pmp_head",
+            "wwo_pmp_pf",
+            "wwo_pmp_volt"
+          ]
+        }
+      }
+    }
+  }
+}

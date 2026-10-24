@@ -166,8 +166,8 @@ async function buildProposalDocx({ lang = 'en', proposal, results, actions, plan
   function resultsBlock(title) {
     if (!results) return [];
     const rows = Object.entries(results.byStage).filter(([, v]) => v.count)
-      .map(([k, v]) => [names[k] || k, f(v.total / 1000, 1), f(v.energy_kwh)]);
-    rows.push([`**${t.total}**`, `**${f(results.totals.total / 1000, 1)}**`, `**${f(results.energy_kwh)}**`]);
+      .map(([k, v]) => [names[k] || k, v.total == null ? 'Unknown' : f(v.total / 1000, 1), f(v.energy_kwh)]);
+    rows.push([`**${t.total}**`, `**${results.totals.total == null ? 'Unknown' : f(results.totals.total / 1000, 1)}**`, `**${f(results.energy_kwh)}**`]);
     return [
       ...(sameTitle(title, t.results) ? [] : [caption(t.results)]),
       MD.table([t.stage, t.ghg, t.energy], rows, [CONTENT - 2 * 2300, 2300, 2300]),
@@ -366,7 +366,17 @@ async function buildZip(state, docxBuffer) {
   const z = ZIP_T[lang] || ZIP_T.en;
   if (docxBuffer) zip.file('proposal.docx', docxBuffer);
   zip.file('ecam/assessments-ecam-format.json', JSON.stringify(state.assessments || [], null, 2));
-  zip.file('ecam/application-metadata.json',JSON.stringify({schema:CW.SCHEMA,ecamVersion:'3.0.1',gwpIndex:state.gwpIndex || 0,assessmentMeta:state.assessmentMeta || [],inputStatus:state.inputStatus || {},note:'Application provenance companion. Native ECAM JSON does not carry these records. Companion import/restore is not implemented.'},null,2));
+  const transfer=require('../public/js/project-transfer');
+  let backup;
+  if(state.projectTransfer) {
+    const parsed=transfer.parse(JSON.stringify(state.projectTransfer));
+    if(parsed.kind!=='project' || CW.fp(parsed.assessments)!==CW.fp(state.assessments)) throw new Error('Project transfer does not match the exported ECAM data.');
+    backup=state.projectTransfer;
+  } else {
+    try {backup=transfer.pack(state);} catch {backup={format:'chatwater-project',version:1,ecam:state.assessments || [],companion:{format:'unbound',state,note:'Missing identity metadata; restore as unconfirmed with edited text in recovery.'}};}
+  }
+  zip.file('ecam/application-metadata.json',JSON.stringify(backup.companion,null,2));
+  zip.file('project/project-backup.json',JSON.stringify(backup,null,2));
   zip.file('ecam/results.json', JSON.stringify(state.results || [], null, 2));
   if (state.results?.length) {
     const rows = [['assessment', 'stage', 'substage', 'total_kgCO2eq', 'co2', 'ch4_as_co2eq', 'n2o_as_co2eq', 'energy_kWh']];

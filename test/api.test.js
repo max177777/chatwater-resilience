@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /* API smoke test: stage 1 → 4 without AI. Run: npm test */
 const assert = require('assert');
 const app = require('../server');
@@ -8,12 +9,12 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
 (async () => {
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
-  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   const assessment = sample[0], m = meta(assessment, 'a_sample');
   const lib = ensureLibrary();
   try {
     console.log(`API${lib.synthetic ? ' (document library not built: synthetic test library used)' : ''}`);
-    const calc = await (await post('/api/calculate', { assessments: sample })).json();
+    const calc = await (await post('/api/calculate', { assessments: sample, assessmentMeta:[m] })).json();
     assert.ok(calc.results[0].totals.total > 0); console.log('  ok - calculate');
 
     const acts = await (await post('/api/actions', { assessment, meta: m })).json();

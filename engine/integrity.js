@@ -8,9 +8,12 @@
 const CW = require('../public/js/cw-core');
 const CA = require('../public/js/custom-actions');
 const engine = require('./ecam-engine');
+const V = require('./assessment-validity');
 const { suggestActions } = require('./actions');
 
 const MESSAGES = {
+  input_status_changed: 'input support or confirmation changed',
+  input_status_untracked: 'input support was not tracked when this was created; review it again',
   legacy: 'it was created before version tracking and needs review',
   assessment_missing: 'its assessment is no longer in the project',
   assessment_changed: 'the assessment data changed',
@@ -45,16 +48,16 @@ const CUSTOM_MESSAGES = {
 const customMessage = c => CUSTOM_MESSAGES[c] || (c.startsWith('unknown_field:') ? `unexpected field "${c.slice(14)}"` : c.startsWith('type:') ? `${c.slice(5)} must be text` : c);
 
 const titleOf = a => (a.title && typeof a.title === 'object') ? a.title.en : a.title;
-const same = (a, b) => (a == null || a === 0) && (b == null || b === 0) ? true
+const same = (a, b) => a == null && b == null ? true
   : (typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= 1e-6 * Math.max(1, Math.abs(b)));
 
-function optionsFor(assessment, meta, gwpIndex = 0) {
-  const results = engine.calculateOne(assessment, gwpIndex);
-  return CW.withKeys(suggestActions(results, assessment, engine, gwpIndex).options, meta);
+function optionsFor(assessment, meta, gwpIndex = 0, inputStatus) {
+  const results = inputStatus === undefined ? engine.calculateOne(assessment,gwpIndex) : V.calculate(assessment,gwpIndex,{meta,inputStatus});
+  return CW.withKeys(suggestActions(results, assessment, engine, gwpIndex,inputStatus).options, meta);
 }
 
 /** Problems with the selected actions for this assessment (empty when they match a fresh ECAM run). */
-function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet, rejected = null }) {
+function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet, inputStatus, rejected = null }) {
   if (actions != null && !Array.isArray(actions)) return ['Selected actions are malformed.'];
   const sel = (actions || []).filter(a => !(a && a.rule === 'baseline'));
   if (!sel.length) return [];
@@ -65,6 +68,8 @@ function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet,
   if (actionSet.assessmentId !== meta.id) return ['Selected actions belong to a different assessment than the one sent.'];
   if (actionSet.revision !== CW.revision(assessment)) codes.push('assessment_changed');
   if ((actionSet.gwpIndex || 0) !== (gwpIndex || 0)) codes.push('gwp_changed');
+  const reviewed=V.calculate(assessment,gwpIndex,{meta,inputStatus});
+  if (actionSet.supportRevision !== undefined && actionSet.supportRevision !== reviewed.supportRevision) codes.push('input_status_changed');
   if (codes.length) return [describe('actions', codes)];
   const dropped = CW.rejectedInSelection(sel, rejected);
   if (dropped.length) return [describe('actions', ['action_rejected']) + ' ' + dropped.map(a => `"${titleOf(a)}"`).join(', ') + '.'];
@@ -77,7 +82,7 @@ function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet,
     if (problems.length) issues.push(`User-proposed action "${typeof a?.title === 'string' ? a.title.slice(0, 80) : '?'}" is not valid: ${problems.map(customMessage).join('; ')}.`);
   }
   if (!calculated.length) return issues;
-  const fresh = new Map(optionsFor(assessment, meta, gwpIndex).map(o => [o.key, o]));
+  const fresh = new Map(optionsFor(assessment, meta, gwpIndex, inputStatus === undefined ? null : inputStatus).map(o => [o.key, o]));
   for (const a of calculated) {
     const o = fresh.get(a.key);
     if (!o) issues.push(`Action "${titleOf(a)}" is not produced by this assessment.`);
@@ -95,10 +100,10 @@ function requireCurrentActions(input) {
 }
 
 /** Throw 409 when the plan sent with a proposal request is outdated. */
-function requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile, rejected }) {
+function requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile, inputStatus, rejected }) {
   if (!plan) return;
   const f = CW.freshness({
-    assessments: meta?.id ? [{ id: meta.id, revision: CW.revision(assessment) }] : [],
+    assessments: meta?.id ? [{ id: meta.id, revision: CW.revision(assessment),supportRevision:V.calculate(assessment,gwpIndex,{meta,inputStatus}).supportRevision }] : [],
     gwpIndex, actionSet, selectedActions: actions, plan, profile, rejected,
   });
   if (f.plan.length) throw conflict('Regenerate or review the project plan first. ' + describe('plan', f.plan), [describe('plan', f.plan)]);
@@ -140,9 +145,9 @@ function exportContext(body, { requireProposal = false } = {}) {
   const assessment = idx >= 0 ? list[idx] : null, meta = idx >= 0 ? metas[idx] : null;
   if (assessment && !issues.length) {
     const gwpIndex = body.gwpIndex || 0;
-    issues.push(...actionIssues({ assessment, meta, gwpIndex, actions, actionSet: body.actionSet, rejected: body.rejectedActions }));
+    issues.push(...actionIssues({ assessment, meta, gwpIndex, actions, actionSet: body.actionSet, inputStatus:body.inputStatus?.[meta?.id], rejected: body.rejectedActions }));
     const f = CW.freshness({
-      assessments: metas.map((m, i) => ({ id: m && m.id, revision: CW.revision(list[i]) })),
+      assessments: metas.map((m, i) => ({ id: m && m.id, revision: CW.revision(list[i]),supportRevision:V.calculate(list[i],gwpIndex,{meta:m,inputStatus:body.inputStatus?.[m?.id]}).supportRevision })),
       gwpIndex, actionSet: body.actionSet, selectedActions: body.selectedActions,
       plan: body.plan, proposal: body.proposal, profile: body.profile, financing: body.financing, rejected: body.rejectedActions,
       customActions: Array.isArray(body.customActions) ? CW.customDefs(body.customActions, body.actionNotes) : undefined,

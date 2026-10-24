@@ -16,7 +16,7 @@ const P = require('../engine/proposal');
 const X = require('../engine/export');
 const { buildPlan } = require('../engine/plan');
 const sample = require('../public/samples/utility-a-indonesia.json');
-const { meta, clone } = require('./helpers/fixtures');
+const { meta, clone, confirmedInputs } = require('./helpers/fixtures');
 
 const UI = vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/i18n.js'), 'utf8') + ';UI');
 let passed = 0;
@@ -171,7 +171,7 @@ test('contributor: ties, zero totals, unavailable values and inconsistent breakd
   assert.strictEqual(r.status, 'zero_total');
   assert.ok(DC.contributor(r, ctx()).includes('No emissions have been calculated'));
   r = AS.largestContributor([row('s1', 'elec', 7), row('s1', 'fuel', null)], [{ sid: 's1', kg: 7 }], 7);
-  assert.deepStrictEqual([r.status, r.unavailable, r.top[0].component], ['ok', 1, 'elec']);
+  assert.strictEqual(r.status,'incomplete');assert.ok(!r.top?.length,'an unavailable component prevents a complete contributor ranking');
   r = AS.largestContributor([row('s1', 'elec', 7), row('s1', 'fuel', 1)], [{ sid: 's1', kg: 20 }], 20);
   assert.strictEqual(r.status, 'inconsistent', 'a breakdown that does not add up is not used');
   assert.strictEqual(AS.largestContributor([], [], 0).status, 'zero_total');
@@ -191,15 +191,16 @@ test('saved and older options resolve the same way after a save/reload round tri
 
 async function project(rules = ['pump_upgrade', 'septic_desludging']) {
   const assessment = clone(sample[0]), id = 'a_main', m = meta(assessment, id);
+  const inputStatus=confirmedInputs(assessment,m),supportRevision=require('../engine/assessment-validity').calculate(assessment,0,{meta:m,inputStatus}).supportRevision;
   const opts = options(assessment, id);
   const selectedActions = opts.filter(o => rules.includes(o.rule)).map(o => ({ ...o, notes: '' }));
-  const basis = { assessmentId: id, revision: CW.revision(assessment), gwpIndex: 0 };
+  const basis = { assessmentId: id, revision: CW.revision(assessment), gwpIndex: 0, supportRevision };
   const profile = { name: 'Utility A (hypothetical)' }, financing = { route: 'general' };
-  const plan = { ...buildPlan(selectedActions, 'en'), summary: 'Synthetic summary.', deps: CW.planDeps({ assessmentId: id, assessment, gwpIndex: 0, actions: selectedActions, profile }) };
+  const plan = { ...buildPlan(selectedActions, 'en'), summary: 'Synthetic summary.', deps: CW.planDeps({ assessmentId: id, assessment, gwpIndex: 0, actions: selectedActions, profile, supportRevision }) };
   const fw = P.financingFrameworks().find(f => f.id === 'general');
   const proposal = { ...(await P.draftProposal({ results: engine.calculateOne(assessment, 0), actions: selectedActions, plan, profile, lang: 'en' }, fw)),
-    deps: CW.proposalDeps({ assessmentId: id, assessment, gwpIndex: 0, actions: selectedActions, plan, profile, financing }) };
-  return { assessments: [assessment], assessmentMeta: [m], gwpIndex: 0, actionResult: { assessmentId: id, basis, options: opts }, actionSet: { ...basis, savedAt: 'now' }, selectedActions, plan, proposal, profile, financing, lang: 'en', ui: { actionSort: 'ghg' } };
+    deps: CW.proposalDeps({ assessmentId: id, assessment, gwpIndex: 0, actions: selectedActions, plan, profile, financing, supportRevision }) };
+  return { inputStatus:{[id]:inputStatus},assessments: [assessment], assessmentMeta: [m], gwpIndex: 0, actionResult: { assessmentId: id, basis, options: opts }, actionSet: { ...basis, savedAt: 'now' }, selectedActions, plan, proposal, profile, financing, lang: 'en', ui: { actionSort: 'ghg' } };
 }
 const fresh = s => CW.freshness({
   assessments: s.assessmentMeta.map((m, i) => ({ id: m.id, revision: CW.revision(s.assessments[i]) })),
@@ -354,7 +355,7 @@ test('benefit status adds no freshness change: older saved actions without it st
   const s = await project();
   const old = s.selectedActions.map(({ benefit_status, ...a }) => a);
   assert.strictEqual(CW.actionsFingerprint(old), CW.actionsFingerprint(s.selectedActions));
-  assert.deepStrictEqual(I.actionIssues({ assessment: s.assessments[0], meta: s.assessmentMeta[0], gwpIndex: 0, actions: old, actionSet: s.actionSet }), []);
+  assert.deepStrictEqual(I.actionIssues({ inputStatus:s.inputStatus[s.assessmentMeta[0].id],assessment: s.assessments[0], meta: s.assessmentMeta[0], gwpIndex: 0, actions: old, actionSet: s.actionSet }), []);
   assert.deepStrictEqual(exportIssues({ ...s, selectedActions: old }, { requireProposal: true }), []);
 });
 

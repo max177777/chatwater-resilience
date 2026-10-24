@@ -25,10 +25,11 @@
   function state(record, sid, code, value) {
     const r = record?.s?.[sid]?.[code];
     if (value == null || value === '') return 'missing';
+    if (r && r.v === value && r.availability === 'unknown') return 'unknown';
     if (r && r.v === value && r.availability === 'not_applicable') return 'not_applicable';
     const origin = CW.inputState(record, sid, code, value);
     if (origin.origin === 'default' && value === 0 && !origin.confirmed) return 'missing';
-    if (origin.origin === 'unknown' && !origin.confirmed) return 'unconfirmed';
+    if (['unknown','imported'].includes(origin.origin) && !origin.confirmed) return 'unconfirmed';
     return 'entered';
   }
   function active(ss, code, Questions) {
@@ -78,7 +79,7 @@
       }
       for (const code of new Set(required)) {
         const st = state(inputStatus,sid,code,ss[code]);
-        if (st === 'missing' || st === 'not_applicable') add(code, 'Enter this input (including an explicit zero where appropriate) or turn off the optional process.',loc,'missing');
+        if (st === 'missing' || st === 'unknown' || st === 'not_applicable') add(code, 'Enter this input (including an explicit zero where appropriate) or turn off the optional process.',loc,'missing');
       }
       const le = (low,high,enabled=true) => {
         if (enabled && finite(ss[low]) && finite(ss[high]) && ss[low] > ss[high]) add(low, `${low} must not exceed ${high} for this process and assessment period (base units).`,loc);

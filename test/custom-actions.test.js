@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /*
  * User-proposed (custom) actions: identity, display, freshness, server validation and the
  * plan → proposal → Word/ZIP journey. HYPOTHETICAL sample utility plus SYNTHETIC user text only;
@@ -111,11 +112,12 @@ test('sorting keeps custom actions with the unquantified options, preserving ide
 // ------------------------------------------------------------------ freshness
 function project(selected) {
   const assessment = clone(sample[0]), m = meta(assessment, AID);
-  const basis = { assessmentId: AID, revision: CW.revision(assessment), gwpIndex: 0 };
+  const inputStatus=fixtureStatus.confirmedInputs(assessment,m), supportRevision=require('../engine/assessment-validity').calculate(assessment,0,{meta:m,inputStatus}).supportRevision;
+  const basis = {supportRevision, assessmentId: AID, revision: CW.revision(assessment), gwpIndex: 0 };
   const profile = { name: 'Utility A (hypothetical)' };
   const selectedActions = selected.map(o => ({ ...o, notes: '' }));
-  const plan = { tasks: [], summary: 'Synthetic plan.', deps: CW.planDeps({ assessmentId: AID, assessment, gwpIndex: 0, actions: selectedActions, profile }) };
-  const proposal = { sections: [], deps: CW.proposalDeps({ assessmentId: AID, assessment, gwpIndex: 0, actions: selectedActions, plan, profile, financing: { route: 'general' } }) };
+  const plan = { tasks: [], summary: 'Synthetic plan.', deps: CW.planDeps({ assessmentId: AID, assessment, supportRevision, gwpIndex: 0, actions: selectedActions, profile }) };
+  const proposal = { sections: [], deps: CW.proposalDeps({ assessmentId: AID, assessment, supportRevision, gwpIndex: 0, actions: selectedActions, plan, profile, financing: { route: 'general' } }) };
   return { assessment, m, basis, profile, selectedActions, plan, proposal };
 }
 const freshOf = (p, customActions, actionNotes = {}) => CW.freshness({
@@ -162,7 +164,7 @@ test('older sessions without custom actions keep their fingerprints and freshnes
 
 // ------------------------------------------------------------------ server validation
 const byRule = (opts, rule) => opts.find(o => o.rule === rule);
-const issues = (p, actions, m = p.m) => I.actionIssues({ assessment: p.assessment, meta: m, gwpIndex: 0, actions, actionSet: p.basis });
+const issues = (p, actions, m = p.m) => I.actionIssues({ inputStatus:fixtureStatus.confirmedInputs(p.assessment,m),assessment: p.assessment, meta: m, gwpIndex: 0, actions, actionSet: p.basis });
 
 test('server: custom actions take an explicit path; malformed or mixed-assessment ones are rejected; calculated ones are still recalculated', () => {
   const opts = options();
@@ -220,7 +222,7 @@ async function journey(post, selection, lang = 'en') {
 
 test('custom-only and mixed journeys reach plan, proposal, Word and ZIP with origin and unquantified benefits visible', async () => {
   const server = app.listen(0);
-  const post = (p, body) => fetch(`http://localhost:${server.address().port}${p}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p, body) => fetch(`http://localhost:${server.address().port}${p}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   try {
     const u = custom({ title: 'Synthetic valve programme', description: 'Replace faulty valves in zone 3.', problem: 'Pressure losses', location: { at: 'substage', prefix: 'wwo', sid: 'wwo_0' } });
     const u2 = custom({ title: 'Synthetic staff training', description: 'Train operators on energy logging.' });
@@ -266,7 +268,7 @@ test('custom-only and mixed journeys reach plan, proposal, Word and ZIP with ori
 
 test('exports are blocked for edited, deleted, mixed-assessment or relocated custom actions; text is never rewritten', async () => {
   const server = app.listen(0);
-  const post = (p, body) => fetch(`http://localhost:${server.address().port}${p}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p, body) => fetch(`http://localhost:${server.address().port}${p}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   try {
     const u = custom({ title: 'Synthetic export check' });
     const j = await journey(post, opts => [byRule(opts, 'pump_upgrade'), u]);

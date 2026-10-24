@@ -88,7 +88,7 @@ function build(body = {}) {
     return finish(ctx, focus, lang);
   }
   const validity = AV.validate(assessment, {meta,inputStatus:body.inputStatus});
-  if (!validity.valid) {
+  if (!assessment?.General || !validity.substages?.length || validity.issues.some(x=>/^AssessmentPeriod/.test(x.code))) {
     ctx.assessment = {id:meta.id,name:assessment.General?.Name || null};
     ctx.results = {availability:'not_assessed', validity};
     addProblem(ctx,'invalid_assessment','Assessment is a draft. Results and actions are unavailable until its inputs are corrected.');
@@ -121,7 +121,7 @@ function build(body = {}) {
       const src = AS.sourceOfOutput(s.prefix, c);
       return { component: c, tco2eq: t1(kg), source: src, classification: src ? CLASS_TEXT(AS.SOURCES[src].classification) : 'no source type' };
     }).filter(c => c.tco2eq);
-    subs.push({ sid: sidAt(s.prefix, index), prefix: s.prefix, name: s.name, tco2eq: t1(s.ghg?.total), share_pct: pct(s.ghg?.total, total), energy_kwh: Math.round(s.energy_kwh || 0), components: comps });
+    subs.push({ sid: sidAt(s.prefix, index), prefix: s.prefix, name: s.name, tco2eq: t1(s.ghg?.total), share_pct: pct(s.ghg?.total, total), energy_kwh: s.energy_kwh == null ? null : Math.round(s.energy_kwh), components: comps });
   }
   const { rows, subTotals } = AS.rowsFromResults(r, meta);
   const lc = AS.largestContributor(rows, subTotals, total);
@@ -132,10 +132,10 @@ function build(body = {}) {
   };
   ctx.results = {
     source: 'recalculated on the server with ECAM v3 from the assessment inputs',
-    availability:r.availability, water_balance:r.water_balance,
+    availability:r.availability, completeness:r.completeness, components:r.substages.map(s=>({name:s.name,availability:s.availability})), water_balance:r.water_balance,
     total_tco2eq: t1(total), by_gas_tco2eq: { co2: t1(r.totals.co2), ch4: t1(r.totals.ch4), n2o: t1(r.totals.n2o) },
-    energy_kwh: Math.round(r.energy_kwh),
-    by_stage: Object.fromEntries(Object.entries(r.byStage).filter(([, v]) => v.count).map(([k, v]) => [k, { tco2eq: t1(v.total), share_pct: pct(v.total, total), energy_kwh: Math.round(v.energy_kwh) }])),
+    energy_kwh: r.energy_kwh == null ? null : Math.round(r.energy_kwh),
+    by_stage: Object.fromEntries(Object.entries(r.byStage).filter(([, v]) => v.count).map(([k, v]) => [k, { tco2eq: t1(v.total), share_pct: pct(v.total, total), energy_kwh: v.energy_kwh == null ? null : Math.round(v.energy_kwh) }])),
     largest_contributor: lc.status === 'ok' ? lc.top.map(x => ({
       substage: x.name, prefix: x.prefix, component: x.component, tco2eq: t1(x.kg), share_pct: +(100 * x.share).toFixed(1),
       source: x.source, classification: CLASS_TEXT(x.classification), ...respOf(x),
@@ -147,7 +147,7 @@ function build(body = {}) {
   // ---------------------------------------------------------------- calculated options and checks (recalculated)
   let options = [], checks = [];
   try {
-    const sa = suggestActions(engine.calculateOne(assessment, gwpIndex), assessment, engine, gwpIndex);
+    const sa = suggestActions(AV.calculate(assessment,gwpIndex,{meta,inputStatus:body.inputStatus}), assessment, engine, gwpIndex,body.inputStatus);
     options = CW.withKeys(sa.options, meta);
     CW.assignLabels(options, body.actionLabels && typeof body.actionLabels === 'object' ? body.actionLabels : null);
     checks = CW.withCheckIds(sa.checks, meta);
@@ -201,12 +201,12 @@ function build(body = {}) {
   if (body.plan && !planHere) addProblem(ctx, body.plan.deps ? 'plan_other' : 'plan_legacy', body.plan.deps ? 'The project plan was made for a different assessment; it is not used here.' : 'The project plan predates version tracking; its assessment cannot be confirmed, so it is not used here.');
   if (body.proposal && !proposalHere) addProblem(ctx, body.proposal.deps ? 'proposal_other' : 'proposal_legacy', body.proposal.deps ? 'The proposal was made for a different assessment; it is not used here.' : 'The proposal predates version tracking; its assessment cannot be confirmed, so it is not used here.');
   const f = CW.freshness({
-    assessments: [{ id: meta.id, revision }], gwpIndex,
+    assessments: [{ id: meta.id, revision, supportRevision:r.supportRevision }], gwpIndex,
     actionSet: selectionHere ? body.actionSet : null, selectedActions: selected,
     plan: planHere, proposal: proposalHere, profile: body.profile, financing: body.financing,
     customActions: CW.customDefs(custom, notes), rejected,
   });
-  const figureIssues = selected.length ? I.actionIssues({ assessment, meta, gwpIndex, actions: selected, actionSet: body.actionSet, rejected }) : [];
+  const figureIssues = selected.length ? I.actionIssues({ assessment, meta, gwpIndex, actions: selected, actionSet: body.actionSet, inputStatus:body.inputStatus, rejected }) : [];
   ctx.freshness = {
     actions: selected.length ? (f.actions.length || figureIssues.length ? { status: 'outdated', codes: f.actions, reasons: [...f.actions.map(c => I.MESSAGES[c] || c), ...figureIssues], ...(figureIssues.length ? { figure_issues: figureIssues.length } : {}) } : { status: 'current' }) : { status: 'none saved' },
     plan: planHere ? (f.plan.length ? { status: 'outdated', codes: f.plan, reasons: f.plan.map(c => I.MESSAGES[c] || c) } : { status: 'current' }) : { status: 'none for this assessment' },
@@ -268,9 +268,9 @@ function responsibilityView(rows, profile) {
     answered,
     areas: Object.fromEntries(Object.keys(RS.AREAS).map(a => [a, RS.roleOf(profile, a) || 'unknown (not answered)'])),
     capacity: Object.fromEntries(Object.keys(RS.CAPACITY).map(k => [k, RS.CAPACITY[k].includes(profile?.[k]) ? profile[k] : 'unknown (not answered)'])),
-    inventory_tco2eq_by_responsibility: Object.fromEntries(Object.entries(bd.byTier).map(([k, v]) => [k, t1(v)])),
-    largest_source_in_inventory: row(bd.top.overall),
-    largest_source_the_utility_operates: answered ? row(bd.top.actionable) : null,
+    inventory_complete:bd.complete, known_subtotal_tco2eq:t1(bd.known_subtotal), inventory_tco2eq_by_responsibility: bd.complete ? Object.fromEntries(Object.entries(bd.byTier).map(([k, v]) => [k, t1(v)])) : null,
+    largest_source_in_inventory: bd.complete ? row(bd.top.overall) : null,
+    largest_source_the_utility_operates: answered && bd.complete ? row(bd.top.actionable) : null,
     note: 'Responsibility does not change ECAM totals: sources outside the utility\'s responsibility stay in the assessed inventory. "unspecified" means the user has not answered, not "outside".',
   };
 }
@@ -376,7 +376,7 @@ function collectMissing(checks, record, profile) {
 function knownMissing({ assessment, meta, gwpIndex = 0, inputStatus = null, profile = null } = {}) {
   let checks = [];
   if (assessment && meta?.id) {
-    try { checks = CW.withCheckIds(suggestActions(engine.calculateOne(assessment, gwpIndex), assessment, engine, gwpIndex).checks, meta); } catch (e) { checks = []; }
+    try { checks = CW.withCheckIds(suggestActions(AV.calculate(assessment,gwpIndex,{meta,inputStatus}),assessment,engine,gwpIndex,inputStatus).checks, meta); } catch (e) { checks = []; }
   }
   return collectMissing(checks, inputStatus && typeof inputStatus === 'object' ? inputStatus : null, profile);
 }
@@ -420,9 +420,10 @@ function resolveFocus({ focus, ctx, subs, sids, optByKey, calcView, custom, cust
       value = assessment[entry[1]]?.[entry[2]]?.[index]?.[code] ?? null;
       where = subs.find(x => x.sid === focus.sid)?.name || focus.sid;
     } else if (assessment.General && code in assessment.General) value = assessment.General[code];
-    const st = focus.sid && CW.isTracked(prefix, code) ? CW.inputState(record, focus.sid, code, value) : null;
+    const st = CW.inputState(record,focus.sid || 'General',code,value);
+    const availability=require('../public/js/result-status').input(record,focus.sid || 'General',code,value,engine._ecam.Info,engine._ecam.Tables);
     const d = knowledge.describe(code);
-    return { focus: { label: `${code} (${cut(d.descr, 80)})`, code }, detail: { code, substage: where, value, description: cut(d.descr, 200), explanation: cut(String(d.expla).replace(/<[^>]+>/g, ''), 600), input_origin: st ? st.origin : 'not tracked', confirmed: st ? st.confirmed : null } };
+    return { focus: { label: `${code} (${cut(d.descr, 80)})`, code }, detail: { code, substage: where, value:availability.status==='available'?value:null, stored_value:value, availability:availability.status, description: cut(d.descr, 200), explanation: cut(String(d.expla).replace(/<[^>]+>/g, ''), 600), input_origin: st ? st.origin : 'not tracked', confirmed: st ? st.confirmed : null } };
   }
   if (kind === 'action') {
     const key = String(focus.key || '');
@@ -495,6 +496,7 @@ function render(ctx) {
     ['problems', ctx.problems.length ? `CONTEXT PROBLEMS: ${ctx.problems.join(' ')}` : ''],
     ['other', ctx.mentions_other.length ? `THE QUESTION NAMES ANOTHER ASSESSMENT: ${ctx.mentions_other.join(', ')}. No data from it is included; do not answer about it from this context.` : ''],
     ['results', r?.availability === 'not_assessed' ? `RESULTS: Not assessed. Correct draft inputs: ${j(r.validity.issues)}` : r ? `RESULTS (${r.source}): total ${r.total_tco2eq} tCO2eq (CO2 ${r.by_gas_tco2eq.co2}, CH4 ${r.by_gas_tco2eq.ch4}, N2O ${r.by_gas_tco2eq.n2o}); energy ${r.energy_kwh} kWh\nBY STAGE: ${Object.entries(r.by_stage).map(([k, v]) => `${k} ${v.tco2eq} t (${v.share_pct}%)`).join('; ')}\nLARGEST CONTRIBUTOR: ${j(r.largest_contributor)}` : ''],
+    ['completeness', r?.completeness ? `INVENTORY COMPLETENESS: ${j(r.completeness)}. Unknown components are not zero. A known subtotal is not the assessment total.` : ''],
     ['water_balance', r?.water_balance?.length ? `WATER BALANCE (each measure uses its own stated dependencies; missing values are unknown): ${j(r.water_balance.map(w => ({name:w.name,distributed_m3:w.distributed_m3,authorized_m3:w.authorized_m3,billed_m3:w.billed_m3,nrw_pct:w.nrw_pct.value,water_loss_pct:w.water_loss_pct.value,nrw_status:w.nrw_pct.status,water_loss_status:w.water_loss_pct.status})))}` : ''],
     ['responsibility', ctx.responsibility ? `RESPONSIBILITY (${ctx.responsibility.source}): ${j((({ source, ...x }) => x)(ctx.responsibility))}` : ''],
     ['focus_detail', ctx.focus_detail ? `FOCUS DETAIL: ${j(ctx.focus_detail)}` : ''],

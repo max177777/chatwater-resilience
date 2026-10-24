@@ -10,6 +10,7 @@
  *   trigger(match, r) -> the condition in words plus the values it read.
  */
 
+const Data = require('../public/js/result-status');
 const t = (kg) => kg / 1000; // kg -> t
 const fmt = (n, d = 0) => (n == null || !Number.isFinite(n)) ? '–'
   : n.toLocaleString('en-US', { maximumFractionDigits: d });
@@ -98,8 +99,8 @@ const RULES = [
       expected_kwh: null, expected_kgco2: null,
       expected_text: { en: 'Evidence for a decision', id: 'Bukti untuk pengambilan keputusan' },
       evidence: {
-        en: `${fmt(s.energy_kwh)} kWh grid electricity (${fmt(100 * s.energy_kwh / r.energy_kwh, 0)}% of the utility total) but no pump efficiency data yet.`,
-        id: `${fmtId(s.energy_kwh)} kWh listrik PLN (${fmtId(100 * s.energy_kwh / r.energy_kwh, 0)}% dari total) tetapi belum ada data efisiensi pompa.`,
+        en: `${fmt(s.energy_kwh)} kWh grid electricity (${fmt(r.energy_kwh == null ? null : 100 * s.energy_kwh / r.energy_kwh, 0)}% of the utility total) but no pump efficiency data yet.`,
+        id: `${fmtId(s.energy_kwh)} kWh listrik PLN (${fmtId(r.energy_kwh == null ? null : 100 * s.energy_kwh / r.energy_kwh, 0)}% dari total) tetapi belum ada data efisiensi pompa.`,
       },
       basis_text: { en: "The electricity entered in ECAM for this stage; the pump-efficiency questions are not answered yet.", id: "Listrik yang diisikan di ECAM untuk tahap ini; pertanyaan efisiensi pompa belum dijawab." },
         basis: 'ECAM energy inputs; pump-efficiency questions not answered',
@@ -315,8 +316,9 @@ const RULES = [
  * @param assessment the ECAM JSON (to read inputs and re-run scenarios)
  * @param engine     engine/ecam-engine (for ECAM re-runs)
  */
-function suggestActions(results, assessment, engine, gwpIndex = 0) {
+function suggestActions(results, assessment, engine, gwpIndex = 0, inputStatus = null) {
   const ctx = { assessment, engine, gwpIndex };
+  const statusFor=(rule,s)=>Data.actionStatus(rule,s,results,{assessment,inputStatus,Info:engine._ecam.Info,Tables:engine._ecam.Tables});
   // attach raw inputs to each substage result (same order as the engine)
   const order = [['Water', 'Abstraction'], ['Water', 'Treatment'], ['Water', 'Distribution'],
     ['Waste', 'Collection'], ['Waste', 'Treatment'], ['Waste', 'Onsite']];
@@ -330,10 +332,10 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
     id: 'A00', rule: 'baseline', category: 'baseline',
     title: { en: 'Keep current practice', id: 'Pertahankan praktik saat ini' },
     expected_text: { en: 'Comparison baseline', id: 'Garis dasar pembanding' },
-    expected_kwh: 0, expected_kgco2: 0,
+    expected_kwh: results.completeness && !results.completeness.complete ? null : 0, expected_kgco2: results.completeness && !results.completeness.complete ? null : 0,
     evidence: {
-      en: `Baseline: ${fmt(t(results.totals.total))} tCO2eq and ${fmt(results.energy_kwh)} kWh over ${fmt(results.period.days)} days.`,
-      id: `Garis dasar: ${fmtId(t(results.totals.total))} tCO2eq dan ${fmtId(results.energy_kwh)} kWh selama ${fmtId(results.period.days)} hari.`,
+      en: `Baseline${results.completeness && !results.completeness.complete ? ' (incomplete: unavailable components)' : ''}: ${fmt(results.totals.total == null ? null : t(results.totals.total))} tCO2eq and ${fmt(results.energy_kwh)} kWh over ${fmt(results.period.days)} days.`,
+      id: `Garis dasar${results.completeness && !results.completeness.complete ? ' (tidak lengkap)' : ''}: ${fmtId(results.totals.total == null ? null : t(results.totals.total))} tCO2eq dan ${fmtId(results.energy_kwh)} kWh selama ${fmtId(results.period.days)} hari.`,
     },
     basis_text: { en: "ECAM total emissions and total energy use.", id: "Total emisi dan total penggunaan energi menurut ECAM." },
         basis: 'ECAM TotalGHG, TotalNRG',
@@ -341,10 +343,12 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
   }];
   for (const rule of RULES) {
     for (const m of rule.applies(results)) {
-      options.push({ rule: rule.id, ...rule.build(m, results, ctx), trigger: rule.trigger(m, results), substage: where.get(m) || null });
+      const support=statusFor(rule.id,m);
+      if (support.status!=='available') continue;
+      options.push({ availability:support, rule: rule.id, ...rule.build(m, results, ctx), trigger: rule.trigger(m, results), substage: where.get(m) || null });
     }
   }
-  const checks = ruleChecks(results, where);
+  const checks = ruleChecks(results, where, statusFor);
   const status = v => (typeof v === 'number' && Number.isFinite(v) ? 'quantified' : 'not_quantified');
   options.forEach(o => {
     if (o.rule === 'pump_upgrade' && o.trigger?.review?.includes('pump_energy_basis')) {
@@ -360,7 +364,8 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
   const [base, ...rest] = options;
   rest.sort((a, b) => (b.expected_kgco2 || 0) - (a.expected_kgco2 || 0));
   rest.forEach((o, k) => { o.id = 'A' + String(k + 1).padStart(2, '0'); });
-  return { assumptions: ASSUMPTIONS, options: [base, ...rest], checks };
+  const availability_checks = results.coverage ? Object.keys(Data.ACTIONS).flatMap(rule => rule==='solar_pv' ? [{rule,...statusFor(rule,null)}] : results.substages.filter(s => ({nrw_reduction:['wsd'],septic_desludging:['wwo'],cso_reduction:['wwc'],biogas_capture:['wwt'],pump_audit:['wsa','wsd','wwc']}[rule] || ['wsa','wst','wsd','wwc','wwt','wwo']).includes(s.prefix)).map(s => ({rule,prefix:s.prefix,name:s.name,...statusFor(rule,s)}))) : [];
+  return { assumptions: ASSUMPTIONS, options: [base, ...rest], checks, availability_checks };
 }
 
 /*
@@ -411,14 +416,18 @@ const CHECKS = [
 ];
 
 /** One entry per covered check and substage. where: substage result -> { prefix, index }. */
-function ruleChecks(results, where) {
+function ruleChecks(results, where, statusFor) {
   const out = [];
   for (const c of CHECKS) {
     for (const s of results.substages.filter(x => c.prefixes.includes(x.prefix))) {
+      const support=results.coverage?statusFor(c.rules[0],s):null;
+      const blocked=support&&support.status!=='available';
       out.push({
         check: c.id, rules: c.rules, substage: where.get(s), name: s.name,
-        inputs: c.inputs(s.prefix).map(code => ({ code, value: s.inputs?.[code] ?? null })),
-        untracked: c.untracked(s.prefix), missing: [], reason: null, review: [], ...c.evaluate(s),
+        inputs: c.inputs(s.prefix).map(code => ({ code, value: results.coverage ? s.input_availability?.[code]?.value ?? null : s.inputs?.[code] ?? null })),
+        untracked: results.coverage ? [] : c.untracked(s.prefix), missing: [], reason: null, review: [], ...c.evaluate(s),
+        ...(support?{availability:support}:{}),
+        ...(blocked?{status:'not_assessed',reason:'dependency_unavailable',missing:support.missing}:{}),
       });
     }
   }

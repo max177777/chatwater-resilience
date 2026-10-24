@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /*
  * Data-integrity regression tests: stable identities, freshness of downstream
  * outputs, server-side export validation, unit display and session migration.
@@ -21,18 +22,19 @@ const test = (name, fn) => tests.push([name, fn]);
 /** Build a complete project the way the browser does: options → saved actions → plan → proposal. */
 async function project({ assessment = clone(sample[0]), id = 'a_main', gwpIndex = 0, rules = ['pump_upgrade', 'septic_desludging'] } = {}) {
   const m = meta(assessment, id);
-  const options = I.optionsFor(assessment, m, gwpIndex);
+  const inputStatus=fixtureStatus.confirmedInputs(assessment,m), supportRevision=require('../engine/assessment-validity').calculate(assessment,gwpIndex,{meta:m,inputStatus}).supportRevision;
+  const options = I.optionsFor(assessment, m, gwpIndex,inputStatus);
   CW.assignLabels(options, {});
-  const basis = { assessmentId: id, revision: CW.revision(assessment), gwpIndex };
+  const basis = { assessmentId: id, revision: CW.revision(assessment), gwpIndex, supportRevision };
   const selectedActions = options.filter(o => rules.includes(o.rule)).map(o => ({ ...o, notes: '' }));
   const actionSet = { ...basis, savedAt: 'now' };
   const profile = { name: 'Utility A (hypothetical)' };
-  const plan = { ...buildPlan(selectedActions, 'en'), summary: 'User-edited summary.', deps: CW.planDeps({ assessmentId: id, assessment, gwpIndex, actions: selectedActions, profile }) };
+  const plan = { ...buildPlan(selectedActions, 'en'), summary: 'User-edited summary.', deps: CW.planDeps({ assessmentId: id, assessment, gwpIndex, actions: selectedActions, profile, supportRevision }) };
   const financing = { route: 'general' };
   const fw = P.financingFrameworks().find(f => f.id === 'general');
   const proposal = { ...(await P.draftProposal({ results: engine.calculateOne(assessment, gwpIndex), actions: selectedActions, plan, profile, lang: 'en' }, fw)),
-    deps: CW.proposalDeps({ assessmentId: id, assessment, gwpIndex, actions: selectedActions, plan, profile, financing }) };
-  return { assessments: [assessment], assessmentMeta: [m], gwpIndex, actionResult: { assessmentId: id, basis, options }, actionSet, selectedActions, plan, proposal, profile, financing, lang: 'en' };
+    deps: CW.proposalDeps({ assessmentId: id, assessment, gwpIndex, actions: selectedActions, plan, profile, financing, supportRevision }) };
+  return { inputStatus:{[id]:inputStatus}, assessments: [assessment], assessmentMeta: [m], gwpIndex, actionResult: { assessmentId: id, basis, options }, actionSet, selectedActions, plan, proposal, profile, financing, lang: 'en' };
 }
 const fresh = s => CW.freshness({
   assessments: s.assessmentMeta.map((m, i) => ({ id: m.id, revision: CW.revision(s.assessments[i]) })),
@@ -74,14 +76,14 @@ test('rejecting an action that is not in the saved selection leaves every output
 // ------------------------------------------------------------------ freshness after upstream edits
 test('both languages: rejection blocks both exports through HTTP until effective selection, plan and proposal are current', async () => {
   const server = app.listen(0);
-  const post = async (route, body) => fetch(`http://localhost:${server.address().port}${route}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = async (route, body) => fetch(`http://localhost:${server.address().port}${route}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   try {
     for (const lang of ['en', 'id']) {
       const s = await project(); s.lang = lang;
       const key = s.selectedActions[0].key;
       s.selectedActions[0].notes = 'Synthetic note retained';
-      s.plan.deps = CW.planDeps({ assessmentId: 'a_main', assessment: s.assessments[0], actions: s.selectedActions, profile: s.profile });
-      s.proposal.deps = CW.proposalDeps({ assessmentId: 'a_main', assessment: s.assessments[0], actions: s.selectedActions, plan: s.plan, profile: s.profile, financing: s.financing });
+      s.plan.deps = CW.planDeps({ assessmentId: 'a_main', assessment: s.assessments[0], supportRevision:s.actionSet?.supportRevision, actions: s.selectedActions, profile: s.profile });
+      s.proposal.deps = CW.proposalDeps({ assessmentId: 'a_main', assessment: s.assessments[0], supportRevision:s.actionSet?.supportRevision, actions: s.selectedActions, plan: s.plan, profile: s.profile, financing: s.financing });
       const text = s.plan.summary;
       s.rejectedActions = { [key]: { reason: 'synthetic rejection' } };
       for (const route of ['/api/export', '/api/export/docx']) assert.strictEqual((await post(route, s)).status, 409);
@@ -248,7 +250,7 @@ test('every editable plan field (summary, owner, duration and the schedule they 
 test('plan summary edit is rejected by the server export until the proposal is regenerated', async () => {
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
-  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   try {
     const s = await project();
     s.plan.summary = 'Summary edited after the proposal (synthetic)';
@@ -322,7 +324,7 @@ test('switching interface language does not invalidate calculations or outputs; 
 
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
-  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   try {
     // options requested in either interface language have the same keys, figures and basis
     const opts = async lang => (await post('/api/actions', { assessment: s.assessments[0], meta: s.assessmentMeta[0], gwpIndex: 0, lang })).json();
@@ -417,7 +419,7 @@ test('changing the financing route makes the proposal outdated', async () => {
 test('server rejects mixed-assessment and stale requests over HTTP', async () => {
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
-  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   try {
     const s = await project();
     const other = clone(sample[0]); other.General.Name = 'Other (synthetic)'; other.Water.Abstraction[0].wsa_nrg_cons = 10;
@@ -443,7 +445,7 @@ test('server rejects mixed-assessment and stale requests over HTTP', async () =>
     assert.strictEqual(r.status, 409); assert.match((await r.json()).error, /no draft proposal/);
 
     // valid export: Word baseline is the actions' assessment even when it is listed second
-    r = await post('/api/export/docx', { ...s, assessments: [other, s.assessments[0]], assessmentMeta: [otherMeta, s.assessmentMeta[0]] });
+    r = await post('/api/export/docx', { ...s, inputStatus: {...s.inputStatus,[otherMeta.id]:fixtureStatus.confirmedInputs(other,otherMeta)}, assessments: [other, s.assessments[0]], assessmentMeta: [otherMeta, s.assessmentMeta[0]] });
     assert.strictEqual(r.status, 200);
     const text = await docxText(Buffer.from(await r.arrayBuffer()));
     const total = (engine.calculateOne(sample[0]).totals.total / 1000).toLocaleString('en-US', { maximumFractionDigits: 1 });

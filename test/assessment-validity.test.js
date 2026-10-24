@@ -38,7 +38,7 @@ const cases = [
  for(const [name,mutate] of cases) {
   const x=clone(a);mutate(x);const before=CW.canonical(x);const v=V.validate(x);
   assert.equal(v.valid,false,name);assert.equal(CW.canonical(x),before,`${name}: keep invalid draft unchanged`);
-  assert.equal(V.calculate(x).totals.total,null,name);
+  assert.equal(V.calculate(x).validity.valid,false,name); // independent supported components may remain available
  }
  assert.equal(V.validate(engine.newAssessment('Indonesia')).valid,false,'empty assessment');
  const empty=engine.newAssessment('Indonesia');empty.Water.Abstraction.push(engine.newSubstage('wsa','Empty',0.677));
@@ -103,9 +103,9 @@ const cases = [
   const zip=await JSZip.loadAsync(Buffer.from(await exportResponse.arrayBuffer()));
   const result=JSON.parse(await zip.file('ecam/results.json').async('string'))[0];near(result.water_balance[0].nrw_pct.value,28.571428571428573);
   assert.ok(zip.file('ecam/availability-and-water-balance.json'));
-  const companion=JSON.parse(await zip.file('ecam/application-metadata.json').async('string'));assert.deepStrictEqual(companion.inputStatus,state.inputStatus);
+  const companion=JSON.parse(await zip.file('ecam/application-metadata.json').async('string'));assert.deepStrictEqual(companion.state.inputStatus,state.inputStatus);
   const invalidDocAssessment=clone(a);invalidDocAssessment.General.AssessmentPeriodEnd=a.General.AssessmentPeriodStart;
-  const invalidDoc={assessments:[invalidDocAssessment],assessmentMeta:[ac.meta],selectedActions:[],financing:{route:'general'},proposal:{sections:[],deps:CW.proposalDeps({assessmentId:ac.meta.id,assessment:invalidDocAssessment,gwpIndex:0,actions:[],plan:null,profile:null,financing:{route:'general'}})}};
+  const invalidDoc={assessments:[invalidDocAssessment],assessmentMeta:[ac.meta],selectedActions:[],financing:{route:'general'},proposal:{sections:[],deps:CW.proposalDeps({assessmentId:ac.meta.id,assessment:invalidDocAssessment,gwpIndex:0,actions:[],plan:null,profile:null,supportRevision:V.calculate(invalidDocAssessment).supportRevision,financing:{route:'general'}})}};
   const blockedDoc=await post('/api/export/docx',invalidDoc);assert.equal(blockedDoc.status,422,await blockedDoc.clone().text());
   const doc=await post('/api/export/docx',state);assert.equal(doc.status,200);
   const text=await require('mammoth').extractRawText({buffer:Buffer.from(await doc.arrayBuffer())});assert.match(text.value,/28.57%/);

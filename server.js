@@ -77,11 +77,16 @@ app.use('/api', (req, res, next) => {
   const guarded = ['/actions','/actions/explain','/actions/alternatives','/plan','/proposal'];
   try {
     if (['/plan','/proposal'].includes(req.path) && req.body.actions?.length && req.body.assessment?.General) I.requireCurrentActions({...req.body,rejected:req.body.rejectedActions});
+    if (['/plan','/proposal'].includes(req.path)) AV.requireSupported(req.body.assessment,{meta:req.body.meta,inputStatus:req.body.inputStatus,gwpIndex:req.body.gwpIndex});
     if (guarded.includes(req.path)) AV.requireValid(req.body.assessment, {meta:req.body.meta,inputStatus:req.body.inputStatus});
+    if(['/actions/explain','/actions/alternatives'].includes(req.path) && req.body.option) {
+      const {assessment,meta,gwpIndex=0,inputStatus,option}=req.body;
+      I.requireCurrentActions({assessment,meta,gwpIndex,inputStatus,actions:[option],actionSet:{assessmentId:meta?.id,revision:CW.revision(assessment),gwpIndex}});
+    }
     if (['/export','/export/docx'].includes(req.path)) {
       I.exportContext(req.body,{requireProposal:req.path === '/export/docx'});
       if (!Array.isArray(req.body.assessments) || !req.body.assessments.length) AV.requireValid(null);
-      req.body.assessments.forEach((a,i) => AV.requireValid(a,{meta:req.body.assessmentMeta?.[i],inputStatus:req.body.inputStatus?.[req.body.assessmentMeta?.[i]?.id]}));
+      req.body.assessments.forEach((a,i) => AV.requireSupported(a,{meta:req.body.assessmentMeta?.[i],inputStatus:req.body.inputStatus?.[req.body.assessmentMeta?.[i]?.id],gwpIndex:req.body.gwpIndex}));
     }
     next();
   } catch (e) { res.status(e.status || 400).json({error:e.message,issues:e.issues}); }
@@ -96,10 +101,10 @@ app.post('/api/calculate', wrap((req, res) => {
 app.post('/api/actions', wrap((req, res) => {
   const { assessment, meta, gwpIndex = 0 } = req.body;
   const r = AV.calculate(assessment, gwpIndex, {meta,inputStatus:req.body.inputStatus});
-  const { options, assumptions, checks } = suggestActions(r, assessment, engine, gwpIndex);
+  const { options, assumptions, checks, availability_checks } = suggestActions(r, assessment, engine, gwpIndex,req.body.inputStatus);
   res.json({
-    results: r, assumptions, options: CW.withKeys(options, meta), checks: CW.withCheckIds(checks, meta),
-    basis: { assessmentId: meta?.id || null, revision: CW.revision(assessment), gwpIndex },
+    results: r, assumptions, availability_checks, options: CW.withKeys(options, meta), checks: CW.withCheckIds(checks, meta),
+    basis: { assessmentId: meta?.id || null, revision: CW.revision(assessment), gwpIndex, supportRevision:r.supportRevision },
   });
 }));
 
@@ -124,7 +129,7 @@ app.post('/api/actions/explain', limitAI, wrap(async (req, res) => {
 
 app.post('/api/plan', limitAI, wrap(async (req, res) => {
   const { actions = [], actionSet, assessment, meta, gwpIndex = 0, profile, inputStatus, lang = 'en', rejectedActions } = req.body;
-  I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet, rejected: rejectedActions });
+  I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet, inputStatus, rejected: rejectedActions });
   const plan = buildPlan(actions, lang);
   const missing = chatContext.knownMissing({ assessment, meta, gwpIndex, inputStatus, profile });
   const results = resultsFor(assessment, gwpIndex, {meta,inputStatus:req.body.inputStatus});
@@ -138,7 +143,7 @@ app.post('/api/plan', limitAI, wrap(async (req, res) => {
   let concept;
   try { concept = await PC.draft(conceptInput, { system: P.systemFor(lang), promptData: P.promptData, langName: P.LANG_NAME[lang] }); }
   catch (e) { concept = { areas: PC.template(conceptInput), ai: false, ai_failed: true }; }
-  const deps = CW.planDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, profile });
+  const deps = CW.planDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, profile, supportRevision:results.supportRevision });
   res.json({ ...plan, summary: summary.text, sources: summary.sources || [], ...(summary.related ? { related: summary.related } : {}),
     evidence: summary.evidence, ai: summary.ai, lang, deps, concept });
 }));
@@ -180,13 +185,13 @@ app.post('/api/proposal', limitAI, wrap(async (req, res) => {
     : P.financingFrameworks().find(f => f.id === route);
   if (!fw) throw new Error('Unknown financing route ' + route);
   const rejected = req.body.rejectedActions;
-  I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet, rejected });
-  I.requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile, rejected });
+  I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet, inputStatus, rejected });
+  I.requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile, inputStatus, rejected });
   const missing = chatContext.knownMissing({ assessment, meta, gwpIndex, inputStatus, profile });
   const pathways = PW.forFacts(Array.isArray(req.body.pathways) ? req.body.pathways.slice(0, 10) : [], lang);
   const estimates = Math.max(0, Math.min(+req.body.estimates || 0, 10000));
   const proposal = await P.draftProposal({ results: resultsFor(assessment, gwpIndex, {meta,inputStatus:req.body.inputStatus}), actions, plan, profile, meta, lang, missing, pathways, estimates }, fw, guideText);
-  const deps = CW.proposalDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, plan, profile, financing: { route, customFramework, pathways: req.body.pathways } });
+  const deps = CW.proposalDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, plan, profile, supportRevision:AV.calculate(assessment,gwpIndex,{meta,inputStatus}).supportRevision, financing: { route, customFramework, pathways: req.body.pathways } });
   res.json({ ...proposal, lang, deps });
 }));
 

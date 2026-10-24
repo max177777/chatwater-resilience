@@ -45,7 +45,7 @@ const CWForm = (() => {
     const { t, esc, fmt } = A();
     const info = Info[code] || {};
     const id = 'in_' + code;
-    const status = AV.state(A().state.inputStatus[A().idOf(Global)], A().idOf(stage, 's'), code, stage[code]);
+    const status = AV.state(A().state.inputStatus[A().idOf(Global)], A().inputSid(stage), code, stage[code]);
     let control = '', extra = '';
     if (info.magnitude === 'Option' && info.table && Tables[info.table]) {
       control = `<select id="${id}" data-code="${code}" data-kind="option">` +
@@ -78,7 +78,10 @@ const CWForm = (() => {
         }
       }
     }
-    if (status === 'unconfirmed') extra += '<span class="small muted">Provenance unconfirmed / Sumber belum dikonfirmasi</span>';
+    const source=CW.inputState(A().state.inputStatus[A().idOf(Global)],A().inputSid(stage),code,stage[code]);
+    extra += `<div class="small muted" data-input-provenance="${code}">${esc(source.origin)} · ${esc(status)}${status === 'unconfirmed' ? ' — legacy/imported value; zero-entry intent was not recorded' : ''}${source.confirmed ? ' · confirmed' : ''}</div>
+      <button type="button" class="link small" data-confirm-input="${code}" ${typeof stage[code]!=='number'||!Number.isFinite(stage[code])?'disabled':''}>Confirm this value${stage[code] === 0 ? ' (zero)' : ''}</button>
+      <button type="button" class="link small" data-unknown-input="${code}">Mark unknown (keep stored value)</button>`;
     const expla = A().tE(code + '_expla');
     return `<tr class="${nested ? 'nested' : ''}">
       <td class="lab"><label for="${id}">${A().rich(labelOf(code))}</label>
@@ -107,18 +110,23 @@ const CWForm = (() => {
     ss.Configuration.Questions[q] = value;
     if (!value) {
       Questions[q].otherQuestions.forEach(k => setQuestion(ss, k, false));
+      // Vendor reset behavior remains unchanged; retain pre-reset values and provenance for recovery.
+      for(const code of Questions[q].variables || []) if(Object.hasOwn(ss,code)&&typeof ss[code]!=='function') {
+        const app=A(), source=CW.inputState(app.state.inputStatus[app.idOf(Global)],app.inputSid(ss),code,ss[code]);
+        app.markScoped(ss,code,source.origin);
+      }
       Questions.reset_values(q, ss);
     }
   }
 
   // --- outputs ------------------------------------------------------------
   function outputsTable(struct, ss) {
-    if (!A().assessmentValidity().valid) return '<p role="status">Cannot calculate — correct draft inputs. / Tidak dapat dihitung — perbaiki data draf.</p>';
+    const result=A().reviewedResults(), sid=A().idOf(ss,'s'), sub=result.substages.find(x=>x.sid===sid);
     const { t, esc, fmt } = A();
     const rows = (struct.class.equations || []).map(eq => {
-      const available = AV.availability(ss, eq, {Questions, sid:A().idOf(ss,'s'), inputStatus:A().state.inputStatus[A().idOf(Global)]});
-      if (['unknown','unavailable','not_applicable'].includes(available.status)) return `<tr><td>${A().rich(labelOf(eq))}</td><td>${esc(available.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate')}: ${esc((available.missing || []).join(', '))}</td></tr>`;
-      const v = safeNum(() => outputTotal(ss[eq]()));
+      const available = sub?.availability[eq] || {status:'untracked'};
+      if (!['available'].includes(available.status)) return `<tr><td>${A().rich(labelOf(eq))}</td><td>${esc(available.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate')}: ${esc((available.missing || []).join(', '))}</td></tr>`;
+      const v = outputTotal(sub?.outputs[eq]);
       if (v === null) return '';
       const isGHG = /_KPI_GHG/.test(eq);
       const unit = isGHG ? 'kgCO₂eq' : unitOf(eq, true);
@@ -129,14 +137,15 @@ const CWForm = (() => {
 
   // --- KPI strip ----------------------------------------------------------
   function kpis() {
-    if (!A().assessmentValidity().valid) return '<div class="notice warn">Not assessed — draft inputs need correction. / Belum dinilai — perbaiki data draf.</div>';
+    const result=A().reviewedResults();
+    if (!A().assessmentValidity().valid || !result.completeness.complete) return `<div class="notice warn">Not assessed: incomplete total. ${result.completeness.known_subtotal == null ? '' : 'Known subtotal (incomplete): '+A().fmt(result.completeness.known_subtotal/1000)+' tCO₂eq'}</div>`;
     const { t, fmt } = A();
-    const g = Global.TotalGHG(), e = Global.TotalNRG();
-    const pop = Global.Water.ws_serv_pop() || Global.Waste.ww_serv_pop() || 0;
-    const years = Global.Years() || 1;
+    const reviewed=A().reviewedResults(), g=reviewed.totals,e=reviewed.energy_kwh;
+    const pop = reviewed.population.ws_serv_pop > 0 ? reviewed.population.ws_serv_pop : reviewed.population.ws_serv_pop === 0 ? reviewed.population.ww_serv_pop : null;
+    const years = reviewed.period.days / 365;
     return `<div class="kpi"><div class="v">${fmt(g.total / 1000)}</div><div class="l">${t('total_ghg')} (tCO₂eq)</div></div>
       <div class="kpi"><div class="v">${fmt(e)}</div><div class="l">${t('total_energy')} (kWh)</div></div>
-      <div class="kpi"><div class="v">${pop ? fmt(g.total / pop / years) : '–'}</div><div class="l">kgCO₂eq ${t('per_capita')}</div></div>`;
+      <div class="kpi"><div class="v">${pop > 0 && years > 0 ? fmt(g.total / pop / years) : 'Cannot calculate'}</div><div class="l">kgCO₂eq ${t('per_capita')}</div></div>`;
   }
 
   // --- general panel -------------------------------------------------------
@@ -147,7 +156,8 @@ const CWForm = (() => {
     const gwp = GWP_reports.map((r, i) => `<option value="${i}" ${state.gwpIndex == i ? 'selected' : ''}>${esc(CW.gwpLabel(r.report, state.lang))}</option>`).join('');
     // display only: binary floating-point noise (e.g. 0.30000000000000004) is hidden; the stored value is unchanged unless the user edits it
     const shown = v => (typeof v === 'number' && Number.isFinite(v) ? String(+v.toPrecision(12)) : esc(v ?? ''));
-    const num = (k, unit) => `<label class="field"><span>${esc(t(k))}</span><div class="row"><input type="text" inputmode="decimal" data-numeric="1" data-gen="${k}" value="${shown(g[k])}" class="grow"><span data-error="${k}" class="field-error"></span><span class="small muted">${esc(CW.unitLabel(unit, state.lang))}</span></div></label>`;
+    const generalSource=k=>{const source=CW.inputState(state.inputStatus[A().idOf(Global)],'General',k,g[k]),av=RSData.input(state.inputStatus[A().idOf(Global)],'General',k,g[k],Info,Tables);return esc(source.origin)+' · '+esc(av.status)+(source.confirmed?' · confirmed':'');};
+    const num = (k, unit) => `<label class="field"><span>${esc(t(k))}</span><div class="row"><input type="text" inputmode="decimal" data-numeric="1" data-gen="${k}" value="${shown(g[k])}" class="grow"><span data-error="${k}" class="field-error"></span><span class="small muted">${esc(CW.unitLabel(unit, state.lang))}</span></div><span class="small muted" data-input-provenance="${k}">${generalSource(k)}</span><button type="button" class="link small" data-confirm-input="${k}" ${typeof g[k]!=='number'||!Number.isFinite(g[k])?'disabled':''}>Confirm factor</button> <button type="button" class="link small" data-unknown-input="${k}">Mark unknown (keep value)</button></label>`;
     return `<div class="card"><h2>${esc(t('general'))}</h2>
       <label class="field"><span>${esc(t('a_name'))}</span><input type="text" data-gen="Name" value="${esc(g.Name)}"></label>
       <div class="grid2">
@@ -165,6 +175,7 @@ const CWForm = (() => {
         ${num('F_NON_CON', 'kgN/kgN')}
         ${num('N_HH', 'kgN/kgN')}
       </div>
+      <div class="small muted">General factors keep their original source classification. Confirmation does not make a default measured.</div>
       <label class="field"><span>${esc(t('comments'))}</span><textarea class="field" data-gen="Comments" rows="3">${esc(g.Comments)}</textarea></label>
     </div>`;
   }
@@ -228,14 +239,15 @@ const CWForm = (() => {
         <button class="btn sm" data-act="dup-sc">${esc(t('duplicate'))}</button>
         <button class="btn sm danger" data-act="del-sc" ${Scenarios.length < 2 ? 'disabled' : ''}>${esc(t('delete'))}</button>
         <span class="spacer"></span>
-        <label class="btn sm">${esc(t('load_file'))}<input type="file" accept=".json,application/json" id="load-ecam" hidden></label>
+        <label class="btn sm">${esc(t('load_file'))}<input type="file" accept=".json,application/json" id="load-ecam" multiple hidden></label>
+        <button class="btn sm" data-act="save-project">Save project backup</button><label class="btn sm">Restore project backup<input type="file" accept=".json,application/json" id="load-project" hidden></label>
         <button class="btn sm" data-act="save-ecam">${esc(t('save_file'))}</button>
         <button class="btn sm" data-act="load-sample">${esc(t('load_sample'))}</button>
       </div></div>
       <div class="kpis" id="kpis">${kpis()}</div>
       <div class="ecam">
         <nav class="stagenav" id="stagenav">${stageNav(sel)}</nav>
-        <div id="panel">${!anySubstage && sel.kind === 'general' ? `<div class="notice">${esc(t('no_substages'))}</div>` : ''}${panel}
+        <div id="panel">${state.transferWarning ? `<div class="notice warn">${esc(state.transferWarning)}</div>` : ''}${!anySubstage && sel.kind === 'general' ? `<div class="notice">${esc(t('no_substages'))}</div>` : ''}${panel}
           <div class="actions-row"><button class="btn" data-go="assess:choose">${esc(t('back'))}</button><button class="btn primary" data-go="assess:results">${esc(t('view_results'))}</button></div>
         </div>
       </div>`;
@@ -281,6 +293,9 @@ const CWForm = (() => {
       const out = document.getElementById('ss-outputs');
       if (out) out.innerHTML = outputsTable(sel.struct, sel.obj);
     }
+    const obj=sel.obj || Global.General, app=A(), rec=app.state.inputStatus[app.idOf(Global)],sid=app.inputSid(obj);
+    document.querySelectorAll('[data-input-provenance]').forEach(el=>{const code=el.dataset.inputProvenance,source=CW.inputState(rec,sid,code,obj[code]),status=AV.state(rec,sid,code,obj[code]);el.textContent=source.origin+' · '+status+(status==='unconfirmed'?' — legacy/imported value; source or entry intent was not recorded':'')+(source.confirmed?' · confirmed':'');});
+    document.querySelectorAll('[data-confirm-input]').forEach(b=>{const value=obj[b.dataset.confirmInput];b.disabled=typeof value!=='number'||!Number.isFinite(value);});
     showErrors(document.getElementById('panel').closest('main') || document,sel);
     A().save();
   }
@@ -292,7 +307,7 @@ const CWForm = (() => {
     const events = {signal:entryBindings.signal};
     const app = A();
     const stage = sel.obj;
-    const entered = (code, origin) => { if (sel.kind === 'ss') app.markEntered(sel.struct.prefix, stage, code, origin); };
+    const entered = (code, origin) => {if(stage) app.markScoped(stage,code,origin);};
     root.onchange = root.oninput = null;
 
     root.addEventListener('input', e => {
@@ -305,6 +320,7 @@ const CWForm = (() => {
         const k = el.dataset.gen;
         if (el.dataset.numeric) {
           Global.General[k] = parseNumber(el.value);
+          app.markScoped(Global.General,k);
           if (k === 'conv_kwh_co2') applyGridFactor();
         } else Global.General[k] = el.value;
         if (k === 'Name') document.querySelector(`#sc-select option[value="${app.state.current}"]`).textContent = el.value;
@@ -317,6 +333,7 @@ const CWForm = (() => {
       if (el.id === 'sc-select') { app.setCurrent(+el.value); return app.render(); }
       if (el.id === 'gwp-select') { app.setGwp(+el.value); return refreshLive(sel); }
       if (el.id === 'load-ecam') return loadEcamFile(el);
+      if (el.id === 'load-project') {const file=el.files[0];el.value='';if(file)file.text().then(text=>app.importProjectText(text));return;}
       if (el.dataset.gen === 'Country') {
         const c = Countries[el.value];
         Global.General.Country = el.value;
@@ -339,6 +356,9 @@ const CWForm = (() => {
     root.addEventListener('click', e => {
       const b = e.target.closest('button, [data-sel]');
       if (!b) return;
+      if (b.dataset.confirmInput) return app.changeInputStatus(stage || Global.General,b.dataset.confirmInput);
+      if (b.dataset.unknownInput) return app.changeInputStatus(stage || Global.General,b.dataset.unknownInput,true);
+      if (b.dataset.act === 'save-project') return app.saveProjectBackup();
       if (b.dataset.sel) {
         const [kind, a, i] = b.dataset.sel.split(':');
         app.state.ui.sel = kind === 'ss' ? { kind, prefix: a, index: +i } : kind === 'stage' ? { kind, level: a } : { kind: 'general' };
@@ -393,47 +413,48 @@ const CWForm = (() => {
 
   function loadEcamFile(input) {
     const app = A();
-    const file = input.files[0];
-    input.value = ''; // the same file can be chosen again, including after a failed import
-    if (!file) return;
-    file.text().then(text => app.importEcamText(text), () => app.toast(app.t('import_not_json')));
+    const files=[...input.files];input.value='';if(!files.length)return;
+    Promise.all(files.map(f=>f.text())).then(texts=>{
+      if(texts.length===1) return app.importProjectText(texts[0]);
+      const side=texts.find(t=>{try{return JSON.parse(t).format==='chatwater-companion';}catch{return false;}}), native=texts.find(t=>t!==side);
+      if(texts.length!==2 || !side || !native) return app.toast('Choose one native ECAM file and its companion, or one complete project backup.');
+      app.importProjectText(native,side);
+    },()=>app.toast(app.t('import_not_json')));
   }
 
   // --- results view ---------------------------------------------------------
   function stageTotals(sc) {
-    return STAGES().map(s => {
-      const list = sc[s.level][s.sublevel];
-      const sum = k => list.map(ss => safeNum(() => ss[s.prefix + '_KPI_GHG']()[k]) || 0).reduce((a, b) => a + b, 0);
-      return { prefix: s.prefix, level: s.level, n: list.length, co2: sum('co2'), ch4: sum('ch4'), n2o: sum('n2o'), total: sum('total'),
-        kwh: list.map(ss => ss[s.prefix + '_nrg_cons'] || 0).reduce((a, b) => a + b, 0) };
-    });
+    return Object.entries(A().reviewedResults(sc).byStage).map(([prefix,r])=>({...r,prefix,n:r.count,kwh:r.energy_kwh}));
   }
 
   function waterBalanceHtml() {
     const {esc,fmt} = A();
     return Global.Water.Distribution.map(ss => {
       const metric = code => {
-        const av = AV.availability(ss,code,{Questions,sid:A().idOf(ss,'s'),inputStatus:A().state.inputStatus[A().idOf(Global)]});
-        return av.status === 'available' ? fmt(safeNum(() => ss[code]()),2)+'%' : esc(av.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate: '+(av.missing || []).map(labelOf).join(', '));
+        const sub=A().reviewedResults().substages.find(s=>s.sid===A().idOf(ss,'s')), av=sub?.availability[code] || {status:'untracked'};
+        return av.status === 'available' ? fmt(sub.outputs[code],2)+'%' : esc(av.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate: '+(av.missing || []).map(labelOf).join(', '));
       };
       return `<p>${esc(ss.name)}: NRW ${metric('wsd_SL_nr_water')} · ${A().state.lang === 'id' ? 'Kehilangan air' : 'Water loss'} ${metric('wsd_SL_water_loss')}</p>`;
     }).join('');
   }
   function renderResults(root) {
-    if (!A().assessmentValidity().valid) {
-      root.innerHTML = summaryHtml() + '<button class="btn" data-go="assess:entry">Back to draft inputs / Kembali ke data</button>';
-      bindIssues(root); return;
+    const r=A().reviewedResults();
+    if (!A().assessmentValidity().valid || !r.completeness.complete) {
+      root.innerHTML = summaryHtml() + `<div class="card"><h2>Incomplete assessment total</h2><p>${r.completeness.status}. Known subtotal: ${r.completeness.known_subtotal == null ? 'unknown' : A().fmt(r.completeness.known_subtotal/1000)+' tCO₂eq (incomplete)'}</p><ul>${r.substages.map(s=>`<li><button class="link" data-status-substage="${s.prefix}:${s.index}">${A().esc(s.name)}</button>: ${A().esc(s.availability[s.prefix+'_KPI_GHG'].status)} — ${A().esc((s.availability[s.prefix+'_KPI_GHG'].missing || []).join(', '))}</li>`).join('')}</ul><p>Confirm ambiguous zeros or mark them unknown in the input form. Stored values and edited documents are retained.</p></div>` + '<button class="btn" data-go="assess:entry">Back to draft inputs / Kembali ke data</button>';
+      bindIssues(root);
+      root.querySelectorAll('[data-status-substage]').forEach(b=>b.onclick=()=>{const [prefix,index]=b.dataset.statusSubstage.split(':');A().state.ui.sel={kind:'ss',prefix,index:+index};A().state.ui.view='assess:entry';A().save();A().render();});
+      return;
     }
     const { t, esc, fmt } = A();
-    const g = Global.TotalGHG(), e = Global.TotalNRG();
+    const reviewed=A().reviewedResults(), g=reviewed.totals,e=reviewed.energy_kwh;
     const rows = stageTotals(Global);
-    const subs = STAGES().flatMap(s => Global[s.level][s.sublevel].map(ss => ({ s, ss, ghg: safeNum(() => ss[s.prefix + '_KPI_GHG']().total) || 0 })));
+    const subs = STAGES().flatMap(s => Global[s.level][s.sublevel].map(ss => {const sub=r.substages.find(x=>x.sid===A().idOf(ss,'s'));return {s,ss,ghg:sub.ghg?.total ?? null};}));
     subs.sort((a, b) => b.ghg - a.ghg);
     const gp = GWP_reports[A().state.gwpIndex] || GWP_reports[0];
     const ctx = A().cardCtx(A().idOf(Global));
     const related = A().relatedActions(Global);
     const sourcesCell = x => AS.COMPONENTS[x.s.prefix]
-      .map(c => ({ c, kg: safeNum(() => x.ss[`${x.s.prefix}_KPI_GHG_${c}`]().total) }))
+      .map(c => ({ c, kg: r.substages.find(s=>s.sid===A().idOf(x.ss,'s'))?.outputs[`${x.s.prefix}_KPI_GHG_${c}`]?.total ?? null }))
       .filter(v => v.kg)
       .map(v => `<div>${DC.componentLabel(x.s.prefix, v.c, ctx)} ${fmt(v.kg / 1000)}</div>`).join('') || '–';
     const relatedCell = x => esc((related.bySid[A().idOf(x.ss, 's')] || []).join(', ') || '–');

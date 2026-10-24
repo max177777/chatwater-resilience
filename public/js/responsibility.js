@@ -130,7 +130,7 @@
       if (r.kg > 0 && (!overall || r.kg > overall.kg)) overall = row;
       if (r.kg > 0 && (tier === 'direct' || tier === 'conditional') && (!actionable || r.kg > actionable.kg)) actionable = row;
     }
-    return { total, byTier, top: { overall, actionable } };
+    return { total, byTier, complete:!rows.some(r=>r.kg==null), known_subtotal:total, top: { overall, actionable } };
   }
 
   /** Display group of an option: tier, with options the user rejected kept apart. */

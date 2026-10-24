@@ -147,15 +147,15 @@
     const pw = f && Array.isArray(f.pathways) && f.pathways.length ? ':pw:' + fp(f.pathways.slice().sort()) : '';
     return base + pw;
   }
-  function planDeps({ assessmentId, assessment, gwpIndex, actions, profile }) {
+  function planDeps({ assessmentId, assessment, gwpIndex, actions, profile, supportRevision }) {
     return {
       assessmentId: assessmentId || null, revision: revision(assessment), gwpIndex: gwpIndex || 0,
-      actionsFingerprint: actionsFingerprint(actions), profile: fp(profile),
+      actionsFingerprint: actionsFingerprint(actions), profile: fp(profile), ...(supportRevision !== undefined ? {supportRevision} : {}),
     };
   }
-  function proposalDeps({ assessmentId, assessment, gwpIndex, actions, plan, profile, financing }) {
+  function proposalDeps({ assessmentId, assessment, gwpIndex, actions, plan, profile, financing, supportRevision }) {
     return {
-      ...planDeps({ assessmentId, assessment, gwpIndex, actions, profile }),
+      ...planDeps({ assessmentId, assessment, gwpIndex, actions, profile, supportRevision }),
       planFingerprint: planFingerprint(plan), framework: frameworkKey(financing),
     };
   }
@@ -178,6 +178,7 @@
       if (!a) return ['assessment_missing'];
       const r = [];
       if (a.revision !== b.revision) r.push('assessment_changed');
+      if (a.supportRevision !== undefined && a.supportRevision !== b.supportRevision) r.push(b.supportRevision ? 'input_status_changed' : 'input_status_untracked');
       if ((b.gwpIndex || 0) !== gwp) r.push('gwp_changed');
       return r;
     };
@@ -342,8 +343,9 @@
     wwo: ['wwo_cont_emp'],
   };
   const isTracked = (prefix, code) => !!(TRACKED_INPUTS[prefix] && TRACKED_INPUTS[prefix].includes(code));
-  const INPUT_ORIGINS = ['manual', 'estimate', 'typical'];
+  const INPUT_ORIGINS = ['manual', 'estimate', 'typical', 'default', 'unknown', 'imported'];
   const sameValue = (r, value) => r.v === value || (r.v == null && value == null);
+  const withoutHistory = r => {const {history,...previous}=r;return previous;};
   const recordOf = (record, sid, code) => record && record.s && record.s[sid] && record.s[sid][code];
   /**
    * { origin, confirmed }. origin: 'manual' | 'estimate' | 'typical' (set in Stage 1),
@@ -368,16 +370,34 @@
   };
   /** Record how Stage 1 set a value. A new value starts unconfirmed. sid = ChatWater substage ID. */
   function setInputOrigin(map, assessmentId, sid, code, origin, value) {
-    ensureRecord(map, assessmentId, sid)[code] = { o: INPUT_ORIGINS.includes(origin) ? origin : null, c: false, v: value };
+    const subs=ensureRecord(map,assessmentId,sid), prior=subs[code];
+    subs[code] = { o: INPUT_ORIGINS.includes(origin) ? origin : null, c:false, v:value, ...(prior?{history:[...(prior.history || []), withoutHistory(prior)].slice(-8)}:{}) };
     return map;
   }
   /** Confirm the current value, keeping its recorded origin when the value is unchanged. */
   function confirmInputValue(map, assessmentId, sid, code, value) {
     const subs = ensureRecord(map, assessmentId, sid);
     const r = subs[code];
-    const o = r && sameValue(r, value) ? (r.o || (r.st === 'entered' ? 'manual' : null)) : null;
-    subs[code] = { o, c: true, v: value };
+    const o = inputState(map[assessmentId],sid,code,value).origin;
+    subs[code] = { ...(r && sameValue(r,value) ? r : r ? {history:[...(r.history || []),withoutHistory(r)].slice(-8)} : {}), o, c:true, v:value, availability:'entered' };
     return map;
+  }
+
+  /** Explicit unknown preserves the numeric value, origin, source notes and previous confirmation. */
+  function setInputAvailability(map,assessmentId,sid,code,value,availability) {
+    if (!['unknown','not_applicable'].includes(availability)) throw new Error('Unsupported input status');
+    const subs=ensureRecord(map,assessmentId,sid), r=subs[code];
+    const origin=inputState(map[assessmentId],sid,code,value).origin;
+    subs[code]={...(r && sameValue(r,value)?r:{}),o:origin,c:false,v:value,availability,
+      history:r?[...(r.history || []),withoutHistory(r)].slice(-8):[]};
+  }
+
+  function duplicateInputStatus(record,oldMeta,newMeta) {
+    if(!record)return undefined;
+    const result=JSON.parse(JSON.stringify(record));result.s={};
+    for(const scope of ['General','Water','Waste']) if(record.s?.[scope]) result.s[scope]=JSON.parse(JSON.stringify(record.s[scope]));
+    for(const [p] of STAGE_KEYS) (oldMeta.substages[p] || []).forEach((sid,i)=>{if(record.s?.[sid])result.s[newMeta.substages[p][i]]=JSON.parse(JSON.stringify(record.s[sid]));});
+    return result;
   }
 
   // ------------------------------------------------------------ units
@@ -493,7 +513,7 @@
     SCHEMA, STAGE_KEYS, canonical, hash, fp, revision, actionKey, substageId, withKeys, withCheckIds, assignLabels, mapLegacy,
     isCustom, customContent, customDefs, actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, rejectedInSelection, hasSummedClaim, summedClaims, migrate, unitView,
     commitVersion, regenerate, restoreVersion, loadSession, writeSession, isQuota,
-    TRACKED_INPUTS, INPUT_ORIGINS, isTracked, inputState, needsConfirm, setInputOrigin, confirmInputValue,
+    TRACKED_INPUTS, INPUT_ORIGINS, isTracked, inputState, needsConfirm, setInputOrigin, confirmInputValue, setInputAvailability, duplicateInputStatus,
     parseEcamFile, parseProfileJson, uniqueName,
   };
 });

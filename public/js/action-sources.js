@@ -88,6 +88,7 @@
    */
   function largestContributor(rows, subTotals, total) {
     const unavailable = rows.filter(r => r.kg == null || !Number.isFinite(r.kg));
+    if (total == null || unavailable.length) return {status:'incomplete',top:[],unavailable:unavailable.length};
     const ok = rows.filter(r => !unavailable.includes(r));
     // the breakdown is only used if every substage's components add up to its own total
     const mismatch = (subTotals || []).filter(st => {
@@ -115,7 +116,7 @@
       subTotals.push({ sid, kg: s.ghg ? s.ghg.total : null });
       for (const c of COMPONENTS[s.prefix] || []) {
         const v = s.outputs[`${s.prefix}_KPI_GHG_${c}`];
-        rows.push({ prefix: s.prefix, sid, name: s.name, component: c, kg: v && typeof v === 'object' ? v.total : null });
+        rows.push({ prefix: s.prefix, sid, name: s.name, component: c, availability:s.availability?.[`${s.prefix}_KPI_GHG_${c}`]?.status, kg: s.availability?.[`${s.prefix}_KPI_GHG_${c}`]?.status === 'not_applicable' ? 0 : v && typeof v === 'object' ? v.total : null });
       }
     }
     return { rows, subTotals };
@@ -134,7 +135,7 @@
   function benefitStatus(o, measure) {
     const key = measure === 'ghg' ? 'kgco2' : measure;
     const field = MEASURES[key === 'kgco2' ? 'ghg' : key];
-    if (!o || !field) return 'not_quantified';
+    if (!o || !field || (o.availability && o.availability.status!=='available') || !quantified(o[field])) return 'not_quantified';
     const s = o.benefit_status && o.benefit_status[key];
     if (s === 'quantified' || s === 'not_quantified') return s;
     if ((LEGACY_PLACEHOLDERS[o.rule] || []).includes(key)) return 'not_quantified';

@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /*
  * The default test run never reaches a paid model, even with a key in the
  * environment, and AI paths can be exercised with an injected client. Run: npm test
@@ -14,7 +15,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
   console.log(`AI offline${lib.synthetic ? ' (document library not built: synthetic test library used)' : ''}`);
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
-  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const post = (p, body) => fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
   const chat = { messages: [{ role: 'user', content: 'grid emission factor' }], assessment: sample[0] };
   try {
     assert.ok(typeof globalThis.__blockedRequests !== 'undefined', 'offline guard is loaded');

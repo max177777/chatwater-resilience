@@ -4,7 +4,8 @@
  * ECAM backend scripts loaded before this file.
  */
 (() => {
-  const STORE = 'cwr.v1';
+  const workspace = new URLSearchParams(window.location.search).get('workspace');
+  const STORE = workspace && /^[\w-]{1,100}$/.test(workspace) ? 'cwr.v1.workspace.'+workspace : 'cwr.v1';
   const $ = s => document.querySelector(s);
 
   // ---------------------------------------------------------------- state
@@ -114,9 +115,38 @@
 
   // ---------------------------------------------------------------- ECAM scenarios
   /** Record how the Stage 1 form set a tracked input: 'manual', 'estimate' (ECAM estimate) or 'typical' (typical value). */
+  function inputSid(stage) {return stage===Global.General?'General':stage===Global.Water?'Water':stage===Global.Waste?'Waste':idOf(stage,'s');}
+  function markScoped(stage,code,origin='manual') {CW.setInputOrigin(state.inputStatus,idOf(Global),inputSid(stage),code,origin,stage[code]);}
+  function changeInputStatus(stage,code,unknown=false) {
+    if(!unknown && (typeof stage[code]!=='number'||!Number.isFinite(stage[code]))) return;
+    if(unknown) CW.setInputAvailability(state.inputStatus,idOf(Global),inputSid(stage),code,stage[code],'unknown');
+    else CW.confirmInputValue(state.inputStatus,idOf(Global),inputSid(stage),code,stage[code]);
+    save();render();
+  }
+  function reviewedResults(sc=Global) {
+    const validity=assessmentValidity(sc), ctx={Structure,Info,Tables,Questions,meta:metaOf(sc),inputStatus:state.inputStatus[idOf(sc)],issues:validity.issues};
+    const g=GWP_reports[state.gwpIndex || 0], raw=RSData.raw(sc,{Structure,gwp:{report:g.report,ch4:g.ct_ch4_eq,n2o:g.ct_n2o_eq}});
+    const graph=RSData.evaluate(sc,ctx), result=RSData.apply(raw,graph);result.validity=validity;result.statusGraph=graph;return result;
+  }
+  function saveProjectBackup() {persist();downloadJson(JSON.stringify(CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}),null,2),'chatwater-project-backup.json');}
+  function importProjectText(text,companionText) {
+    const parsed=CWProject.parse(text,companionText);
+    if(!parsed.ok) {toast(parsed.error);return false;}
+    if(parsed.kind!=='project') {
+      const names=addAssessments(parsed.assessments);
+      if(parsed.recovery) state.transferRecovery=[...(state.transferRecovery || []),{at:new Date().toISOString(),warning:parsed.warning,payload:parsed.recovery}];
+      state.transferWarning=parsed.warning;save();render();toast(parsed.warning);return names;
+    }
+    if(!persist()) {toast('Save the current workspace successfully before restoring a project.');return false;}
+    const key=newId('workspace');
+    const result=CW.writeSession(window.localStorage,'cwr.v1.workspace.'+key,parsed.state);
+    if(!result.ok) {toast('Project could not be restored; the current workspace is unchanged.');return false;}
+    window.location.assign('?workspace='+encodeURIComponent(key));return true;
+  }
+
   function markEntered(prefix, stage, code, origin = 'manual') {
     if (!Global) return;
-    CW.setInputOrigin(state.inputStatus, idOf(Global), idOf(stage, 's'), code, origin, stage[code]);
+    markScoped(stage,code,origin);
   }
   function substageById(sc, sid) {
     for (const [, lv, sl] of CW.STAGE_KEYS) { const ss = sc?.[lv]?.[sl]?.find(x => idOf(x, 's') === sid); if (ss) return ss; }
@@ -168,9 +198,7 @@
     const copy = Ecam.from(o); Scenarios.push(copy);
     const newMeta = metaOf(copy), oldStatus = state.inputStatus[oldMeta.id];
     if (oldStatus) {
-      const rec = plain(oldStatus); rec.s = {};
-      for (const [p] of CW.STAGE_KEYS) oldMeta.substages[p].forEach((sid,i) => { if (oldStatus.s?.[sid]) rec.s[newMeta.substages[p][i]] = plain(oldStatus.s[sid]); });
-      state.inputStatus[newMeta.id] = rec;
+      state.inputStatus[newMeta.id] = CW.duplicateInputStatus(oldStatus,oldMeta,newMeta);
     }
     setCurrent(Scenarios.length - 1);
   }
@@ -181,13 +209,7 @@
   /** Add checked ECAM assessments (CW.parseEcamFile), renaming copies whose name is already used. Returns the names as loaded. */
   function addAssessments(list) {
     const built = list.map(o => {
-      const draft = plain(o);
-      for (const c of ['AssessmentPeriodStart','AssessmentPeriodEnd']) if (!(c in draft.General)) draft.General[c] = null;
-      for (const [p,lv,sl] of CW.STAGE_KEYS) for (const ss of draft[lv][sl]) {
-        const st = Structure.find(s => s.prefix === p), defaults = new st.class();
-        // An absent imported input remains absent; ECAM constructor zeros are not evidence.
-        for (const [code,value] of Object.entries(defaults)) if (typeof value === 'number' && !Object.hasOwn(ss,code)) ss[code] = null;
-      }
+      const draft=RSData.prepare(o,Structure,new Ecam().General);
       return Ecam.from(draft);
     }); // throws before anything is added
     const names = [];
@@ -282,7 +304,7 @@
   // ---------------------------------------------------------------- freshness
   function freshness() {
     return CW.freshness({
-      assessments: Scenarios.map(s => ({ id: idOf(s), revision: CW.revision(s) })),
+      assessments: Scenarios.map(s => ({ id: idOf(s), revision: CW.revision(s), supportRevision:reviewedResults(s).supportRevision })),
       gwpIndex: state.gwpIndex, actionResult: state.actionResult, actionSet: state.actionSet,
       selectedActions: state.selectedActions, plan: state.plan, proposal: state.proposal,
       profile: state.profile, financing: state.financing, rejected: state.rejectedActions,
@@ -477,7 +499,7 @@
     return AV.validate(sc, {Info, Questions, Tables, InputCodes, meta:metaOf(sc), inputStatus:state.inputStatus[idOf(sc)]});
   }
   function finishAssessment() {
-    if (!assessmentValidity().valid) { go('assess:results'); return; }
+    if (!assessmentValidity().valid || !reviewedResults().completeness.complete) {go('assess:results');return;}
     state.finished[idOf(Global)] = new Date().toISOString();
     state.selectedAssessmentId = idOf(Global);
     save(); toast(t('finished'));
@@ -486,11 +508,11 @@
 
   // ---------------------------------------------------------------- stage 2: actions
   function summaryOf(sc) {
-    if (!assessmentValidity(sc).valid) return "Not assessed — correct draft inputs";
-    const g = sc.TotalGHG();
+    if (!assessmentValidity(sc).valid || !reviewedResults(sc).completeness.complete) return "Incomplete assessment — review unknown or unconfirmed inputs";
+    const result=reviewedResults(sc), g=result.totals;
     const rows = CWForm.stageTotals(sc).sort((a, b) => b.total - a.total);
     const top = rows[0];
-    return `${fmt(g.total / 1000)} tCO₂eq · ${fmt(sc.TotalNRG())} kWh` + (top && top.total ? ` · ${t('top_source')}: ${stageLabel(top.prefix)} (${fmt(100 * top.total / g.total, 0)}%)` : '');
+    return `${fmt(g.total / 1000)} tCO₂eq · ${fmt(result.energy_kwh)} kWh` + (top && top.total ? ` · ${t('top_source')}: ${stageLabel(top.prefix)} (${fmt(100 * top.total / g.total, 0)}%)` : '');
   }
 
   // user actions whose assessment was deleted are kept and listed; they are never attached to another assessment
@@ -556,7 +578,7 @@
         }
         state.selectedKeys = base.filter(k => offered.has(k));
         state.actionReview = review;
-        state.actionResult = { assessmentId: aid, assessmentName: sc.General.Name, basis: res.basis, options: res.options, assumptions: res.assumptions, checks: res.checks || [] };
+        state.actionResult = { assessmentId: aid, assessmentName: sc.General.Name, basis: res.basis, options: res.options, assumptions: res.assumptions, checks: res.checks || [], availability_checks:res.availability_checks || [] };
         go('actions:compare');
       } catch (err) { toast(t('error') + ': ' + err.message); busy(e.target, false); }
     };
@@ -577,20 +599,12 @@
   }
   const safeKg = fn => { try { const v = fn(); return Number.isFinite(v) ? v : null; } catch { return null; } };
   /** ECAM's first-level source outputs per substage (AS.COMPONENTS), with each substage's own total. */
-  function emissionRows(sc) {
-    const rows = [], subTotals = [];
-    for (const [p, lv, sl] of CW.STAGE_KEYS) for (const ss of sc[lv][sl]) {
-      const sid = idOf(ss, 's');
-      subTotals.push({ sid, kg: safeKg(() => ss[p + '_KPI_GHG']().total) });
-      for (const c of AS.COMPONENTS[p]) rows.push({ prefix: p, sid, name: ss.name, component: c, kg: safeKg(() => ss[`${p}_KPI_GHG_${c}`]().total) });
-    }
-    return { rows, subTotals };
-  }
+  function emissionRows(sc) {return AS.rowsFromResults(reviewedResults(sc),metaOf(sc));}
   /** Largest assessed contributor of one assessment, from ECAM's first-level source outputs (AS.COMPONENTS). */
   function contributorOf(sc) {
     if (!sc) return null;
     const { rows, subTotals } = emissionRows(sc);
-    return AS.largestContributor(rows, subTotals, safeKg(() => sc.TotalGHG().total));
+    return AS.largestContributor(rows, subTotals, reviewedResults(sc).totals.total);
   }
 
   // ---------------------------------------------------------------- meeting feedback (Oct 20)
@@ -599,6 +613,7 @@
   /** Stage 1 results and Stage 2: total inventory vs what the utility can act on (or the contributor panel when the profile is not answered). */
   function responsibilityHtml(sc, ctx) {
     if (!sc) return '';
+    if (!reviewedResults(sc).completeness.complete) return '<div class="notice warn">Inventory is incomplete; contribution ranks and responsibility totals are unavailable.</div>';
     if (!RS.answered(state.profile)) return FU.responsibilityPanel([], state.profile, fuCtx()) + DC.contributor(contributorOf(sc), ctx);
     return FU.responsibilityPanel(emissionRows(sc).rows, state.profile, fuCtx());
   }
@@ -842,6 +857,7 @@
           <select id="action-sort" style="width:auto">${['original', 'ghg', 'kwh'].map(k => `<option value="${k}" ${k === sort ? 'selected' : ''}>${esc(t('sort_' + k))}</option>`).join('')}</select></label>
         <button class="btn sm" id="toggle-details">${esc(showDetails ? t('hide_details') : t('details'))}</button></div>
       ${sort === 'original' ? '' : `<p class="small muted" data-sort-note="${sort}">${esc(t('sort_note').replace('{days}', fmt(days, 0)))}</p>`}
+      ${(r.availability_checks || []).some(c=>!RSData.ok(c.status)) ? `<div class="notice warn" data-unavailable-actions><b>Some action estimates are unavailable</b><ul>${(r.availability_checks || []).filter(c=>!RSData.ok(c.status)).map(c=>`<li>${esc(c.name || 'Utility')} · ${esc(c.rule)}: ${esc(c.status)} — ${esc((c.missing || []).join(', '))}</li>`).join('')}</ul>Unknown inputs are not zero; these estimates are not ranked as quantified benefits.</div>` : ''}
       <div class="dcards">${cards}</div>
       <div class="row" style="margin:4px 0 10px"><button class="btn" id="add-custom">+ ${esc(t('add_custom'))}</button></div>
       <details class="small" style="margin-top:12px"><summary>${esc(t('assumptions_title'))}</summary><ul class="notice small" data-assumptions>${Object.entries(r.assumptions).map(([k, v]) => `<li>${esc(assumptionText(k, v))}</li>`).join('')}</ul></details>
@@ -1029,7 +1045,7 @@
     if (reviewed) reviewed.onclick = () => {
       const sc = byId(state.actionSet?.assessmentId);
       if (!sc) return toast(t('stale_assessment_missing'));
-      p.deps = CW.planDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, profile: state.profile });
+      p.deps = CW.planDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, profile: state.profile, supportRevision:reviewedResults(sc).supportRevision });
       save(); render();
     };
     root.querySelector('#plan-summary').oninput = e => { p.summary = e.target.value; save(); refreshSummed(root, 'plan'); refreshConceptReview(root, p); };
@@ -1115,7 +1131,7 @@
   }
 
   function exportState() {
-    return { ...plain(state), assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
+    return { ...plain(state), assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
   }
   // mirrors the server check so the user sees why before a request is made
   function exportBlockedReason() {
@@ -1175,7 +1191,7 @@
     if (reviewed) reviewed.onclick = () => {
       const sc = sourceAssessment();
       if (!sc) return toast(t('stale_assessment_missing'));
-      p.deps = CW.proposalDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, plan: state.plan, profile: state.profile, financing: state.financing });
+      p.deps = CW.proposalDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, plan: state.plan, profile: state.profile, supportRevision:reviewedResults(sc).supportRevision, financing: state.financing });
       save(); render();
     };
     root.querySelector('#dl-word').onclick = async e => {
@@ -1336,7 +1352,7 @@
   window.App = {
     get state() { return state; }, fmtDate, tEOriginal, fillEstimates, recordEstimate, isEstimate, estimatesList, responsibilityHtml, openDetails, fuCtx, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
     idOf, cardCtx, contributorOf, relatedActions, metaOf,
-    assessmentValidity, setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
+    inputSid, markScoped, changeInputStatus, reviewedResults, saveProjectBackup, importProjectText, assessmentValidity, setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
   };
 
   async function boot() {
@@ -1349,7 +1365,7 @@
     if (health) META = health;
     Scenarios.length = 0;
     (state.assessments || []).forEach((o, i) => {
-      try { const sc = Ecam.from(o); attachMeta(sc, state.assessmentMeta?.[i]); Scenarios.push(sc); }
+      try { const sc = Ecam.from(RSData.prepare(o,Structure,new Ecam().General)); attachMeta(sc, state.assessmentMeta?.[i]); Scenarios.push(sc); }
       catch (e) { console.warn('skip assessment', e); }
     });
     const sel = state.ui.sel;

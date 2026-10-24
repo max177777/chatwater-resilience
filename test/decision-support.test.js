@@ -13,7 +13,7 @@ const { suggestActions, NRW_TRIGGER } = require('../engine/actions');
 const I = require('../engine/integrity');
 const app = require('../server');
 const sample = require('../public/samples/utility-a-indonesia.json');
-const { meta, clone } = require('./helpers/fixtures');
+const { meta, clone, confirmedInputs } = require('./helpers/fixtures');
 
 const UI = vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../public/js/i18n.js'), 'utf8') + ';UI');
 let passed = 0;
@@ -70,7 +70,7 @@ test('ECAM estimates and typical values keep their origin when confirmed; a new 
   assert.deepStrictEqual(CW.inputState(map.a_new, 'wsd_0', 'wsd_vol_dist', 6000), st('manual'));
   // confirming a value whose record is stale does not invent an origin
   CW.confirmInputValue(map, 'a_new', 'wsd_0', 'wsd_vol_dist', 7000);
-  assert.deepStrictEqual(CW.inputState(map.a_new, 'wsd_0', 'wsd_vol_dist', 7000), st('default', true));
+  assert.deepStrictEqual(CW.inputState(map.a_new, 'wsd_0', 'wsd_vol_dist', 7000), st('unknown', true));
   // records saved before origins were split
   const old = { a: { origin: 'unknown', s: { x: { e: { st: 'entered', v: 1 }, c: { st: 'confirmed', v: 2 } } } } };
   assert.deepStrictEqual(CW.inputState(old.a, 'x', 'e', 1), st('manual'));
@@ -292,7 +292,7 @@ test('selections and notes stay with their cards; confirming input status change
   // saved actions carry the trigger, but the fingerprint the plan depends on is unchanged by it
   const sel = [{ ...desl, notes: 'n' }];
   assert.strictEqual(CW.actionsFingerprint(sel), CW.actionsFingerprint([{ ...desl, trigger: undefined, notes: 'n' }]));
-  assert.deepStrictEqual(I.actionIssues({ assessment: a, meta: first.meta, actions: sel, actionSet: { assessmentId: 'a_main', revision: rev, gwpIndex: 0 } }), []);
+  assert.deepStrictEqual(I.actionIssues({ assessment: a, meta: first.meta, inputStatus:confirmedInputs(a,first.meta), actions: sel, actionSet: { assessmentId: 'a_main', revision: rev, gwpIndex: 0 } }), []);
 });
 
 test('input status survives save and reload, stays out of ECAM files, and value edits still mark options outdated', () => {
@@ -329,7 +329,7 @@ test('/api/actions returns the checks with stable substage IDs from the sent met
   try {
     const a = clone(sample[0]);
     const m = meta(a, 'a_api');
-    const r = await (await fetch(base + '/api/actions', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ assessment: a, meta: m, gwpIndex: 0 }) })).json();
+    const r = await (await fetch(base + '/api/actions', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ assessment: a, meta: m, gwpIndex: 0, inputStatus:confirmedInputs(a,m) }) })).json();
     assert.strictEqual(r.checks.length, 5);
     assert.ok(r.checks.every(c => c.sid && !c.sid.includes('#')));
     const pump = r.options.find(o => o.rule === 'pump_upgrade');

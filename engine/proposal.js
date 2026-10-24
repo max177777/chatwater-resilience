@@ -9,6 +9,7 @@ const { expectedText, customLocationText, uiText, stageLabel } = require('./expo
 const R = require('./retrieval');
 const { missingText } = require('./chat-context');
 const AS = require('../public/js/action-sources');
+const Data = require('../public/js/result-status');
 const CA = require('../public/js/custom-actions');
 const RS = require('../public/js/responsibility');
 const CW = require('../public/js/cw-core');
@@ -70,7 +71,7 @@ function responsibilityFacts({ results, actions, profile, meta }) {
     const { rows } = AS.rowsFromResults(results, meta);
     const b = RS.breakdown(rows, profile);
     const t = kg => +(kg / 1000).toFixed(1);
-    out.inventory_tco2eq = { total: t(b.total), directly_actionable: t(b.byTier.direct), needs_coordination: t(b.byTier.conditional),
+    out.inventory_tco2eq = { complete:b.complete, total:b.complete ? t(b.total) : null, known_subtotal:t(b.total), directly_actionable: t(b.byTier.direct), needs_coordination: t(b.byTier.conditional),
       outside_utility_responsibility: t(b.byTier.outside), responsibility_not_specified: t(b.byTier.unspecified) };
     out.note = 'Sources outside the utility\'s responsibility stay in the inventory but are not the utility\'s action priorities.';
   }
@@ -84,21 +85,28 @@ function responsibilityFacts({ results, actions, profile, meta }) {
 function facts({ results, actions, plan, profile, meta, lang = 'en', pathways, estimates }) {
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : o;
   const r = results;
+  if(r?.coverage) actions=(actions || []).map(a=>{
+    if(CA.isCustom(a))return a;
+    const sid=String(a.key || '').split('|')[2],sub=r.substages.find(s=>s.sid===sid || (a.substage && s.prefix===a.substage.prefix && meta?.substages?.[s.prefix]?.[a.substage.index]===s.sid));
+    const availability=Data.actionStatus(a.rule,sub,r);
+    return availability.status==='available'?{...a,availability}:{...a,availability,expected_kwh:null,expected_kgco2:null,expected_text:'Unavailable: input support changed',scenario:null,evidence:null};
+  });
+  const rounded=(v,m=1,d=1)=>v==null||!Number.isFinite(v)?null:+(v/m).toFixed(d);
   return {
     utility_profile: profile || null,
     ecam_results: r ? {
       assessment: r.name, country: r.country, period: r.period, gwp_report: r.gwp.report,
       grid_factor_kgco2_per_kwh: r.factors.conv_kwh_co2,
-      total_tco2eq: +(r.totals.total / 1000).toFixed(1),
-      by_gas_tco2eq: { co2: +(r.totals.co2 / 1000).toFixed(1), ch4: +(r.totals.ch4 / 1000).toFixed(1), n2o: +(r.totals.n2o / 1000).toFixed(1) },
-      energy_kwh: Math.round(r.energy_kwh),
+      total_tco2eq: rounded(r.totals.total,1000),
+      by_gas_tco2eq: { co2: rounded(r.totals.co2,1000), ch4: rounded(r.totals.ch4,1000), n2o: rounded(r.totals.n2o,1000) },
+      energy_kwh: rounded(r.energy_kwh,1,0),
       by_stage: Object.fromEntries(Object.entries(r.byStage).filter(([, v]) => v.count)
-        .map(([k, v]) => [k, { stage: stageLabel(k, lang), tco2eq: +(v.total / 1000).toFixed(1), energy_kwh: Math.round(v.energy_kwh) }])),
-      population: r.population, water_balance: r.water_balance || [], availability:r.availability || 'legacy_unverified',
+        .map(([k, v]) => [k, { stage: stageLabel(k, lang), tco2eq: rounded(v.total,1000), energy_kwh: rounded(v.energy_kwh,1,0) }])),
+      population: r.population, water_balance: r.water_balance || [], availability:r.availability || 'legacy_unverified', completeness:r.completeness || null, component_availability:r.substages?.map(s=>({name:s.name,availability:Object.fromEntries([s.prefix+'_KPI_GHG',...(AS.COMPONENTS[s.prefix] || []).map(c=>s.prefix+'_KPI_GHG_'+c)].map(c=>[c,s.availability?.[c]?{status:s.availability[c].status,...(s.availability[c].missing?.length?{missing:s.availability[c].missing}:{})}:{status:'untracked'}]))})),
     } : null,
     selected_actions: (actions || []).map(a => CA.isCustom(a) ? customFact(a, { results, meta, lang }) : ({
       id: a.id, title: L(a.title), expected: expectedText(a, lang),
-      expected_tco2eq: a.expected_kgco2 ? +(a.expected_kgco2 / 1000).toFixed(1) : null,
+      expected_tco2eq: AS.isQuantified(a,'ghg') ? rounded(a.expected_kgco2,1000) : null, availability:a.availability || null,
       expected_kwh: a.expected_kwh && AS.isQuantified(a, 'kwh') ? Math.round(a.expected_kwh) : null,
       energy_benefit: AS.benefitStatus(a, 'kwh') === 'quantified' ? 'quantified' : 'not quantified',
       scenario_assumption: L(a.scenario) || null, evidence: L(a.evidence),

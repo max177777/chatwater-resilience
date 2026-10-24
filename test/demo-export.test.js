@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /*
  * ECAM-first demo flow, Bahasa Indonesia coverage and Word export formatting.
  * HYPOTHETICAL sample utility and synthetic AI text only; the AI client is injected. Run: npm test
@@ -199,12 +200,13 @@ test('interface strings: every key exists in both languages; chat context transl
 test('chat context: responsibility, rejected actions, ECAM estimates, concept status and selected pathways stay distinct', () => {
   const C = require('../engine/chat-context');
   const p = project();
+  p.assessment.Water.Distribution[0].Configuration.Questions.wsd_water_eff=true; // this test deliberately evaluates and rejects the water-loss option
   const wsd = p.meta.substages.wsd[0];
   const nrw = I.optionsFor(p.assessment, p.meta, 0).find(o => o.rule === 'nrw_reduction');
   const vol = p.assessment.Water.Distribution[0].wsd_vol_dist;
   const concept = { areas: PC.template({ facts: P.facts({ results: p.results, actions: p.selectedActions, plan: p.plan, lang: 'en' }), actions: p.selectedActions, plan: p.plan, lang: 'en' }), ai: false };
   for (const lang of ['en', 'id']) {
-    const { context: c, text } = C.build({
+    const { context: c, text } = C.build({inputStatus:fixtureStatus.confirmedInputs(p.assessment,p.meta),
       lang, view: 'plan', assessment: p.assessment, meta: p.meta, question: 'What is our largest emission source?',
       profile: { resp_onsite: 'none', resp_water_supply: 'operates' },
       rejectedActions: { [nrw.key]: { reason: 'synthetic: programme already funded', at: 'now' } },
@@ -236,7 +238,7 @@ test('chat context: responsibility, rejected actions, ECAM estimates, concept st
     if (lang === 'id') assert.ok(html.includes('Dokumen induk, tahun, dan status hukumnya tidak diketahui') && html.includes('belum diperiksa ulang'));
   }
   // an unanswered profile keeps the largest source and marks its responsibility unknown
-  const { context: u } = C.build({ lang: 'en', view: 'assess', assessment: p.assessment, meta: p.meta });
+  const { context: u } = C.build({inputStatus:fixtureStatus.confirmedInputs(p.assessment,p.meta), lang: 'en', view: 'assess', assessment: p.assessment, meta: p.meta });
   assert.strictEqual(u.results.largest_contributor[0].responsibility, 'unspecified');
   assert.ok(u.results.largest_contributor[0].responsibility_note);
 });

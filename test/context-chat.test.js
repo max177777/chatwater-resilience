@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /*
  * Context chat: document library, retrieval evaluation, bounded context, read-only route.
  * Model-path checks use the injected test client; no request leaves the machine.
@@ -34,7 +35,7 @@ const custom = (over = {}) => ({
   console.log('Context chat');
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
-  const post = async (p, body) => { const r = await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return { status: r.status, body: await r.json() }; };
+  const post = async (p, body) => { const r = await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) }); return { status: r.status, body: await r.json() }; };
   const built = library.summary().loaded;
   try {
     // ------------------------------------------------------------ library and retrieval evaluation
@@ -116,7 +117,7 @@ const custom = (over = {}) => ({
     }
 
     // ------------------------------------------------------------ bounded context
-    const ctxA = C.build({ lang: 'en', view: 'assess:results', assessment, meta: m, focus: { kind: 'result', sid: 'wwo_0' } });
+    const ctxA = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m), lang: 'en', view: 'assess:results', assessment, meta: m, focus: { kind: 'result', sid: 'wwo_0' } });
     const lc = ctxA.context.results.largest_contributor[0];
     assert.strictEqual(lc.source, 'containment');
     assert.match(lc.classification, /pending review/);
@@ -127,11 +128,11 @@ const custom = (over = {}) => ({
     console.log('  ok - context: septic containment result keeps its "pending review" boundary caveat');
 
     // tampered client figures are ignored: results come from the ECAM inputs
-    const forged = C.build({ lang: 'en', view: 'actions:compare', assessment, meta: m, results: { totals: { total: 1 } }, focus: { kind: 'general' } });
+    const forged = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m), lang: 'en', view: 'actions:compare', assessment, meta: m, results: { totals: { total: 1 } }, focus: { kind: 'general' } });
     assert.strictEqual(forged.context.results.total_tco2eq, ctxA.context.results.total_tco2eq);
 
     const otherCustom = custom({ cid: 'c_otherassess1', key: 'a_other|custom|c_otherassess1', assessmentId: 'a_other', title: 'Other assessment action (synthetic)' });
-    const ctxB = C.build({
+    const ctxB = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m),
       lang: 'en', view: 'actions:compare', question: 'How does Utility B (synthetic) compare with this?', assessment, meta: m,
       focus: { kind: 'action', key: custom().key, intent: 'develop' }, customActions: [custom(), otherCustom],
       otherAssessments: [{ id: 'a_b', name: 'Utility B (synthetic)' }],
@@ -149,7 +150,7 @@ const custom = (over = {}) => ({
     assert.ok(ctxB.text.length <= C.TEXT_LIMIT);
     console.log('  ok - context: other assessment\'s actions excluded and flagged; custom action statuses and framework guidance');
 
-    const ctxF = C.build({ lang: 'en', view: 'actions:compare', assessment, meta: m, focus: { kind: 'action', key: 'a_other|pump_upgrade|wsa_0' } });
+    const ctxF = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m), lang: 'en', view: 'actions:compare', assessment, meta: m, focus: { kind: 'action', key: 'a_other|pump_upgrade|wsa_0' } });
     assert.strictEqual(ctxF.context.focus.ok, false);
     assert.match(ctxF.context.focus.problem, /different assessment/);
 
@@ -157,23 +158,23 @@ const custom = (over = {}) => ({
     const acts = (await post('/api/actions', { assessment, meta: m })).body;
     const chosen = acts.options.filter(o => o.rule === 'pump_upgrade');
     const plan = (await post('/api/plan', { assessment, meta: m, actions: chosen, actionSet: acts.basis, lang: 'en' })).body;
-    const fresh = C.build({ lang: 'en', view: 'plan', assessment, meta: m, focus: { kind: 'plan' }, actionSet: acts.basis, selectedActions: chosen, plan });
+    const fresh = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m), lang: 'en', view: 'plan', assessment, meta: m, focus: { kind: 'plan' }, actionSet: acts.basis, selectedActions: chosen, plan });
     assert.strictEqual(fresh.context.freshness.plan.status, 'current');
     assert.ok(fresh.context.plan.tasks.length > 0);
     const changed = clone(assessment); changed.Water.Abstraction[0].wsa_nrg_cons += 1000;
-    const stale = C.build({ lang: 'en', view: 'plan', assessment: changed, meta: m, focus: { kind: 'plan' }, actionSet: acts.basis, selectedActions: chosen, plan });
+    const stale = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m), lang: 'en', view: 'plan', assessment: changed, meta: m, focus: { kind: 'plan' }, actionSet: acts.basis, selectedActions: chosen, plan });
     assert.strictEqual(stale.context.freshness.plan.status, 'outdated');
     assert.ok(stale.context.freshness.plan.reasons.some(r => /assessment data changed/.test(r)));
     assert.match(stale.text, /plan outdated/);
     const foreignPlan = { ...plan, deps: { ...plan.deps, assessmentId: 'a_other' } };
-    const fp = C.build({ lang: 'en', view: 'plan', assessment, meta: m, focus: { kind: 'plan' }, plan: foreignPlan });
+    const fp = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m), lang: 'en', view: 'plan', assessment, meta: m, focus: { kind: 'plan' }, plan: foreignPlan });
     assert.strictEqual(fp.context.plan, null);
     assert.ok(fp.context.problems.some(p => /different assessment/.test(p)));
     assert.strictEqual(fp.context.focus.ok, false);
     console.log('  ok - context: stale plan marked outdated; plan from another assessment not used');
 
     // missing information and costs that ChatWater does not compute
-    const miss = C.build({ lang: 'en', view: 'plan', assessment, meta: m, focus: { kind: 'missing' } });
+    const miss = C.build({inputStatus:fixtureStatus.confirmedInputs(assessment,m), lang: 'en', view: 'plan', assessment, meta: m, focus: { kind: 'missing' } });
     assert.ok(miss.context.missing.some(x => x.kind === 'rule_check' && x.check === 'pump_efficiency'));
     assert.ok(miss.context.missing.find(x => x.kind === 'not_computed').items.some(i => /eligibility/.test(i)));
     assert.ok(miss.context.framework.stage3.find(a => a.area === 2).questions.length === 4);

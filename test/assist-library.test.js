@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /*
  * Every assistance feature uses the shared document-library retrieval (engine/retrieval.js):
  * Explain with AI, the plan summary, proposal sections and the chat. Checked with the injected
@@ -29,7 +30,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
   console.log(`Shared library retrieval across assistance features${lib.synthetic ? ' (document library not built: synthetic test library used)' : ''}`);
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
-  const post = async (p, body) => { const r = await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }); return { status: r.status, body: await r.json() }; };
+  const post = async (p, body) => { body=fixtureStatus.withConfirmedInputs(body);if(body.inputStatus?.s)for(const fields of Object.values(body.inputStatus.s))for(const record of Object.values(fields))if(record.v!==0)record.c=false; const r = await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) }); return { status: r.status, body: await r.json() }; };
   const assessment = sample[0];
   const m = meta(assessment, 'a_sample');
   const build = library.buildId();

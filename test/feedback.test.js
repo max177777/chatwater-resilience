@@ -1,3 +1,4 @@
+const fixtureStatus = require('./helpers/fixtures');
 /*
  * Meeting feedback (Oct 20): responsibility tiers, actionable emissions, alternatives,
  * plan concept, financing pathways and the review checklist. Offline. Run: npm test
@@ -161,7 +162,7 @@ const ok = (name, fn) => { fn(); n++; console.log('  ok -', name); };
     // API routes
     const app = require('../server');
     const server = app.listen(0);
-    const post = (p, body) => fetch(`http://localhost:${server.address().port}${p}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const post = (p, body) => fetch(`http://localhost:${server.address().port}${p}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) });
     try {
       const alt = await (await post('/api/actions/alternatives', { option: byRule('pump_upgrade'), assessment: sample, meta, profile, lang: 'en' })).json();
       assert.strictEqual(alt.source, 'framework'); assert.strictEqual(alt.ai, false); assert.ok(alt.items.length);
