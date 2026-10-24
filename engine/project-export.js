@@ -12,7 +12,7 @@ function blocked(message){const e=new Error('Export blocked. '+message);e.status
 const WORKSPACE_KEYS=new Set(['assessments','assessmentMeta','inputStatus','projectTransfer','checkpoints','previous','chat','chatThreads','transferRecovery','profiles','projects','workspace','customActions','legacy']);
 const EVIDENCE_KEYS=new Set(('en id at prefix sid index kgco2 kwh status dependencies missing reason mode text values code label value unit review '
  +'id tag passage_id source_id sourceId title cite heading locator locatorLabel role review_status warnings qualifications qualification_details library_build publisher date url source from page printed_page section slide '
- +'library_build searched query queries context stage from status reason retrieved cited unknown_tags word_overlap checks tag_valid support overlap sentence '
+ +'library_build searched query queries source_filter context stage from status reason retrieved cited unknown_tags word_overlap checks tag_valid support overlap sentence '
  +'key error incomplete n questions unsupported_figures placeholders_dropped original kind version caveats').split(/\s+/));
 // Evidence is attached only to the retained output or selected action. Unknown nested
 // workspace containers and explicitly foreign-owned records are never carried along.
@@ -23,12 +23,19 @@ function evidenceValue(v,aid){
  return Object.fromEntries(Object.entries(v).filter(([k])=>!WORKSPACE_KEYS.has(k)&&EVIDENCE_KEYS.has(k)).map(([k,x])=>[k,evidenceValue(x,aid)]).filter(([,x])=>x!==undefined));
 }
 const DEP_KEYS=['assessmentId','revision','gwpIndex','supportRevision','actionsFingerprint','profile','planFingerprint','framework'];
-function document(value,kind,aid){
+function document(value,kind,aid,actions=[],meta){
  if(!value)return null;
  if(value.deps?.assessmentId!==aid)blocked('Document ownership does not match the project.');
- const out=fields(value,kind==='plan'?['summary','total_weeks','ai','lang','reviewed','created_at']:['title','route','ai','lang','reviewed','created_at']);
+ const out=fields(value,kind==='plan'?['summary','total_weeks','ai','lang','reviewed','created_at']:['title','route','framework_version','ai','lang','reviewed','created_at']);
  out.deps=fields(value.deps,DEP_KEYS);
  const reviewIds=new Set(kind==='proposal'?list(value.sections).map((s,i)=>'section-'+i):['summary','schedule',...list(value.concept?.areas).map((a,i)=>'concept-'+i)]);
+ if(kind==='proposal'&&value.route==='gcf-preliminary-v1'){
+  const PC=require('../public/js/preliminary-concept'),p=value.preliminary;
+  if(!p||p.version!==PC.VERSION||p.framework!==PC.ROUTE||JSON.stringify(value.sections?.map(s=>s.key))!==JSON.stringify(PC.SECTIONS))blocked('Unsupported preliminary concept version or section metadata.');
+  const inputs=PC.clean(p.inputs||{},actions),scope=PC.scope(actions,meta,inputs);
+  if(C.fp(scope)!==C.fp(p.scope))blocked('Concept action classifications do not match the source project.');
+  out.preliminary={...fields(p,['version','framework','presentation_target_pages','illustrations']),template:fields(p.template,['url','sha256','preparation_status_basis']),preparation_status:fields(p.preparation_status,['en','id']),status_notice:fields(p.status_notice,['en','id']),inputs,scope,references:list(p.references).map(r=>fields(r,['id','title','date','review_status','url','sha256']))};
+ }
  if(value.humanReview){out.humanReview={version:typeof value.humanReview.version==='number'?value.humanReview.version:null,sections:Object.fromEntries(Object.entries(value.humanReview.sections||{}).filter(([id])=>reviewIds.has(id)).map(([id,r])=>[id,fields(r,['version','association','confirmed','sourceClaims','warnings','note','at'])]))};}
  if(value.reviewNotes)out.reviewNotes=Object.fromEntries(Object.entries(value.reviewNotes).filter(([id,n])=>reviewIds.has(id)&&typeof n==='string'));
  for(const k of ['sources','related','evidence','ai_failed'])if(value[k]!==undefined)out[k]=evidenceValue(value[k],aid);
@@ -74,7 +81,7 @@ function select(body,{requireProposal=false}={}){
  const a=nativeAssessment(assessment),m={id:aid,substages:Object.fromEntries(C.STAGE_KEYS.map(([p])=>[p,strings(meta.substages[p])]))};
  const lang=body.proposal?.lang || body.plan?.lang || body.lang || 'en';
  const out={schema:C.SCHEMA,assessments:[a],assessmentMeta:[m],gwpIndex:body.gwpIndex || 0,lang,current:0,selectedAssessmentId:aid,ui:{tab:'assess',view:'assess:entry',sel:{kind:'general'},chatOpen:false}};
- out.plan=document(body.plan,'plan',aid);out.proposal=document(body.proposal,'proposal',aid);
+ out.plan=document(body.plan,'plan',aid,body.selectedActions,m);out.proposal=document(body.proposal,'proposal',aid,body.selectedActions,m);
  out.actionSet=body.actionSet?fields(body.actionSet,['assessmentId','revision','gwpIndex','supportRevision','savedAt','legacy']):null;
  // Kept as written; I.exportContext has already checked selected ownership/figures.
  const cleanAction=a=>{
@@ -104,11 +111,12 @@ function select(body,{requireProposal=false}={}){
  // Profiles are workspace-global today. Require the same scoped profile the outputs used.
  if((out.profile&&Object.values(out.profile).some(v=>!scalar(v)))||C.fp(out.profile)!==C.fp(body.profile))blocked('The profile contains unscoped fields. Remove them or use the full workspace recovery backup.');
  out.financing={...fields(body.financing,['route']),...(body.financing?.pathways?{pathways:strings(body.financing.pathways)}:{})};
+ if(body.financing?.route==='gcf-preliminary-v1')out.financing.conceptInputs=require('../public/js/preliminary-concept').clean(body.financing.conceptInputs||{},body.selectedActions||[]);
  if(body.financing?.customFramework)out.financing.customFramework={...fields(body.financing.customFramework,['id','name','note']),sections:list(body.financing.customFramework.sections).map(s=>fields(s,['key','title','en','id','guidance']))};
  if(C.frameworkKey(out.financing)!==C.frameworkKey(body.financing))blocked('The financing framework cannot be safely scoped without changing its identity.');
  out.previous={};
  for(const kind of ['plan','proposal']){
-  const prev=recovery.previous?.[kind];if(prev?.value?.deps?.assessmentId===aid){try{out.previous[kind]={...fields(prev,['at']),value:document(prev.value,kind,aid)};}catch{/* an ambiguous historical version is omitted, never rebound */}}
+  const prev=recovery.previous?.[kind];if(prev?.value?.deps?.assessmentId===aid){try{out.previous[kind]={...fields(prev,['at']),value:document(prev.value,kind,aid,body.selectedActions,m)};}catch{/* an ambiguous historical version is omitted, never rebound */}}
  }
  // Checkpoints are whole-workspace snapshots; their nested ownership cannot be trusted.
  out.checkpoints=[];
@@ -135,8 +143,9 @@ function select(body,{requireProposal=false}={}){
 function manifest(state,contents){
  const a=state.assessments[0],m=state.assessmentMeta[0],r=state.results[0];
  return {format:'chatwater-selected-project-package',version:1,scope:'selected_project',project:{id:m.id,assessmentId:m.id,name:a.General.Name,identity_basis:'outputs.source_assessment_id',revision:C.revision(a)},
- versions:{application:require('../package.json').version,ecam:'3.0.1',native_ecam:a.General.version,session:C.SCHEMA,transfer:T.VERSION},period:r.period,language:state.lang,
+ versions:{framework:state.proposal?.framework_version||'legacy-unrecorded',application:require('../package.json').version,ecam:'3.0.1',native_ecam:a.General.version,session:C.SCHEMA,transfer:T.VERSION},period:r.period,language:state.lang,
  calculation_settings:{gwpIndex:state.gwpIndex,gwp:r.gwp,units:a.Configuration.Units,general_factors:r.factors,input_status_support:r.supportRevision},
+ preliminary_concept:state.proposal?.preliminary||null,
  review_status:{package:state.exportMode||'working_draft',evaluation:state.documentReview,freshness:'current under existing validity/freshness checks',scientific_approval:'not established by export'},
  omissions:state.exportScope.omissions,contents};
 }

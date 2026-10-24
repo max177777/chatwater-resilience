@@ -1,8 +1,8 @@
 /* Shared editorial review contract. Screening is not claim verification or certification. */
 (function(root,factory){
- if(typeof module==='object'&&module.exports)module.exports=factory(require('./cw-core'),require('./feedback-ui'));
- else root.DR=factory(root.CW,root.FU);
-})(typeof self!=='undefined'?self:this,function(C,FU){
+ if(typeof module==='object'&&module.exports)module.exports=factory(require('./cw-core'),require('./feedback-ui'),require('./preliminary-concept'));
+ else root.DR=factory(root.CW,root.FU,root.PC);
+})(typeof self!=='undefined'?self:this,function(C,FU,PC){
  const VERSION=1, list=x=>Array.isArray(x)?x:[], copy=x=>JSON.parse(JSON.stringify(x));
  const TEXT={en:{working_draft:'Working draft',reviewed:'Reviewed',outdated:'Outdated',
   meaning:'Reviewed means a person checked this content and its sources and claims. It is not scientific certification, funding eligibility or funder approval. Automated checks only screen for possible issues.',
@@ -12,7 +12,7 @@
   tags:'A citation tag has no matching source. Correct or remove it.',evidence:'Check source qualifications and claim support; citation tags and word overlap do not establish support.',
   calculation:'A selected action has a provisional calculation warning or unquantified benefit. Retain the caveat and explain its treatment.',
   invalid:'Calculation support is incomplete or invalid. Return to the assessment.',outdated_issue:'Source dependencies changed. Use the existing update workflow before export.',
-  no_document:'No document has been created.',note:'Review note: explain how flagged claims, source qualifications and provisional warnings were treated.',
+  framework:'Concept version or section metadata is missing or unsupported. Regenerate with the selected framework.',no_document:'No document has been created.',note:'Review note: explain how flagged claims, source qualifications and provisional warnings were treated.',
   confirm:'I reviewed {section}: content, completeness, sources and claim support, and the treatment of calculation/evidence warnings. This is not scientific or funder approval.',
   unresolved:'Unresolved issues',none:'No unresolved screening or human-review requirements.',stale_request:'The content changed. Review the current version again.',
   draft_download:'Download working draft',reviewed_download:'Download reviewed document',package:'Selected project package',word:'Word',association:'Content and dependency association',
@@ -25,7 +25,7 @@
   tags:'Tanda kutipan tidak memiliki sumber yang cocok. Perbaiki atau hapus.',evidence:'Periksa batasan sumber dan dukungan klaim; tanda kutipan dan kemiripan kata tidak membuktikan dukungan.',
   calculation:'Aksi terpilih memiliki peringatan perhitungan sementara atau manfaat yang belum dihitung. Pertahankan catatan batasannya dan jelaskan penanganannya.',
   invalid:'Dukungan perhitungan belum lengkap atau tidak valid. Kembali ke penilaian.',outdated_issue:'Dependensi sumber berubah. Perbarui melalui alur yang tersedia sebelum ekspor.',
-  no_document:'Dokumen belum dibuat.',note:'Catatan tinjauan: jelaskan penanganan klaim, batasan sumber, dan peringatan sementara.',
+  framework:'Metadata versi atau bagian konsep tidak didukung. Buat ulang dengan kerangka terpilih.',no_document:'Dokumen belum dibuat.',note:'Catatan tinjauan: jelaskan penanganan klaim, batasan sumber, dan peringatan sementara.',
   confirm:'Saya meninjau {section}: isi, kelengkapan, sumber dan dukungan klaim, serta penanganan peringatan perhitungan/bukti. Ini bukan persetujuan ilmiah atau pemberi dana.',
   unresolved:'Masalah belum terselesaikan',none:'Tidak ada persyaratan penyaringan atau tinjauan manusia yang belum dipenuhi.',stale_request:'Isi berubah. Tinjau kembali versi saat ini.',
   draft_download:'Unduh draf kerja',reviewed_download:'Unduh dokumen yang sudah ditinjau',package:'Paket proyek terpilih',word:'Word',association:'Kaitan isi dan dependensi',
@@ -43,7 +43,7 @@
   const value=copy(p.value);delete value.humanReview;delete value.reviewed;
   // Summary owns the document object; exclude sibling content and all legacy ticks.
   const content=p.id==='summary'?{summary:doc.summary,ai:doc.ai,sources:doc.sources,related:doc.related,evidence:doc.evidence}:value;
-  return {version:VERSION,kind,id:p.id,content,title:doc.title||null,lang:doc.lang||null,deps:doc.deps||null,
+  return {version:VERSION,kind,id:p.id,content,...(doc.framework_version?{framework_version:doc.framework_version}:{}),...(doc.route===PC.ROUTE?{preliminary:doc.preliminary||null}:{}),title:doc.title||null,lang:doc.lang||null,deps:doc.deps||null,
    evidence:doc.concept?.evidence||doc.evidence||null,source:sources(p,doc),failure:p.failed||false,
    warnings:list(state.selectedActions).map(a=>({key:a.key,provisional_warning:a.provisional_warning,condition:a.condition,benefit_status:a.benefit_status,origin:a.origin}))};
  }
@@ -58,13 +58,14 @@
    if(stale.length)add('outdated_issue',null,true,[...new Set(stale)].join(', '));
    const result=list(ctx.results).find(r=>r.assessmentId===doc.deps?.assessmentId);
    if(result&&(result.validity?.valid===false||result.completeness?.complete===false))add('invalid',null);
+   if(doc.route===PC.ROUTE&&(doc.preliminary?.version!==PC.VERSION||doc.preliminary?.framework!==PC.ROUTE||JSON.stringify(doc.sections?.map(s=>s.key))!==JSON.stringify(PC.SECTIONS)))add('framework',null);
    const ps=parts(doc,kind);if(!ps.length)add('empty',null);
    if(kind==='proposal'&&!String(doc.title||'').trim())add('missing',ps[0]);
    for(const p of ps){
     const before=d.issues.length,hash=C.fp(payload(p,doc,kind,state)),record=doc.humanReview?.version===VERSION?doc.humanReview.sections?.[p.id]:null;
     const reviewValid=!!(record&&record.version===VERSION&&record.association===hash&&record.confirmed===true&&record.sourceClaims===true&&record.warnings===true&&typeof record.at==='string'&&Number.isFinite(Date.parse(record.at)));
     if(!p.text.trim())add('empty',p);
-    if(FU.review([{text:p.text,ai:p.ai,reviewed:true}]).placeholders)add('missing',p);
+    if(FU.review([{text:p.text,ai:p.ai,reviewed:true}]).placeholders)add('missing',p,true,FU.screeningDetails(p.text).placeholders);
     if(p.id==='schedule'&&list(doc.tasks).some(k=>!String(k.owner||'').trim()||!String(k.name||'').trim()||!Number.isFinite(k.weeks)||k.weeks<=0))add('missing',p);
     if(p.ai&&C.mayBeIncomplete(p.text))add('incomplete',p);
     const tags=[...p.text.matchAll(/\[S(\d+)\]/g)].map(m=>'S'+m[1]);
@@ -77,7 +78,7 @@
     if(sources(p,doc).length||tags.length||ev?.unknown_tags?.length||ev?.word_overlap?.some(w=>w.status==='low_overlap'))warnings.push('evidence');
     if(list(state.selectedActions).some(a=>a.provisional_warning||C.isCustom(a)))warnings.push('calculation');
     const note=typeof record?.note==='string'?record.note.trim():'';
-    for(const w of warnings)if(!reviewValid||!note)add(w,p,false);
+    for(const w of warnings)if(!reviewValid||!note)add(w,p,false,w==='claims'?FU.screeningDetails(p.text).claims:'');
     if(!reviewValid)add('unreviewed',p,false);
     const issues=d.issues.slice(before),hard=issues.some(x=>x.hard);
     d.sections.push({id:p.id,title:p.title,target:p.target,association:hash,status:hard||!reviewValid||(warnings.length&&!note)?'working_draft':'reviewed',warnings,issues,canReview:!hard&&!stale.length,note:reviewValid?note:'',review:reviewValid?copy(record):null});

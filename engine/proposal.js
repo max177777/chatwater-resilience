@@ -47,7 +47,7 @@ const fmtId = (n, d = 0) => CW.formatNumber(n, 'id', d);
 
 function financingFrameworks() {
   return fs.readdirSync(path.join(FW_DIR, 'financing')).filter(f => f.endsWith('.json'))
-    .map(f => JSON.parse(fs.readFileSync(path.join(FW_DIR, 'financing', f), 'utf8')));
+    .map(f => {const fw=JSON.parse(fs.readFileSync(path.join(FW_DIR, 'financing', f), 'utf8'));const legacy=require('../frameworks/financing-versions.json').legacy[fw.id];return legacy?{...fw,version:legacy.version}:fw;});
 }
 
 /** Compact, number-safe summary of the results for prompts. */
@@ -232,6 +232,7 @@ function templateSection(sec, f, lang, drafts) {
 async function draftProposal(input, framework, guideText) {
   const lang = input.lang || 'en';
   const f = facts(input);
+  if(framework.id==='gcf-preliminary-v1')return require('./preliminary-concept').draft(input,framework,f);
   const drafts = draftText(input.plan);
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : o;
   const sections = [], failed = [];
@@ -270,7 +271,7 @@ async function draftProposal(input, framework, guideText) {
     sections.push({ key: sec.key, title, guidance: L10N_GUIDANCE(sec, lang), text, sources, ...(related ? { related } : {}), evidence, ai, ...quotes });
   }
   return {
-    route: framework.id, title: `${L(framework.name)} — ${f.utility_profile?.name || f.ecam_results?.assessment || ''}`.trim(), sections,
+    route: framework.id, ...(framework.version?{framework_version:framework.version}:{}), title: `${L(framework.name)} — ${f.utility_profile?.name || f.ecam_results?.assessment || ''}`.trim(), sections,
     ai: useAI && !failed.length, ...(failed.length ? { ai_failed: failed } : {}),
   };
 }

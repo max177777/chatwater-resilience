@@ -36,11 +36,13 @@ const custom = (over = {}) => ({
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
   const post = async (p, body) => { const r = await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) }); return { status: r.status, body: await r.json() }; };
-  const built = library.summary().loaded;
+  const boundedRelease=library.summary().loaded&&library.summary().build_id===require('../scripts/library/releases/gcf-guidance-v1.lock.json').build_id;
+  const built = library.summary().loaded&&!boundedRelease;
   try {
+    if(boundedRelease){const lock=require('../scripts/library/releases/gcf-guidance-v1.lock.json');assert.equal(library.summary().passages,lock.passages);assert.equal(library.summary().sources.filter(s=>s.status==='indexed').length,lock.sources);for(const q of lock.retrieval_checks)assert(library.retrieve(q.query,{sources:[q.source]}).passages.some(p=>p.sourceId===q.source));console.log('  ok - bounded deployed release: pinned build/counts and known questions; 19-source legacy-corpus evaluation is not applicable');}
     // ------------------------------------------------------------ library and retrieval evaluation
     if (!built) {
-      console.log('  SKIPPED - document library not built (run: node scripts/library/build.js); retrieval evaluation not run');
+      console.log(boundedRelease?'  NOT RUN - legacy 19-source corpus evaluation (release intentionally has two guides)':'  SKIPPED - document library not built (run: node scripts/library/build.js); retrieval evaluation not run');
     } else {
       const man = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'manifest.json'), 'utf8'));
       const by = id => man.sources.find(s => s.id === id);

@@ -211,9 +211,11 @@ async function journey(post, selection, lang = 'en') {
   const planRes = await post('/api/plan', { assessment, meta: m, actions: chosen, actionSet, profile, lang });
   assert.strictEqual(planRes.status, 200, await planRes.clone().text());
   const plan = await planRes.json();
-  const propRes = await post('/api/proposal', { route: 'general', assessment, meta: m, actions: chosen, actionSet, plan, profile, lang });
-  assert.strictEqual(propRes.status, 200, await propRes.clone().text());
-  const proposal = await propRes.json();
+  // Frozen legacy framework is tested directly for historical draft/export compatibility.
+  // New GCF HTTP generation, including custom actions, is covered by preliminary-concept.test.js.
+  const P=require('../engine/proposal');
+  const proposal={...await P.draftProposal({actions:chosen,plan,profile,meta:m,lang,results:engine.calculateOne(assessment,0)},P.financingFrameworks().find(f=>f.id==='general')),lang,
+    deps:CW.proposalDeps({assessmentId:m.id,assessment,gwpIndex:0,actions:chosen,plan,profile,supportRevision:actionSet.supportRevision,financing:{route:'general'}})};
   const customActions = chosen.filter(CW.isCustom).map(({ notes, ...c }) => c);
   const actionNotes = Object.fromEntries(chosen.filter(CW.isCustom).map(c => [c.key, c.notes]));
   const state = { assessments: [assessment], assessmentMeta: [m], gwpIndex: 0, actionSet, selectedActions: chosen, customActions, actionNotes, plan, proposal, profile, financing: { route: 'general' }, lang };

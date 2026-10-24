@@ -1,0 +1,89 @@
+{
+  "id": "gcf-preliminary-v1",
+  "version": 1,
+  "name": {
+    "en": "Preliminary project concept",
+    "id": "Konsep awal proyek"
+  },
+  "preparation_status": {
+    "en": "Preliminary concept, subject to further assessment",
+    "id": "Konsep awal, masih memerlukan penilaian lebih lanjut"
+  },
+  "status_notice": {
+    "en": "Preliminary concept for discussion and project development. Not an approved or submission-ready GCF funding proposal.",
+    "id": "Konsep awal untuk diskusi dan pengembangan proyek. Bukan proposal pendanaan GCF yang disetujui atau siap diajukan."
+  },
+  "presentation_target_pages": 4,
+  "template": {
+    "url": "https://docs.google.com/document/d/1ve8ZOja74FUbYcFRrxcu8u9ETtguYstLtOn8p7fHwfk/edit",
+    "sha256": "056fd6a3ac36ac37aa5ec5359df2364b87b001ef3c2824b7e9e58858d54aa76f",
+    "preparation_status_basis": "Template opening and concluding status; no published version number supplied. Snapshot version 1."
+  },
+  "_note": "Versioned implementation of the supplied eight-section preliminary concept template. Required/optional/conditional field treatment is an explicit ChatWater workflow policy, not a GCF submission checklist. Legacy gcf route is unchanged.",
+  "sections": [
+    {
+      "key": "summary",
+      "en": "1. Project Summary",
+      "id": "1. Ringkasan Proyek",
+      "guidance": "Describe the project, location, service improvement, beneficiaries and investment uncertainty.",
+      "guidance_id": "Jelaskan proyek, lokasi, perbaikan layanan, penerima manfaat dan ketidakpastian investasi.",
+      "page_group": 1
+    },
+    {
+      "key": "rationale",
+      "en": "2. Problem and Climate Rationale",
+      "id": "2. Masalah dan Alasan Iklim",
+      "guidance": "Explain baseline problems, climate evidence, investment need and the distinction between evidence and assumptions.",
+      "guidance_id": "Jelaskan masalah garis dasar, bukti iklim, kebutuhan investasi; pisahkan bukti dan asumsi.",
+      "page_group": 1
+    },
+    {
+      "key": "objectives",
+      "en": "3. Project Objectives and Activities",
+      "id": "3. Tujuan dan Kegiatan Proyek",
+      "guidance": "State a measurable objective and connect each selected action to its purpose. Capacity building is conditional on an identified need.",
+      "guidance_id": "Nyatakan tujuan terukur dan kaitkan aksi dengan tujuannya. Pengembangan kapasitas sesuai kebutuhan.",
+      "page_group": 2
+    },
+    {
+      "key": "benefits",
+      "en": "4. Expected Results and Benefits",
+      "id": "4. Hasil dan Manfaat yang Diharapkan",
+      "guidance": "Distinguish baseline, individually estimated action benefits, and unverified targets. Do not sum overlapping benefits. Mitigation and adaptation claims are conditional on evidence.",
+      "guidance_id": "Pisahkan garis dasar, manfaat tiap aksi dan sasaran belum diverifikasi. Jangan jumlahkan manfaat tumpang tindih.",
+      "page_group": 2
+    },
+    {
+      "key": "implementation",
+      "en": "5. Implementation Approach",
+      "id": "5. Pendekatan Pelaksanaan",
+      "guidance": "Describe phases, proposed timing, owner and partners; do not imply institutional commitments.",
+      "guidance_id": "Jelaskan tahap, waktu, pemilik dan mitra yang diusulkan; jangan menganggap ada komitmen kelembagaan.",
+      "page_group": 3
+    },
+    {
+      "key": "budget",
+      "en": "6. Preliminary Project Budget and Financing",
+      "id": "6. Anggaran Awal dan Pembiayaan Proyek",
+      "guidance": "Separate indicative costs, currency, uncertainty and potential financing. Contributions and co-financing amounts are optional if known; eligibility remains unconfirmed.",
+      "guidance_id": "Pisahkan biaya indikatif, mata uang, ketidakpastian dan calon pendanaan. Kontribusi opsional jika diketahui; kelayakan belum dikonfirmasi.",
+      "page_group": 3
+    },
+    {
+      "key": "risks",
+      "en": "7. Preliminary Risks and Mitigation Measures",
+      "id": "7. Risiko Awal dan Langkah Mitigasi",
+      "guidance": "List technical, cost, financing, capacity, social/environmental and climate risks with proposed responses, subject to assessment.",
+      "guidance_id": "Catat risiko teknis, biaya, pendanaan, kapasitas, sosial/lingkungan dan iklim beserta usulan respons.",
+      "page_group": 4
+    },
+    {
+      "key": "next_steps",
+      "en": "8. Information Required for the Next Stage",
+      "id": "8. Informasi yang Diperlukan untuk Tahap Berikutnya",
+      "guidance": "Identify baseline verification, design, feasibility, cost/benefit validation, institutions, safeguards, consultations and approvals still needed. Conclude with preparation limitations.",
+      "guidance_id": "Identifikasi verifikasi, desain, kelayakan, biaya/manfaat, lembaga, pengaman, konsultasi dan persetujuan yang masih diperlukan.",
+      "page_group": 4
+    }
+  ]
+}

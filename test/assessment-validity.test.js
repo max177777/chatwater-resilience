@@ -96,9 +96,9 @@ const cases = [
   const selected=acts.options.filter(o=>o.rule==='pump_upgrade'),actionSet=acts.basis;
   const planResponse=await post('/api/plan',{assessment:a,...ac,actions:selected,actionSet,lang:'en'});assert.equal(planResponse.status,200,await planResponse.clone().text());
   const plan=await planResponse.json();assert.match(plan.summary,/28.57%/);assert.match(plan.summary,/water loss 25.00%/);
-  const proposal=await (await post('/api/proposal',{assessment:a,...ac,actions:selected,actionSet,plan,route:'general',lang:'en'})).json();
+  const proposal=await (await post('/api/proposal',{assessment:a,...ac,actions:selected,actionSet,plan,route:'gcf-preliminary-v1',lang:'en'})).json();
   assert.ok(proposal.sections?.length);
-  const state={assessments:[a],assessmentMeta:[ac.meta],inputStatus:{[ac.meta.id]:ac.inputStatus},selectedActions:selected,actionSet,plan,proposal,financing:{route:'general'},lang:'en'};
+  const state={assessments:[a],assessmentMeta:[ac.meta],inputStatus:{[ac.meta.id]:ac.inputStatus},selectedActions:selected,actionSet,plan,proposal,financing:{route:'gcf-preliminary-v1',conceptInputs:{}},lang:'en'};
   const exportResponse=await post('/api/export',state);assert.equal(exportResponse.status,200,await exportResponse.clone().text());
   const zip=await JSZip.loadAsync(Buffer.from(await exportResponse.arrayBuffer()));
   const result=JSON.parse(await zip.file('ecam/results.json').async('string'))[0];near(result.water_balance[0].nrw_pct.value,28.571428571428573);

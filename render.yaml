@@ -4,7 +4,9 @@ services:
     name: chatwater-resilience
     runtime: node
     plan: free            # free instances sleep when idle; switch to "starter" for always-on
-    buildCommand: npm ci && npm test
+    buildCommand: npm ci && npm run build:library:release && npm test
+    # Provision a protected artifact descriptor as /etc/secrets/chatwater-library-release.json first.
+    # The build fails closed on absent/unapproved/hash-mismatched sources; no credentials in git.
     startCommand: npm start
     healthCheckPath: /api/health
     autoDeploy: true      # every push to main redeploys

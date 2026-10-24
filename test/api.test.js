@@ -33,11 +33,11 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
     console.log('  ok - plan');
 
     let proposal;
-    for (const route of ['general', 'gcf']) {
+    for (const route of ['gcf-preliminary-v1']) {
       proposal = await (await post('/api/proposal', { assessment, meta: m, actions: chosen, actionSet, plan, route, lang: 'id' })).json();
       assert.ok(proposal.sections.length >= 8);
     }
-    console.log('  ok - proposal (general, gcf)');
+    console.log('  ok - proposal (GCF preliminary)');
 
     const chat = await (await post('/api/chat', { messages: [{ role: 'user', content: 'grid emission factor' }], assessment, meta: m })).json();
     assert.strictEqual(chat.ai, false);
@@ -46,7 +46,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
     assert.ok(chat.retrieval.passages.every(p => p.sourceId && p.locatorLabel && p.text));
     assert.strictEqual(chat.context.assessment.id, m.id); console.log('  ok - chat retrieval (AI off: excerpts and context, no answer)');
 
-    const zip = await post('/api/export', { assessments: sample, assessmentMeta: [m], selectedActions: chosen, actionSet, plan, proposal, financing: { route: 'gcf' } });
+    const zip = await post('/api/export', { assessments: sample, assessmentMeta: [m], selectedActions: chosen, actionSet, plan, proposal, financing: { route: 'gcf-preliminary-v1',conceptInputs:{} } });
     assert.strictEqual(zip.status, 200, await zip.clone().text());
     assert.strictEqual(zip.headers.get('content-type'), 'application/zip');
     assert.ok((await zip.arrayBuffer()).byteLength > 5000); console.log('  ok - export zip');

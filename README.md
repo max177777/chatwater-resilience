@@ -56,7 +56,7 @@ Every push to `main` redeploys. On the free plan the service sleeps after inacti
 |---|---|
 | Stage 2 rules and scenario assumptions | `engine/actions.js` (`RULES`, `ASSUMPTIONS`) |
 | Project-plan phases, durations, owners | `frameworks/project-plan.json` |
-| Proposal sections (General, GCF) | `frameworks/financing/*.json` — **`gcf.json` is a placeholder** built on the six GCF investment criteria; replace it with the 2024 GCF Water/Sanitation guideline framework |
+| Proposal sections (GCF-only demo; legacy drafts retained) | `frameworks/financing/*.json` — **`gcf.json` remains the frozen legacy criteria placeholder**; `gcf-preliminary-v1.json` implements the supplied eight-section preliminary concept template with action-based guidance routing (see `docs/gcf-preliminary-concept.md`) |
 | AI prompts | `frameworks/prompts/*.md` |
 | Knowledge base (RAG) for chat, plan and proposal | Add PDF/Word/Markdown files to `knowledge/financing`, `knowledge/plan` or `knowledge/indonesia` — see [`knowledge/README.md`](knowledge/README.md). Check what was loaded at `/api/knowledge` |
 | Interface text EN / ID | `public/js/i18n.js` |

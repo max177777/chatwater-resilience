@@ -49,10 +49,11 @@ function write(dir) {
 
 /** Use the built library if there is one; otherwise load the synthetic one. Returns { synthetic, reload, restore }. */
 function ensureLibrary() {
-  if (library.summary().loaded) return { synthetic: false, reload: () => library.load(), restore: () => {} };
+  const bounded=library.summary().loaded&&library.summary().build_id===require('../../scripts/library/releases/gcf-guidance-v1.lock.json').build_id;
+  if (library.summary().loaded&&!bounded) return { synthetic: false, reload: () => library.load(), restore: () => {} };
   const dir = write(fs.mkdtempSync(path.join(os.tmpdir(), 'cw-synthetic-lib-')));
   library.load(dir);
-  return { synthetic: true, reload: () => library.load(dir), restore: () => { library.load(); fs.rmSync(dir, { recursive: true, force: true }); } };
+  return { synthetic: true, reason:bounded?'bounded deployment release: feature paths use synthetic references; real release checks run separately':'document library not built', reload: () => library.load(dir), restore: () => { library.load(); fs.rmSync(dir, { recursive: true, force: true }); } };
 }
 
 module.exports = { write, ensureLibrary };

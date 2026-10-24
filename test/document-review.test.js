@@ -17,7 +17,7 @@ async function run(){
   s.proposal.sections[0].text=s.proposal.sections[0].text.replace(' [To be completed: cost evidence]','');
   const b=R.evaluate(s).documents.proposal.sections[0];assert.throws(()=>D.confirm(s,'proposal',b.id,b.association),/required_note/);
   attest(s);r=R.evaluate(s);assert.equal(r.status,'reviewed');assert.deepEqual(browserReport(s),r);
-  const ctx=vm.createContext({self:{},CW:C,FU:require('../public/js/feedback-ui')});ctx.self=ctx;vm.runInContext(fs.readFileSync('public/js/document-review.js','utf8'),ctx);assert.equal(JSON.stringify(ctx.DR.evaluate(s)),JSON.stringify(D.evaluate(s)),'UMD browser build agrees');
+  const ctx=vm.createContext({self:{},CW:C,FU:require('../public/js/feedback-ui'),PC:require('../public/js/preliminary-concept')});ctx.self=ctx;vm.runInContext(fs.readFileSync('public/js/document-review.js','utf8'),ctx);assert.equal(JSON.stringify(ctx.DR.evaluate(s)),JSON.stringify(D.evaluate(s)),'UMD browser build agrees');
   s.exportMode='reviewed';res=await post('/api/export',s);assert.equal(res.status,200,await res.clone().text());zip=await JSZip.loadAsync(Buffer.from(await res.arrayBuffer()));
   const manifest=JSON.parse(await zip.file('manifest.json').async('string'));assert.equal(manifest.review_status.package,'reviewed');assert.equal(manifest.review_status.evaluation.status,'reviewed');assert.equal(manifest.review_status.evaluation.documents.proposal.association,r.documents.proposal.association);
   report=JSON.parse(await zip.file('document-review.json').async('string'));assert.deepEqual(report.issues,[]);const restored=T.parse(await zip.file('project/project-backup.json').async('string'));assert.equal(R.evaluate(restored.state).status,'reviewed','valid review associations survive selected restore');

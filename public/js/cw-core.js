@@ -145,7 +145,7 @@
     const base = route === 'custom' ? 'custom:' + fp(f.customFramework ? f.customFramework.sections : null) : route;
     // financing pathways the user ticked are drafted into the proposal; none ticked keeps older keys unchanged
     const pw = f && Array.isArray(f.pathways) && f.pathways.length ? ':pw:' + fp(f.pathways.slice().sort()) : '';
-    return base + pw;
+    return base + pw + (route==='gcf-preliminary-v1'?':inputs:'+fp(f?.conceptInputs||{}):'');
   }
   function planDeps({ assessmentId, assessment, gwpIndex, actions, profile, supportRevision }) {
     return {

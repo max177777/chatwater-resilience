@@ -10,6 +10,7 @@
     "start": "node server.js",
     "test": "node test/run.js",
     "test:absent-library": "node test/absent-library.js",
+    "build:library:release": "node scripts/library/provision.js",
     "build:sample": "node scripts/make-sample.js",
     "build:id": "node scripts/build-id-labels.js"
   },

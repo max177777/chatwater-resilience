@@ -62,13 +62,13 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
     assert.strictEqual(plan.ai, true);
     let n = 0;
     ai.setClient(async () => { if (++n % 2 === 0) throw new Error('simulated overload'); return 'AI section text (synthetic).'; });
-    const prop = await (await post('/api/proposal', { ...body, plan, route: 'general' })).json();
+    const prop = await (await post('/api/proposal', { ...body, plan, route: 'gcf-preliminary-v1' })).json();
     const bad = prop.sections.filter(s => s.ai === false), good = prop.sections.filter(s => s.ai === true);
     assert.ok(bad.length && good.length);
     assert.strictEqual(prop.ai, false, 'a partly templated draft is not labelled AI-generated');
     assert.deepStrictEqual(prop.ai_failed.map(x => x.key), bad.map(s => s.key));
     assert.ok(prop.sections.every(s => !/AI error|simulated overload/.test(s.text)), 'no error text in the document');
-    assert.ok(good.every(s => s.text === 'AI section text (synthetic).'));
+    assert.ok(good.every(s => s.text.includes('AI section text (synthetic).')));
     console.log('  ok - proposal: failed sections are template text, marked, without error text');
     ai.setClient(null);
 

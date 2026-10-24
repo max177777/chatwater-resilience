@@ -34,7 +34,7 @@
     actionSet: null, selectedActions: [],
     customActions: [], // user-proposed actions (custom-actions.js), each bound to its source assessment ID
     customLastLabel: {}, // assessment ID -> last U-label handed out, so labels of deleted actions are not reused
-    plan: null, financing: { route: 'general' }, proposal: null,
+    plan: null, financing: { route: PC.ROUTE, pathways:['gcf'] }, proposal: null,
     chat: [], // messages from before chats were scoped; kept and shown, never sent
     chatThreads: {}, // assessment ID -> messages about that assessment only
     checkpoints: [], explanations: {},
@@ -263,6 +263,7 @@
     $('#save-status').textContent = t('saving');
     clearTimeout(saveTimer);
     saveTimer = setTimeout(persist, 250);
+    clearTimeout(readinessTimer);readinessTimer=setTimeout(refreshReadiness,180);
   }
   function checkpoint() {
     state.assessments = plain(Scenarios);
@@ -386,12 +387,13 @@
     if (summed().plan) return toast(t('legacy_sum_title') + ' ' + t('legacy_sum_body'));
     const sc = sourceAssessment() || Global;
     const f = state.financing;
+    if(!PC.demoSupported(f)||state.proposal&&state.proposal.route!==PC.ROUTE)return toast(t('demo_start_help'));
     if(state.ui.reviewGenerating)return;
     if (state.proposal && !confirm(t('confirm_replace_proposal'))) return;
     state.ui.reviewGenerating=true;render();
     try {
       await CW.regenerate(state, 'proposal', () => api('/api/proposal', {
-        route: f.route, customFramework: f.customFramework, guideText: f.guideText,
+        route: f.route, conceptInputs:f.conceptInputs||{}, customFramework: f.customFramework, guideText: f.guideText,
         actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: state.profile,
         assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang,
         pathways: f.pathways || [], estimates: estimatesList(sc).length, rejectedActions: state.rejectedActions,
@@ -425,7 +427,109 @@
     $('#chat-toggle').setAttribute('aria-label', t(state.ui.chatOpen ? 'aria_hide_chat' : 'aria_show_chat'));
   }
 
-  function go(view) { state.ui.view = view; save(); render(); window.scrollTo({ top: 0 }); }
+  let readinessTimer,latestReadiness;
+  const readinessState=()=>({...state,assessments:Scenarios,assessmentMeta:Scenarios.map(metaOf)});
+  function readinessReport(){
+    const InputCodes=Object.fromEntries(Structure.filter(s=>s.sublevel).map(s=>[s.prefix,Object.keys(new s.class()).filter(c=>typeof new s.class()[c]==='number')]));
+    const assessments=Scenarios.map(assessment=>{const result=reviewedResults(assessment);return {assessment,meta:metaOf(assessment),result,validity:result.validity};});
+    return Ready.evaluate(readinessState(),{assessments,Info,Tables,Questions,InputCodes});
+  }
+  const readinessLabel=code=>String(UI[state.lang]?.['gc_rule_'+code]||tE(code+'_descr')||tE(code)||code).replace(/<[^>]+>/g,'');
+  function decorateReadiness(report){
+    const aid=idOf(Global),sel=state.ui.sel,stage=sel?.kind==='ss'?Global[Structure.find(s=>s.prefix===sel.prefix)?.level]?.[Structure.find(s=>s.prefix===sel.prefix)?.sublevel]?.[sel.index]:sel?.kind==='stage'?Global[sel.level]:Global.General;
+    const scope=stage?inputSid(stage):'General';
+    document.querySelectorAll('[data-kind="num"], [data-kind="option"], [data-gen]').forEach(el=>{
+      const code=el.dataset.code||el.dataset.gen,f=report.fields.find(f=>f.assessmentId===aid&&f.scope===scope&&f.code===code),key=Ready.targetId({kind:'field',assessmentId:aid,scope,code}),id=key+'-description';
+      if(!el.id)el.id=key;el.setAttribute('aria-required',String(!!f&&f.active&&f.kind!=='optional'));
+      const matches=report.issues.filter(i=>i.target.kind==='field'&&i.assessmentId===aid&&i.target.scope===scope&&i.target.code===code);
+      let note=document.getElementById(id);if(!note){note=document.createElement('div');note.id=id;note.className='small readiness-field';el.insertAdjacentElement('afterend',note);}
+      const label=t('gc_'+(f?.kind==='required'?'required':f?.kind==='calculation'?'calculation':'optional_field'));
+      note.textContent=label+(f?.explicitUnknown?' · '+t('gc_unknown_note'):f?.active===false?' · '+t('gc_inactive_note'):'')+(matches.length?' — '+[...new Set(matches.map(i=>ReadyUI.explanation(i,t,state.lang)))].join(' '):'');
+      const described=new Set((el.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));described.add(id);el.setAttribute('aria-describedby',[...described].join(' '));
+      el.setAttribute('aria-invalid',String(matches.some(i=>['invalid','date','date_order','number','percent','hours','power_factor','option','nonnegative','relation','inactive_conflict'].includes(i.messageKey))));
+      // Replace the older generic blank prompt with the adapter's explicit-unknown explanation.
+      document.querySelectorAll('[data-error]').forEach(error=>{if(error.dataset.error===code&&matches.length){error.textContent=[...new Set(matches.map(i=>ReadyUI.explanation(i,t,state.lang)))].join(' ');if(!error.id)error.id=key+'-error';}});
+    });
+    document.querySelectorAll('[data-sec],[data-pc],#plan-summary,[data-owner],[data-weeks]').forEach(el=>{el.setAttribute('aria-required','true');const id=(el.id||el.dataset.owner||el.dataset.weeks||'section')+'-review-required';let note=el.nextElementSibling;if(!note?.matches('[data-review-required]')){note=document.createElement('span');note.dataset.reviewRequired='';note.className='small readiness-field';el.insertAdjacentElement('afterend',note);}note.textContent=t('gc_review_required');});
+    document.querySelectorAll('[data-q]').forEach(el=>{el.setAttribute('aria-label',String(tE(el.dataset.q)||el.dataset.q).replace(/<[^>]+>/g,'')+' — '+t(el.value==='1'?'yes':'no'));if(!el.id)el.id=Ready.targetId({kind:'question',assessmentId:aid,scope,code:el.dataset.q})+'-'+el.value;});
+    document.querySelectorAll('[data-validity-issue]').forEach(b=>{const old=b.closest('[role=status]');if(old)old.hidden=true;});
+    document.querySelectorAll('#dl-all,#dl-word,[data-reviewed-export],#gen-plan,#draft,#show-options,#save-actions,[data-act=finish]').forEach(b=>b.setAttribute('aria-describedby','readiness-title'));
+  }
+  function refreshReadiness(){
+    clearTimeout(readinessTimer);if(!Global)return;
+    const report=latestReadiness=readinessReport(),stage=state.ui.view.split(':')[0],root=$('#view');
+    if(state.ui.readyIssueId&&!report.issues.some(i=>i.id===state.ui.readyIssueId)){clearGuidedTarget();state.ui.readyIssueId=null;}
+    const html=ReadyUI.panel(report,readinessState(),stage,{t,esc,label:readinessLabel}),old=$('#readiness-panel');
+    if(old)old.outerHTML=html;else {const heading=root.querySelector('.page-head');if(heading)heading.insertAdjacentHTML('afterend',html);else root.insertAdjacentHTML('afterbegin',html);}
+    root.querySelectorAll('[data-ready-issue]').forEach(b=>b.onclick=()=>navigateReadiness(b.dataset.readyIssue,b.dataset.readyExcerpt));
+    document.querySelectorAll('[data-tab]').forEach(b=>{
+      const local={...state,ui:{...state.ui,readyOperation:null}},relevant=ReadyUI.relevant(report,local,b.dataset.tab),n=relevant.issues.filter(i=>i.severity==='blocker').length,w=relevant.issues.filter(i=>i.severity==='warning').length;
+      b.querySelector('[data-readiness-count]')?.remove();const badge=document.createElement('span');badge.dataset.readinessCount='';badge.className='readiness-count';badge.textContent=` ! ${n} · △ ${w}`;b.append(badge);b.setAttribute('aria-label',t('tab_'+b.dataset.tab)+` — ${t('gc_blocker')}: ${n}; ${t('gc_warning')}: ${w}`);
+    });
+    const r=ReadyUI.relevant(report,state,stage),counts=['blocker','warning','optional'].map(k=>t('gc_'+k)+': '+r.issues.filter(i=>i.severity===k).length).join('; '),announce=$('#readiness-announcement');
+    if(announce&&announce.textContent!==counts)announce.textContent=counts;
+    decorateReadiness(report);
+  }
+  function blockReadiness(operation){
+    const report=readinessReport();if(!report.operations[operation]?.blocked)return false;
+    state.ui.readyOperation=operation;refreshReadiness();$('#readiness-title')?.focus();return true;
+  }
+  function navigateReadiness(id,excerpt){
+    const report=readinessReport(),issue=report.issues.find(i=>i.id===id);if(!issue)return refreshReadiness();
+    const target=issue.target,resolved=Ready.resolve(readinessState(),target);
+    const unavailable=key=>{const el=$('#readiness-navigation-error');if(el){el.textContent=t('gc_'+key);el.focus();}};
+    if(!resolved.ok)return unavailable(resolved.reason);
+    setCurrent(resolved.assessmentIndex);if(resolved.selection)state.ui.sel=resolved.selection;
+    if(target.kind==='operation'&&['calculate_actions','select_actions'].includes(target.operation))state.selectedAssessmentId=target.assessmentId;
+    state.ui.readyIssueId=id;go(resolved.view);
+    let el;
+    if(target.kind==='concept_field')el=[...document.querySelectorAll('[data-concept-field]')].find(e=>e.dataset.conceptField===target.code);
+    if(target.kind==='field')el=[...document.querySelectorAll('[data-gen],[data-code]')].find(e=>(e.dataset.gen||e.dataset.code)===target.code&&['INPUT','SELECT','TEXTAREA'].includes(e.tagName)&&!['exception','unit'].includes(e.dataset.kind));
+    if(['document','review'].includes(target.kind)){
+      const doc=state[target.document];
+      if(target.kind==='review')el=[...document.querySelectorAll(target.reviewControl==='confirm'?'[data-review-confirm]':'[data-review-note]')].find(e=>(e.dataset.reviewConfirm||e.dataset.reviewNote)===target.document+'|'+resolved.partId);
+      else if(target.sectionKey==='summary'&&target.document==='plan')el=$('#plan-summary');
+      else if(target.sectionKey==='schedule')el=$('#review-plan-schedule');
+      else if(target.sectionKey){const parts=target.document==='proposal'?doc.sections:doc.concept?.areas,k=target.document==='proposal'?'key':'id',index=parts.findIndex(p=>p[k]===target.sectionKey);el=[...document.querySelectorAll(target.document==='proposal'?'[data-sec]':'[data-pc]')].find(e=>+(e.dataset.sec??e.dataset.pc)===index);}
+      else el=$('#review-'+target.document);
+    }
+    if(target.kind==='task'){const i=state.plan.tasks.findIndex(t=>t.id===target.taskId);el=[...document.querySelectorAll(target.code==='owner'?'[data-owner]':'[data-weeks]')].find(e=>+(e.dataset.owner??e.dataset.weeks)===i);}
+    if(target.kind==='action'){const edit=[...document.querySelectorAll('[data-edit-custom]')].find(b=>b.dataset.editCustom===target.actionKey);if(edit){edit.click();el=document.querySelector('#custom-form [name=location]')||document.querySelector('[name=location]');}}
+    if(target.kind==='operation')el=({calculate_actions:$('#show-options'),select_actions:document.querySelector('[data-pick]')||$('#show-options'),draft_plan:$('#gen-plan'),draft_proposal:$('#draft')})[target.operation];
+    if(target.kind==='assessment')el=document.querySelector('[data-add]')||document.querySelector('[data-gen=Name]');
+    if(!el&&target.kind==='field'){
+      const owners=Object.entries(Questions).filter(([,q])=>q?.variables?.includes(target.code)).map(([q])=>q);
+      el=[...document.querySelectorAll('[data-q]')].find(e=>owners.includes(e.dataset.q)&&!e.disabled);if(el)unavailable('target_inactive');
+    }
+    const reviewUnavailable=el?.disabled&&target.kind==='review';
+    if(reviewUnavailable)el=[...document.querySelectorAll('[data-review-note]')].find(e=>e.dataset.reviewNote===target.document+'|'+resolved.partId);
+    if(el?.disabled)return unavailable('operation_unavailable');
+    if(!el)return unavailable('target_missing');
+    for(let parent=el.parentElement;parent;parent=parent.parentElement)if(parent.tagName==='DETAILS')parent.open=true;
+    highlightTarget(el,ReadyUI.instructions(issue,t,state.lang)+(reviewUnavailable?' '+t('gc_review_blocked'):''),target.kind==='document'?(issue.excerpts?.includes(excerpt)?excerpt:issue.excerpts?.[0]):undefined);
+  }
+  function clearGuidedTarget(){
+    document.querySelectorAll('.guided-target-highlight').forEach(e=>{e.classList.remove('guided-target-highlight');e.setAttribute('aria-describedby',(e.getAttribute('aria-describedby')||'').split(/\s+/).filter(x=>x&&x!=='readiness-target-explanation').join(' '));});
+    document.querySelectorAll('[data-guided-target-row],#readiness-target-explanation').forEach(e=>e.remove());
+  }
+  function highlightTarget(el,instructions,quote){
+    clearGuidedTarget();
+    for(let p=el.parentElement;p;p=p.parentElement)if(p.tagName==='DETAILS')p.open=true;
+    el.classList.add('guided-target-highlight');
+    const description=document.createElement('p');description.className='notice small readiness-target-note';description.id='readiness-target-explanation';description.textContent=t('gc_target_shown')+' — '+instructions;const row=el.closest('tr');if(row){const tr=document.createElement('tr');tr.dataset.guidedTargetRow='true';const td=document.createElement('td');td.colSpan=row.children.length;td.append(description);tr.append(td);row.insertAdjacentElement('afterend',tr);}else (el.closest('label')||el).insertAdjacentElement('afterend',description);
+    if(instructions===t('gc_warning_help')){const link=document.createElement('a');link.href='#review-action-caveats';link.textContent=' '+t('gc_shared_warnings');description.append(link);}
+    el.setAttribute('aria-describedby',[(el.getAttribute('aria-describedby')||'').replace(/readiness-target-explanation/g,''),description.id].join(' ').trim());
+    if(!el.matches('input,select,textarea,button,[tabindex]'))el.tabIndex=-1;
+    el.scrollIntoView({block:'center'});el.focus({preventScroll:true});
+    if(quote&&el.tagName==='TEXTAREA'){const at=el.value.indexOf(quote);if(at>=0)el.setSelectionRange(at,at+quote.length);else description.textContent+=' '+t('gc_section_only');}
+
+  }
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    const operation=b.dataset.reviewedExport?'export_reviewed':b.id==='dl-word'||b.id==='dl-all'?'export_draft':b.dataset.act==='finish'?'finish_assessment':({ 'show-options':'calculate_actions','save-actions':'save_actions','gen-plan':'draft_plan','draft':'draft_proposal'})[b.id];
+    if(operation&&blockReadiness(operation)){e.preventDefault();e.stopImmediatePropagation();}
+  },true);
+  function go(view) { state.ui.readyOperation=null;state.ui.view = view; save(); render(); window.scrollTo({ top: 0 }); }
 
   const VIEWS = {
     'assess:choose': viewChoose,
@@ -443,7 +547,7 @@
     const root = document.createElement('div');
     $('#view').replaceChildren(root);
     (VIEWS[state.ui.view] || viewChoose)(root);
-    renderChat();
+    renderChat();refreshReadiness();
   }
 
   // ---------------------------------------------------------------- stage 1: choose module (ECAM is the entry point)
@@ -705,8 +809,14 @@
     }
     if (Scenarios.indexOf(sc) !== state.current) setCurrent(Scenarios.indexOf(sc));
     if (sel) state.ui.sel = sel;
-    toast(t('goto_shown').replace('{name}', sc.General.Name));
+    state.ui.readyIssueId=null;
     go(sel ? 'assess:entry' : 'assess:results');
+    const source=d.sources?.[0]?.source;
+    const code=source==='grid_electricity'&&sel?sel.prefix+'_nrg_cons':null;
+    const field=code?[...document.querySelectorAll('[data-code]')].find(e=>e.dataset.code===code&&e.matches('input,select,textarea')):null;
+    const section=field||document.querySelector(sel?'#ss-outputs':'[data-detail-tables]')||document.querySelector('main h2');
+    if(section)highlightTarget(section,field?t('gc_source_field').replace('{field}',readinessLabel(code)):t('gc_source_scope'));
+
   }
 
   /** Add (existing = null) or edit a user-proposed action of assessment aid. User text is stored as written. */
@@ -865,7 +975,7 @@
       ${(r.availability_checks || []).some(c=>!RSData.ok(c.status)) ? `<div class="notice warn" data-unavailable-actions><b>Some action estimates are unavailable</b><ul>${(r.availability_checks || []).filter(c=>!RSData.ok(c.status)).map(c=>`<li>${esc(c.name || 'Utility')} · ${esc(c.rule)}: ${esc(c.status)} — ${esc((c.missing || []).join(', '))}</li>`).join('')}</ul>Unknown inputs are not zero; these estimates are not ranked as quantified benefits.</div>` : ''}
       <div class="dcards">${cards}</div>
       <div class="row" style="margin:4px 0 10px"><button class="btn" id="add-custom">+ ${esc(t('add_custom'))}</button></div>
-      <details class="small" style="margin-top:12px"><summary>${esc(t('assumptions_title'))}</summary><ul class="notice small" data-assumptions>${Object.entries(r.assumptions).map(([k, v]) => `<li>${esc(assumptionText(k, v))}</li>`).join('')}</ul></details>
+      <details class="small" style="margin-top:12px"><summary>${esc(t('assumptions_title'))}</summary>${!r.assumptions?`<p class="notice warn">${esc(t('gc_assumptions_missing'))}</p>`:''}<ul class="notice small" data-assumptions>${Object.entries(r.assumptions||{}).map(([k, v]) => `<li>${esc(assumptionText(k, v))}</li>`).join('')}</ul></details>
       <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions" ${optionsStale ? 'disabled' : ''}>${esc(t('save_actions'))}</button></div>`;
     root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; if (showDetails) openCards.clear(); save(); render(); };
     root.querySelector('#action-sort').onchange = e => { state.ui.actionSort = e.target.value; save(); render(); };
@@ -981,9 +1091,9 @@
     const report=documentReview(),d=report.documents[kind];if(!d)return '';
     const tr=k=>DR.t(k,state.lang),issues=kind==='proposal'?report.issues:d.issues.map(i=>({...i,document:kind}));
     return `<section class="card" id="review-${kind}" tabindex="-1" aria-label="${esc(tr('review'))}"><h2>${esc(tr('status'))}: <span data-document-status="${kind}">${esc(tr(d.status))}</span></h2><p class="small">${esc(tr('meaning'))}</p>
-      ${report.scientificWarnings.map(w=>`<p class="notice warn small">${esc(L(w.text))}</p>`).join('')}<h3>${esc(tr('unresolved'))}</h3><div role="status" aria-live="polite">${issues.length?`<ul>${issues.map(i=>`<li><button type="button" class="link" data-review-link="${esc(i.target)}" data-review-document="${i.document}" data-review-issue="${i.code}">${esc(t(i.document==='plan'?'tab_plan':'tab_finance'))} / ${esc(i.title)}: ${esc(tr(i.code))}</button></li>`).join('')}</ul>`:`<p>${esc(tr('none'))}</p>`}</div>
-      ${d.sections.map(r=>`<fieldset><legend>${esc(r.title)} — ${esc(tr(r.status))}</legend>${r.warnings.length?`<ul class="small">${r.warnings.map(w=>`<li>${esc(tr(w))}</li>`).join('')}</ul>`:''}
-        <label class="field"><span>${esc(tr('note'))}</span><textarea data-review-note="${kind}|${r.id}" aria-label="${esc(r.title+' — '+tr('note'))}">${esc(state[kind]?.reviewNotes?.[r.id]??r.note)}</textarea></label>
+      <div id="review-action-caveats" tabindex="-1"><h3>${esc(t('gc_shared_warnings'))}</h3>${state.selectedActions.filter(a=>a.provisional_warning||CW.isCustom(a)).map(a=>`<p class="notice warn small"><b>${esc(L(a.title)||a.id)}</b>: ${esc(a.provisional_warning?L(a.provisional_warning):t('gc_unquantified'))}</p>`).join('')}</div><h3>${esc(tr('unresolved'))}</h3><div role="status" aria-live="polite">${issues.length?`<p>${issues.length} · <a href="#readiness-panel">${esc(t('gc_title'))}</a></p>`:`<p>${esc(tr('none'))}</p>`}</div>
+      ${d.sections.map(r=>`<fieldset><legend>${esc(r.title)} — ${esc(tr(r.status))}</legend>${r.warnings.length?`<ul class="small">${r.warnings.map(w=>`<li>${w==='calculation'?`<a href="#review-action-caveats">${esc(t('gc_shared_warnings'))}</a>`:esc(tr(w))}</li>`).join('')}</ul>`:''}
+        <label class="field"><span>${esc(t(r.warnings.length?'gc_required':'gc_optional_field'))} · ${esc(tr('note'))}</span><textarea data-review-note="${kind}|${r.id}" aria-required="${r.warnings.length>0}" aria-label="${esc(r.title+' — '+tr('note'))}">${esc(state[kind]?.reviewNotes?.[r.id]??r.note)}</textarea></label>
         <label><input type="checkbox" data-review-confirm="${kind}|${r.id}" data-review-association="${esc(r.association)}" ${r.status==='reviewed'?'checked':''} ${!r.canReview||state.ui.reviewGenerating?'disabled':''}> ${esc(tr('confirm').replace('{section}',r.title))}</label>
         <p class="small muted">${esc(tr('association'))}: ${esc(r.association)}</p><p data-review-error="${r.id}" role="alert"></p></fieldset>`).join('')}</section>`;
   }
@@ -1000,12 +1110,6 @@
       panel.querySelector('[role=status]').textContent=DR.t('unreviewed',state.lang);
       const cb=panel.querySelector(`[data-review-confirm="${what}|${id}"]`);cb.checked=false;
       root.querySelectorAll('[data-reviewed-export]').forEach(b=>b.disabled=true);
-    });
-    root.querySelectorAll('[data-review-link]').forEach(b=>b.onclick=()=>{
-      if(['invalid','outdated_issue'].includes(b.dataset.reviewIssue)){const sc=byId(state[b.dataset.reviewDocument]?.deps?.assessmentId);if(sc)setCurrent(Scenarios.indexOf(sc));go('assess:results');return;}
-      if(b.dataset.reviewDocument!==kind){go(b.dataset.reviewDocument==='plan'?'plan':'finance:draft');}
-      const el=document.getElementById(b.dataset.reviewLink)||document.getElementById('review-'+b.dataset.reviewDocument);
-      if(el){el.scrollIntoView({block:'center'});el.focus();}
     });
     root.querySelectorAll('[data-review-confirm]').forEach(cb=>cb.onchange=()=>{
       const [what,id]=cb.dataset.reviewConfirm.split('|'),note=root.querySelector(`[data-review-note="${what}|${id}"]`).value;
@@ -1103,47 +1207,63 @@
   }
 
   // ---------------------------------------------------------------- stage 4: financing
+  function preliminaryInputs(){
+    const inputs=state.financing.conceptInputs||{},scope=PC.scope(state.selectedActions,metaOf(sourceAssessment()||Global),inputs);
+    const label=f=>f.label[state.lang]||f.label.en;
+    return `<section class="card" id="preliminary-inputs"><h2>${esc(t('pc_inputs'))}</h2><p>${esc(t('pc_inputs_help'))}</p>${PC.FIELDS.map(f=>`<label class="field"><span>${esc(label(f))} · ${esc(t('pc_'+f.requirement))}${!PC.active(f,inputs)?' · '+esc(t('pc_inactive')):''}</span>${f.key==='purpose'?`<select id="concept-input-purpose" data-concept-field="purpose" aria-required="true"><option value="unknown">${esc(t('pc_unknown'))}</option>${['mitigation','adaptation','both'].map(k=>`<option value="${k}" ${inputs.purpose===k?'selected':''}>${esc(t('pc_'+k))}</option>`).join('')}</select>`:`<textarea class="field" id="concept-input-${f.key}" data-concept-field="${f.key}" maxlength="4000" rows="2" aria-required="${PC.active(f,inputs)&&['required','conditional'].includes(f.requirement)}">${esc(inputs[f.key]||'')}</textarea>`}</label>`).join('')}
+    <h3>${esc(t('pc_action_scope'))}</h3><p>${esc(t('pc_scope_help'))}</p>${scope.classifications.map(c=>{const a=state.selectedActions.find(a=>a.key===c.key);return `<label class="field"><span>${esc(a.id+' · '+L(a.title))} — ${esc(c.sectors.map(s=>t('pc_'+s)).join(' + ')||t('pc_unknown'))}</span>${c.origin==='user_classification'||!c.sectors.length?`<select data-concept-sector="${esc(c.key)}"><option value="unknown">${esc(t('pc_unknown'))}</option>${['water','sanitation','mixed'].map(k=>`<option value="${k}" ${inputs.actionSectors?.[c.key]===k?'selected':''}>${esc(t('pc_'+k))}</option>`).join('')}</select>`:''}</label>`;}).join('')}</section>`;
+  }
+  function bindPreliminaryInputs(root){
+    root.querySelectorAll('[data-concept-field]').forEach(el=>el.oninput=()=>{state.financing.conceptInputs={...state.financing.conceptInputs,[el.dataset.conceptField]:el.value};save();const download=root.querySelector('#dl-all');if(download)download.disabled=!!exportBlockedReason();if(el.dataset.conceptField==='purpose'){render();$('#concept-input-purpose')?.focus();}});
+    root.querySelectorAll('[data-concept-sector]').forEach(el=>el.onchange=()=>{const i=state.financing.conceptInputs||{};state.financing.conceptInputs={...i,actionSectors:{...i.actionSectors,[el.dataset.conceptSector]:el.value}};save();render();[...document.querySelectorAll('[data-concept-sector]')].find(x=>x.dataset.conceptSector===el.dataset.conceptSector)?.focus();});
+  }
+  function gcfRecoveryNotice(){return (state.checkpoints||[]).some(c=>c.reason==='gcf-demo-transition')?`<p class="notice">${esc(t('demo_recovery'))} <button class="btn sm" id="recover-gcf-transition">${esc(t('demo_recover'))}</button></p>`:'';}
+  function startGcfConcept(){
+    if(state.ui.reviewGenerating||!confirm(t('demo_start_confirm')))return;
+    let next;try{next=PC.demoFinancing(state.financing,state.selectedActions);}catch(err){return toast(t('error')+': '+err.message);}
+    const before={financing:state.financing,proposal:state.proposal,checkpoints:state.checkpoints,previous:state.previous};
+    const snap=plain({...state,assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf),checkpoints:undefined});
+    state.checkpoints=[{at:new Date().toISOString(),view:state.ui.view,reason:'gcf-demo-transition',snap},...(state.checkpoints||[])];
+    state.financing=next;
+    if(state.proposal){state.previous={...state.previous,proposal:{at:new Date().toISOString(),value:plain(state.proposal)}};state.proposal=null;}
+    if(!persist()){Object.assign(state,before);return toast(t('checkpoint_not_saved'));}
+    render();
+  }
+  function recoverGcfTransition(){
+    if(state.ui.reviewGenerating||!confirm(t('demo_recover_confirm')))return;
+    const saved=state.checkpoints.find(c=>c.reason==='gcf-demo-transition');if(!saved)return;
+    const before={financing:state.financing,proposal:state.proposal,checkpoints:state.checkpoints,previous:state.previous};
+    const snap=plain({...state,assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf),checkpoints:undefined});
+    state.checkpoints=[{at:new Date().toISOString(),view:state.ui.view,reason:'before-gcf-recovery',snap},...state.checkpoints];
+    state.financing=plain(saved.snap.financing);state.proposal=plain(saved.snap.proposal);state.previous=plain(saved.snap.previous||{});
+    if(!persist()){Object.assign(state,before);return toast(t('checkpoint_not_saved'));}render();
+  }
   function viewFinance(root) {
     const f = state.financing;
     const fr = freshness();
     const upstreamStale = fr.actions.length > 0 || fr.plan.length > 0;
     const sums = summed();
-    const exportBlocked = upstreamStale || fr.proposal.length > 0 || sums.plan || sums.proposal.length > 0;
-    const card = (route, title, desc, btn) => `<div class="card pick ${f.route === route ? 'on' : ''}" data-route="${route}"><h2>${esc(title)}</h2><p>${esc(desc)}</p>${btn}</div>`;
+    const exportBlocked = !state.proposal || upstreamStale || fr.proposal.length > 0 || sums.plan || sums.proposal.length > 0;
+    const legacy=state.proposal&&state.proposal.route!==PC.ROUTE;
+    const supported=PC.demoSupported(f)&&!legacy;
     root.innerHTML = `<div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
       ${!state.plan ? `<div class="notice warn">${esc(t('no_plan'))}</div>` : ''}
       ${staleNotice(fr.actions, 'actions')}${staleNotice(fr.plan, 'plan')}${staleNotice(fr.proposal, 'proposal')}${genErrorNotice('proposal')}
       ${state.plan ? summedNotice('plan') : ''}${state.proposal ? summedNotice('proposal') : ''}
       ${META.ai ? '' : `<div class="notice small">${esc(t('ai_off_note'))}</div>`}${evidenceNotice()}
       <div id="pathways">${pathwayCache.html || ''}</div>
-      ${card('general', t('general_proposal'), t('general_desc'), `<button class="btn ${f.route === 'general' ? 'primary' : ''}">${esc(t('use_general'))}</button>`)}
-      ${card('custom', t('tailor'), t('tailor_desc'), `<label class="btn ${f.route === 'custom' ? 'primary' : ''}">${esc(t('add_guide'))}<input type="file" id="guide-file" accept=".pdf,.docx,.txt,.md" hidden></label>
-        ${f.guideName ? `<span class="small muted" style="margin-left:8px">${esc(t('guide_loaded'))}: ${esc(f.guideName)}</span>` : ''}
-        ${f.customFramework?.requirements?.length ? `<div class="notice small" style="margin-top:10px"><b>${esc(t('requirements'))}</b><ul>${f.customFramework.requirements.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>` : ''}
-        ${f.customFramework?._note ? `<p class="small muted" style="margin-top:8px">${esc(f.customFramework._note)}</p>` : ''}`)}
-      ${card('gcf', t('gcf'), t('gcf_desc'), `<button class="btn ${f.route === 'gcf' ? 'primary' : ''}">${esc(t('use_gcf'))}</button><p class="small muted" style="margin:8px 0 0">${esc(t('gcf_note'))}</p>`)}
+      <div class="card"><h2>${esc(t('pc_route'))}</h2><p>${esc(t('demo_gcf_notice'))}</p><p>${esc(t('pc_route_desc'))}</p>
+      ${!supported?`<p class="notice warn">${esc(t('demo_start_help'))} ${esc(t('demo_saved_route'))}: ${esc(state.proposal?(state.proposal.route||t('demo_route_unrecorded')):(f.route||t('demo_route_unrecorded')))}. ${esc(t('demo_historical_choices'))}: ${esc((f.pathways||[]).join(', ')||'—')}</p><button class="btn primary" id="start-gcf">${esc(t('demo_start'))}</button>`:''}</div>
+      ${supported?preliminaryInputs():''}
+      ${gcfRecoveryNotice()}
       <div class="actions-row"><button class="btn" data-go="plan">${esc(t('back'))}</button>
         ${state.proposal ? `<button class="btn" data-go="finance:draft">${esc(t('open_draft'))}</button>` : ''}
         ${previousControl('proposal')}
         ${exportScopeNotice()}<button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button>
-        <button class="btn primary" id="draft" ${upstreamStale ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
-    root.querySelectorAll('[data-route]').forEach(c => c.onclick = e => {
-      if (e.target.closest('label')) { f.route = c.dataset.route; save(); return; }
-      f.route = c.dataset.route; save(); render();
-    });
-    root.querySelector('#guide-file').onchange = async e => {
-      const file = e.target.files[0]; if (!file) return;
-      f.route = 'custom';
-      const lbl = e.target.closest('label'); busy(lbl, true, file.name);
-      try {
-        const buf = await file.arrayBuffer();
-        let bin = ''; const bytes = new Uint8Array(buf);
-        for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-        const res = await api('/api/guide/parse', { filename: file.name, base64: btoa(bin), lang: state.lang });
-        Object.assign(f, { guideName: file.name, guideText: res.guideText, customFramework: res.framework });
-        save(); render();
-      } catch (err) { busy(lbl, false); toast(t('error') + ': ' + err.message); }
-    };
+        <button class="btn primary" id="draft" ${upstreamStale||!supported ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
+    root.querySelector('#start-gcf')?.addEventListener('click',startGcfConcept);
+    root.querySelector('#recover-gcf-transition')?.addEventListener('click',recoverGcfTransition);
+    bindPreliminaryInputs(root);
     root.querySelector('#draft').onclick = e => generateProposal(e.target, state.proposal?.lang || state.lang);
     root.querySelector('#dl-all').onclick = e => downloadAll(e.target);
     loadPathways(root);
@@ -1163,7 +1283,7 @@
     const el = root.querySelector('#pathways');
     if (!el || !state.selectedActions.length) return;
     const key = CW.fp({ a: state.selectedActions.map(a => a.key || a.id), p: state.profile, l: state.lang });
-    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); };
+    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); if(!PC.demoSupported(state.financing)||state.proposal&&state.proposal.route!==PC.ROUTE)el.querySelectorAll('[data-fp]').forEach(cb=>cb.disabled=true); };
     if (pathwayCache.key === key && pathwayCache.match) return paint();
     try {
       pathwayCache.match = await api('/api/pathways', { actions: state.selectedActions, profile: state.profile, lang: state.lang });
@@ -1171,7 +1291,7 @@
     } catch (err) { el.innerHTML = ''; }
   }
 
-  function exportScopeNotice() {const ids=[state.proposal?.deps?.assessmentId,state.plan?.deps?.assessmentId,state.actionSet?.assessmentId].filter(Boolean),sc=new Set(ids).size===1?byId(ids[0]):null;return `<p class="notice" data-selected-project-scope>${esc(t('selected_package_scope').replace('{name}',sc?.General.Name || '—'))}</p>`;}
+  function exportScopeNotice() {const ids=[state.proposal?.deps?.assessmentId,state.plan?.deps?.assessmentId,state.actionSet?.assessmentId].filter(Boolean),sc=new Set(ids).size===1?byId(ids[0]):null;return `${state.proposal?.preliminary?`<p class="notice">${esc(L(state.proposal.preliminary.preparation_status))} · ${esc(L(state.proposal.preliminary.status_notice))}</p>`:''}<p class="notice" data-selected-project-scope>${esc(t('selected_package_scope').replace('{name}',sc?.General.Name || '—'))}</p>`;}
   function exportState(exportMode='working_draft') {
     return { ...plain(state), exportMode, assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
   }
@@ -1189,7 +1309,7 @@
     busy(btn, true, t('download_all'));
     try {
       const blob = await api('/api/export', exportState(exportMode), true);
-      download(blob, `${(state.profile?.name || sourceAssessment()?.General?.Name || 'chatwater').replace(/[^\w-]+/g, '_')}-chatwater-files.zip`);
+      download(blob, `${(state.profile?.name || sourceAssessment()?.General?.Name || 'chatwater').replace(/[^\w-]+/g, '_')}-${state.proposal?.route===PC.ROUTE?'gcf-preliminary-concept':'chatwater-files'}.zip`);
     } catch (err) { toast(t('error') + ': ' + err.message); }
     busy(btn, false);
   }
@@ -1201,7 +1321,8 @@
     const outdated = fr.actions.length || fr.plan.length || fr.proposal.length;
     const sums = () => { const s = summed(); return s.plan || s.proposal.length > 0; };
     const blocked = outdated || sums();
-    root.innerHTML = `<div class="page-head"><h1>${esc(t('proposal_title'))}${fr.proposal.length ? ` <span class="badge-outdated">${esc(t('outdated_badge'))}</span>` : ''}</h1><p class="muted">${esc(p.title)}</p></div>
+    root.innerHTML = `<div class="page-head"><h1>${esc(p.route===PC.ROUTE?t('pc_route'):t('proposal_title'))}${fr.proposal.length ? ` <span class="badge-outdated">${esc(t('outdated_badge'))}</span>` : ''}</h1><p class="muted">${esc(p.title)}</p></div>
+      ${p.route!==PC.ROUTE?`<p class="notice">${esc(t('demo_legacy'))} ${esc(p.route||t('demo_route_unrecorded'))}. <button class="btn" data-go="finance">${esc(t('demo_start'))}</button></p>`:''}
       ${staleNotice(fr.proposal, 'proposal')}
       ${summedNotice('proposal')}
       ${state.plan ? summedNotice('plan') : ''}
@@ -1227,7 +1348,7 @@
       root.querySelectorAll('#dl-word, #dl-all').forEach(b => { b.disabled = off; });
     });
     const regenLang = root.querySelector('[data-regen-lang=proposal]');
-    if (regenLang) regenLang.onclick = e => generateProposal(e.target, state.lang);
+    if (regenLang) {regenLang.disabled=p.route!==PC.ROUTE||!PC.demoSupported(state.financing);regenLang.onclick = e => generateProposal(e.target, state.lang);}
     const reviewed = root.querySelector('#proposal-reviewed');
     if (reviewed) reviewed.onclick = () => {
       const sc = sourceAssessment();
@@ -1239,7 +1360,7 @@
       const why = exportBlockedReason();
       if (why) return toast(why);
       busy(btn, true, t('download_word'));
-      try { download(await api('/api/export/docx', exportState(exportMode), true), 'proposal.docx'); }
+      try { download(await api('/api/export/docx', exportState(exportMode), true), p.route===PC.ROUTE?(p.lang==='id'?'konsep-awal-proyek-gcf.docx':'gcf-preliminary-project-concept.docx'):'proposal.docx'); }
       catch (err) { toast(t('error') + ': ' + err.message); }
       busy(btn, false);
     };
@@ -1395,7 +1516,7 @@
   window.App = {
     get state() { return state; }, fmtDate, tEOriginal, fillEstimates, recordEstimate, isEstimate, estimatesList, responsibilityHtml, openDetails, fuCtx, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
     idOf, cardCtx, contributorOf, relatedActions, metaOf,
-    inputSid, markScoped, changeInputStatus, reviewedResults, saveProjectBackup, importProjectText, assessmentValidity, setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
+    refreshReadiness, navigateReadiness, inputSid, markScoped, changeInputStatus, reviewedResults, saveProjectBackup, importProjectText, assessmentValidity, setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
   };
 
   async function boot() {

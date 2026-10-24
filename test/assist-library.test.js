@@ -27,10 +27,11 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
 
 (async () => {
   const lib = ensureLibrary();
-  console.log(`Shared library retrieval across assistance features${lib.synthetic ? ' (document library not built: synthetic test library used)' : ''}`);
+  console.log(`Shared library retrieval across assistance features${lib.synthetic ? ' ('+(lib.reason||'document library not built')+': synthetic test library used)' : ''}`);
   const server = app.listen(0);
   const base = `http://localhost:${server.address().port}`;
   const post = async (p, body) => { body=fixtureStatus.withConfirmedInputs(body);if(body.inputStatus?.s)for(const fields of Object.values(body.inputStatus.s))for(const record of Object.values(fields))if(record.v!==0)record.c=false; const r = await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) }); return { status: r.status, body: await r.json() }; };
+  const legacyProposal=async input=>({body:{...await P.draftProposal({...input,results:engine.calculateOne(input.assessment,0),missing:require('../engine/chat-context').knownMissing(fixtureStatus.withConfirmedInputs(input))},P.financingFrameworks().find(f=>f.id===input.route)),lang:input.lang,deps:require('../public/js/cw-core').proposalDeps({assessmentId:input.meta.id,...input,financing:{route:input.route},supportRevision:input.plan.deps.supportRevision})}});
   const assessment = sample[0];
   const m = meta(assessment, 'a_sample');
   const build = library.buildId();
@@ -89,7 +90,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
 
     // proposal sections
     calls.length = 0;
-    const prop = (await post('/api/proposal', { ...body, plan, route: 'general' })).body;
+    const prop = (await legacyProposal({ ...body, plan, route: 'general' })).body;
     assert.strictEqual(calls.length, prop.sections.length);
     calls.forEach((c, i) => promptOk(c, `section ${prop.sections[i].key}`));
     prop.sections.forEach(s => provenanceOk(s, `section ${s.key}`));
@@ -113,7 +114,8 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
     // ---------------------------------------------------------------- no supporting passage
     const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'cw-empty-lib-'));
     fs.mkdirSync(path.join(empty, 'passages'));
-    fs.writeFileSync(path.join(empty, 'manifest.json'), JSON.stringify({ schema: 1, sources: [] }));
+    fs.writeFileSync(path.join(empty, 'manifest.json'), JSON.stringify({ schema: 1, sources: [{id:'unmatched',title:'Synthetic unrelated archive',role:'guidance',status:'indexed'}] }));
+    fs.writeFileSync(path.join(empty,'passages','unmatched.json'),JSON.stringify([{id:'unmatched#p1',source:'unmatched',text:'Zebrafish chromatophore morphogenesis and genetic pigmentation patterns in laboratory embryos.',locator:{page:1}}]));
     library.load(empty);
     try {
       calls.length = 0;
@@ -155,7 +157,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
       assert.strictEqual(chatOff.body.retrieval.status, 'unavailable');
       assert.ok(chatOff.body.context.results.largest_contributor, 'project-data questions still work');
       ai.setClient(null);
-      const tpl = (await post('/api/proposal', { ...body, plan: p, route: 'general' })).body;
+      const tpl = (await legacyProposal({ ...body, plan: p, route: 'general' })).body;
       assert.ok(tpl.sections.every(s => s.ai === false && s.evidence.searched.status === 'unavailable' && s.related.length === 0));
       const vctx = { t: k => k, esc: s => String(s ?? ''), fmt: n => String(n) };
       const unavailableHtml = CV.assistant({ ai: false, retrieval: chatOff.body.retrieval, context: chatOff.body.context }, vctx);
@@ -176,7 +178,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
     assert.ok(!/\[S\d/.test(tplPlan.summary), 'template text carries no citation tags');
     assert.ok(tplPlan.related.every(x => x.passage_id && !x.id), 'retrieved passages are related reading, not citations');
     assert.deepStrictEqual(tplPlan.evidence.cited, []);
-    const tplProp = (await post('/api/proposal', { ...body, plan: tplPlan, route: 'gcf' })).body;
+    const tplProp = (await legacyProposal({ ...body, plan: tplPlan, route: 'gcf' })).body;
     assert.ok(tplProp.sections.every(s => s.ai === false && s.sources.length === 0 && s.evidence.cited.length === 0 && !/\[S\d/.test(s.text)));
     assert.strictEqual(tplProp.ai, false);
     console.log('  ok - AI off: template plan and proposal work, record what was searched, and cite nothing');
@@ -202,7 +204,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
     console.log('  ok - exports: provenance file for new outputs; older outputs export unchanged, with nothing attached');
 
     // ---------------------------------------------------------------- fresh evaluation set (reported, not asserted)
-    if (lib.synthetic) console.log('  NOT RUN - evaluation on the real corpus: prerequisite missing (document library not built); no result reported');
+    if (lib.synthetic) console.log('  NOT RUN - full 19-source corpus evaluation: '+lib.reason+'; no full-corpus result reported');
     else {
       const { run } = require('../scripts/library/eval');
       const { rows, metrics } = run();

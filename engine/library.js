@@ -79,7 +79,7 @@ let lib = empty();
 function empty() { return { dir: null, manifest: null, build_id: null, sources: new Map(), passages: [], byId: new Map(), df: new Map(), N: 0, avgLen: 1, quals: new Map(), skipped: 0, error: null }; }
 
 /** Load the built library. Missing library → empty index with an error note. */
-function load(dir = DEFAULT_DIR) {
+function load(dir = DEFAULT_DIR, {verifyRelease=true} = {}) {
   const next = empty();
   next.dir = dir;
   const hash = crypto.createHash('sha256');
@@ -92,6 +92,7 @@ function load(dir = DEFAULT_DIR) {
     lib = next;
     return summary();
   }
+  if(!Array.isArray(next.manifest?.sources)){next.error='Library source manifest is malformed';next.manifest=null;lib=next;return summary();}
   for (const s of next.manifest.sources) {
     next.sources.set(s.id, s);
     for (const q of s.qualifications || []) next.quals.set(`${s.id}:${q.id}`, q);
@@ -104,7 +105,8 @@ function load(dir = DEFAULT_DIR) {
       const text = fs.readFileSync(path.join(dir, 'passages', `${s.id}.json`), 'utf8');
       hash.update(text);
       list = JSON.parse(text);
-    } catch (e) { s.load_error = e.message; continue; }
+      if(!Array.isArray(list)||list.some(p=>!p||typeof p.id!=='string'||typeof p.text!=='string'||p.source!==s.id))throw new Error('Malformed or mismatched passage identities');
+    } catch (e) { next.error='Indexed passage file unreadable for '+s.id+': '+e.message;next.manifest=null;lib=next;return summary(); }
     for (const p of list) {
       next.byId.set(p.id, p);
       if (p.duplicate_of) { next.skipped++; (alsoIn.get(p.duplicate_of) || alsoIn.set(p.duplicate_of, []).get(p.duplicate_of)).push(p.id); continue; }
@@ -118,8 +120,13 @@ function load(dir = DEFAULT_DIR) {
   }
   for (const [id, dups] of alsoIn) { const p = next.byId.get(id); if (p) p.also_in = dups; }
   next.N = next.passages.length;
+  if(!next.N){next.error='Library contains no usable indexed passages';next.manifest=null;lib=next;return summary();}
   next.avgLen = next.passages.reduce((a, p) => a + p.tokens.length, 0) / (next.N || 1);
   next.build_id = 'lib-' + hash.digest('hex').slice(0, 12);
+  if(verifyRelease&&next.manifest.release==='gcf-guidance-v1'){
+    try{const expected=require('../scripts/library/releases/gcf-guidance-v1.lock.json');if(next.build_id!==expected.build_id||next.N!==expected.passages||next.manifest.sources.filter(s=>s.status==='indexed').length!==expected.sources)throw new Error('build ID or source/passage count mismatch');}
+    catch(e){next.error='Release validation failed: '+e.message;next.manifest=null;}
+  }
   lib = next;
   return summary();
 }

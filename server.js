@@ -69,8 +69,11 @@ app.get('/api/knowledge/search', (req, res) => res.json(req.query.legacy ? knowl
 
 app.get('/api/meta', (req, res) => res.json({
   countries: engine.countries(), gwpReports: engine.gwpReports(),
-  financing: P.financingFrameworks().map(f => ({ id: f.id, name: f.name, note: f._note })),
+  financing: P.financingFrameworks().filter(f=>f.id==='gcf-preliminary-v1').map(f => ({ id: f.id, version:f.version||null, name: f.name, note: f._note })),
 }));
+
+// Informational only: downstream routes retain their independent authoritative gates.
+app.post('/api/readiness', wrap((req,res)=>res.json(require('./engine/readiness').evaluate(req.body))));
 
 // Revalidate on every downstream request; browser completion flags are not trusted.
 app.use('/api', (req, res, next) => {
@@ -163,26 +166,17 @@ app.post('/api/actions/alternatives', limitAI, wrap(async (req, res) => {
 // Stage 4: financing pathways matched to the selected actions and profile (a shortlist, never eligibility)
 app.post('/api/pathways', wrap((req, res) => {
   const { actions = [], profile = null, lang = 'en' } = req.body;
-  res.json(PW.match({ actions, profile, lang }));
+  res.json(PW.demoMatch({actions,profile,lang}));
 }));
 
 app.post('/api/guide/parse', limitAI, wrap(async (req, res) => {
-  const { filename = 'guide', base64, lang = 'en' } = req.body;
-  const buf = Buffer.from(base64 || '', 'base64');
-  let text = '';
-  if (/\.pdf$/i.test(filename)) text = (await require('pdf-parse/lib/pdf-parse.js')(buf)).text;
-  else if (/\.docx$/i.test(filename)) text = (await require('mammoth').extractRawText({ buffer: buf })).value;
-  else text = buf.toString('utf8');
-  text = text.replace(/\s+\n/g, '\n').trim();
-  if (!text) throw new Error('Could not read text from this file.');
-  const framework = await P.frameworkFromGuide(text, filename, lang);
-  res.json({ framework, guideText: text.slice(0, 60000), chars: text.length });
+  res.status(422).json({error:'This demo supports only the GCF preliminary project concept. Uploaded-guide generation is unavailable; saved drafts remain recoverable.',code:'demo_gcf_only'});
 }));
 
 app.post('/api/proposal', limitAI, wrap(async (req, res) => {
-  const { route = 'general', customFramework, guideText, actions = [], actionSet, plan, profile, assessment, meta, gwpIndex = 0, inputStatus, lang = 'en' } = req.body;
-  const fw = route === 'custom' && customFramework ? customFramework
-    : P.financingFrameworks().find(f => f.id === route);
+  const { route, actions = [], actionSet, plan, profile, assessment, meta, gwpIndex = 0, inputStatus, lang = 'en' } = req.body;
+  if(!require('./public/js/preliminary-concept').demoSupported(req.body))return res.status(422).json({error:'This demo generates only the GCF preliminary project concept with GCF financing selections. Start a new GCF concept explicitly; historical drafts are not converted.',code:'demo_gcf_only'});
+  const fw = P.financingFrameworks().find(f => f.id === route);
   if (!fw) throw new Error('Unknown financing route ' + route);
   const rejected = req.body.rejectedActions;
   I.requireCurrentActions({ assessment, meta, gwpIndex, actions, actionSet, inputStatus, rejected });
@@ -190,8 +184,11 @@ app.post('/api/proposal', limitAI, wrap(async (req, res) => {
   const missing = chatContext.knownMissing({ assessment, meta, gwpIndex, inputStatus, profile });
   const pathways = PW.forFacts(Array.isArray(req.body.pathways) ? req.body.pathways.slice(0, 10) : [], lang);
   const estimates = Math.max(0, Math.min(+req.body.estimates || 0, 10000));
-  const proposal = await P.draftProposal({ results: resultsFor(assessment, gwpIndex, {meta,inputStatus:req.body.inputStatus}), actions, plan, profile, meta, lang, missing, pathways, estimates }, fw, guideText);
-  const deps = CW.proposalDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, plan, profile, supportRevision:AV.calculate(assessment,gwpIndex,{meta,inputStatus}).supportRevision, financing: { route, customFramework, pathways: req.body.pathways } });
+  const conceptInputs=fw.id==='gcf-preliminary-v1'?require('./public/js/preliminary-concept').clean(req.body.conceptInputs||{},actions):undefined;
+  const canonical=conceptInputs?new Map(I.optionsFor(assessment,meta,gwpIndex,inputStatus).map(a=>[a.key,a])):null;
+  const draftingActions=canonical?actions.map(a=>CW.isCustom(a)?a:{...canonical.get(a.key),id:a.id,notes:a.notes||''}):actions;
+  const proposal = await P.draftProposal({ conceptInputs, results: resultsFor(assessment, gwpIndex, {meta,inputStatus:req.body.inputStatus}), actions:draftingActions, plan, profile, meta, lang, missing, pathways, estimates }, fw);
+  const deps = CW.proposalDeps({ assessmentId: meta?.id, assessment, gwpIndex, actions, plan, profile, supportRevision:AV.calculate(assessment,gwpIndex,{meta,inputStatus}).supportRevision, financing: { route, pathways: req.body.pathways, ...(conceptInputs?{conceptInputs}:{}) } });
   res.json({ ...proposal, lang, deps });
 }));
 
