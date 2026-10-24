@@ -81,6 +81,7 @@ function citeOf(p, tag, build) {
     heading: [p.locatorLabel, p.heading].filter(Boolean).join(' — '),
     locator: p.locator, locatorLabel: p.locatorLabel, role: p.role, review_status: p.review_status,
     warnings: p.warnings, qualifications: (p.qualifications || []).map(q => q.id), library_build: build,
+    qualification_details: p.qualifications || [],
   };
 }
 

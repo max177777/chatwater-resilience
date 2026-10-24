@@ -122,6 +122,15 @@
   }
 
   // ------------------------------------------------------------ financing pathways
+  const CVmod = () => (typeof module === 'object' && module.exports ? require('./chat-view') : (typeof self !== 'undefined' ? self.CV : null));
+  /** Review status and every caveat of a pathway document (older responses carry only the first caveat). */
+  function docNotes(d, ctx) {
+    const cv = CVmod();
+    const caveats = d.caveats || (d.caveat ? [d.caveat] : []);
+    if (cv && cv.qualificationsHtml) return cv.qualificationsHtml(d.review_status || null, caveats, ctx, 'data-doc-notes');
+    return caveats.length ? ` <span class="muted">(${ctx.esc(caveats.join(' '))})</span>` : '';
+  }
+
   /** match: engine/pathways.js result { matched: [...], other: [...] }; selected: Set of ids */
   function pathways(match, selected, ctx) {
     const { t, L, esc } = ctx;
@@ -131,7 +140,7 @@
       <details><summary class="small">${esc(t('fp_why'))}: ${p.reasons.map(r => esc(r)).join('; ') || '–'}</summary>
         <dl class="dc-dl small"><dt>${esc(t('fp_who'))}</dt><dd>${esc(L(p.who))}</dd>
           <dt>${esc(t('fp_questions'))}</dt><dd><ul>${(p.questions || []).map(q => `<li>${esc(L(q))}</li>`).join('')}</ul></dd>
-          ${p.documents.length ? `<dt>${esc(t('fp_docs'))}</dt><dd><ul>${p.documents.map(d => `<li>${esc(d.title)}${d.caveat ? ` <span class="muted">(${esc(d.caveat)})</span>` : ''}</li>`).join('')}</ul></dd>` : ''}</dl></details></li>`;
+          ${p.documents.length ? `<dt>${esc(t('fp_docs'))}</dt><dd><ul>${p.documents.map(d => `<li data-fp-doc="${esc(d.id)}">${esc(d.title)}${docNotes(d, ctx)}</li>`).join('')}</ul></dd>` : ''}</dl></details></li>`;
     return `<div class="card" data-pathways><h2>${esc(t('fp_title'))}</h2><p class="small muted">${esc(t('fp_sub'))}</p>
       <ul class="fps">${match.matched.map(one).join('')}</ul>
       ${match.other.length ? `<details><summary class="small">${esc(t('fp_other'))}</summary><ul class="fps">${match.other.map(one).join('')}</ul></details>` : ''}

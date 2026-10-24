@@ -28,15 +28,15 @@ function prefixOf(o) {
 }
 
 /** Team framework rows for this option: by rule (and substage), or by location for user actions. */
-function rowsFor(o) {
+function rowsFor(o, lang = 'en') {
   const prefix = prefixOf(o);
-  if (CW.isCustom(o)) return prefix ? chatContext.frameworkRows({ prefix }, 3) : [];
-  return chatContext.frameworkRows({ rule: o.rule, prefix }, 3);
+  if (CW.isCustom(o)) return prefix ? chatContext.frameworkRows({ prefix }, 3, lang) : [];
+  return chatContext.frameworkRows({ rule: o.rule, prefix }, 3, lang);
 }
 
 /** Deterministic suggestions: every framework action for the option's emission output, de-duplicated. */
 function fromFramework(o, lang) {
-  const rows = rowsFor(o);
+  const rows = rowsFor(o, lang);
   const seen = new Set(), items = [];
   for (const r of rows) {
     for (const a of r.actions || []) {
@@ -48,7 +48,7 @@ function fromFramework(o, lang) {
   }
   // the framework's questions belong to the emission output, not to each action: listed once
   const questions = [...new Set(rows.flatMap(r => r.questions || []))].slice(0, 6);
-  return { source: 'framework', items: items.slice(0, 8), rows: rows.map(r => r.id), questions };
+  return { source: 'framework', items: items.slice(0, 8), rows: rows.map(r => r.id), questions, ...(rows.some(r => r.original_language) ? { original_language: 'en' } : {}) };
 }
 
 /** Responsibility answers and capacity in words, for the prompt. */
@@ -65,7 +65,7 @@ function profileText(profile, lang) {
  */
 async function fromAI({ option, mode = 'alternatives', request = '', results, profile, meta, lang = 'en' }) {
   const f = P.facts({ results, actions: [option], profile, meta, lang });
-  const rows = rowsFor(option);
+  const rows = rowsFor(option, lang);
   const r = R.search(R.forAction(option, f, lang));
   const tier = RS.forOption(option, profile);
   const task = mode === 'revise'

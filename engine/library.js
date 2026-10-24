@@ -295,4 +295,4 @@ function passage(id) { const p = lib.byId.get(id); return p ? view(p) : null; }
 
 load();
 
-module.exports = { load, summary, buildId, retrieve, evidenceBlock, supportCheck, source, passage, locatorLabel, tokenize, GLOSSARY };
+module.exports = { DEFAULT_DIR, load, summary, buildId, retrieve, evidenceBlock, supportCheck, source, passage, locatorLabel, tokenize, GLOSSARY };

@@ -16,7 +16,27 @@ const { callClaude, aiEnabled, parseJson } = require('./ai');
 
 const TITLES_ID = ['Menetapkan proyek', 'Menetapkan garis dasar', 'Mengidentifikasi kegiatan proyek', 'Menetapkan penanggung jawab',
   'Menyusun jadwal pelaksanaan', 'Menetapkan persyaratan teknis dan operasional', 'Menilai risiko pelaksanaan', 'Menetapkan pemantauan dan evaluasi'];
+// Indonesian wording of the framework's area descriptions and questions (stage-guidance.json stage3), awaiting Silvia's review.
+const GUIDE_ID = [
+  { description: 'Tujuan, lingkup, dan hasil yang diharapkan' },
+  { description: 'Kinerja saat ini dan buktinya', questions: [
+    'Berapa tingkat emisi, konsumsi energi, atau gangguan layanan saat ini?',
+    'Bahaya iklim apa yang memengaruhi lokasi proyek?',
+    'Data garis dasar apa yang tersedia, dan kajian tambahan apa yang diperlukan?',
+    'Bagaimana utilitas akan mengukur perbaikan terhadap garis dasar?'] },
+  { description: 'Menjabarkan kegiatan terpilih menjadi paket pekerjaan', questions: [
+    'Kegiatan apa saja yang diperlukan untuk melaksanakan kegiatan terpilih?',
+    'Penyelidikan teknis, desain, izin, atau persetujuan apa yang diperlukan?',
+    'Apa tonggak capaian utama pelaksanaan?',
+    'Apa yang harus selesai sebelum pelaksanaan dapat dimulai?'] },
+  { description: 'Orang, unit kerja, dan mitra eksternal' },
+  { description: 'Waktu, urutan, dan keterkaitan antartugas' },
+  { description: 'Kelayakan dan kontinuitas layanan' },
+  { description: 'Risiko pelaksanaan dan ketahanan pada kondisi mendatang' },
+  { description: 'Target, indikator, dan akuntabilitas' },
+];
 const fmt = (n, d = 0) => (n == null || !Number.isFinite(n)) ? '–' : n.toLocaleString('en-US', { maximumFractionDigits: d });
+const fmtId = (n, d = 0) => CW.formatNumber(n, 'id', d);
 
 // Indicators that ECAM can track for each rule when the assessment is repeated
 const INDICATORS = {
@@ -36,7 +56,7 @@ const T = {
     purpose: (u, n) => `Purpose: carry out ${n} selected action(s) at ${u}, to reduce emissions and energy use where the utility can act.`,
     scope: 'Scope:', outcome: 'Expected outcome (each estimate on its own; they are not added up):', notq: 'benefit not quantified',
     objective: 'project objective agreed with management',
-    baseline: r => `ECAM ${r.period.start} – ${r.period.end}: ${fmt(r.total_tco2eq)} tCO₂eq and ${fmt(r.energy_kwh)} kWh of grid electricity (${r.gwp_report}; grid factor ${r.grid_factor_kgco2_per_kwh} kgCO₂/kWh).`,
+    baseline: r => `ECAM ${CW.formatDate(r.period.start, 'en')} – ${CW.formatDate(r.period.end, 'en')}: ${fmt(r.total_tco2eq)} tCO₂eq and ${fmt(r.energy_kwh)} kWh of grid electricity (${CW.gwpLabel(r.gwp_report, 'en')}; grid factor ${r.grid_factor_kgco2_per_kwh} kgCO₂/kWh).`,
     split: (d, c, o, tot) => `Of the ${fmt(tot)} tCO₂eq inventory, ${fmt(d)} t are within the utility's direct responsibility, ${fmt(c)} t need coordination and ${fmt(o)} t are outside its responsibility.`,
     est: n => `${n} input(s) use ECAM estimates instead of measured data; the baseline is indicative until they are replaced.`,
     hazards: 'climate hazards affecting the project location', addData: 'additional data or assessments needed',
@@ -56,8 +76,8 @@ const T = {
     purpose: (u, n) => `Tujuan: melaksanakan ${n} kegiatan terpilih di ${u}, untuk mengurangi emisi dan pemakaian energi pada bagian yang dapat ditangani utilitas.`,
     scope: 'Lingkup:', outcome: 'Hasil yang diharapkan (setiap perkiraan berdiri sendiri; tidak dijumlahkan):', notq: 'manfaat belum dihitung',
     objective: 'tujuan proyek yang disepakati manajemen',
-    baseline: r => `ECAM ${r.period.start} – ${r.period.end}: ${fmt(r.total_tco2eq)} tCO₂eq dan ${fmt(r.energy_kwh)} kWh listrik jaringan (${r.gwp_report}; faktor jaringan ${r.grid_factor_kgco2_per_kwh} kgCO₂/kWh).`,
-    split: (d, c, o, tot) => `Dari inventaris ${fmt(tot)} tCO₂eq, ${fmt(d)} t berada dalam tanggung jawab langsung utilitas, ${fmt(c)} t perlu koordinasi, dan ${fmt(o)} t di luar tanggung jawabnya.`,
+    baseline: r => `ECAM ${CW.formatDate(r.period.start, 'id')} – ${CW.formatDate(r.period.end, 'id')}: ${fmtId(r.total_tco2eq)} tCO₂eq dan ${fmtId(r.energy_kwh)} kWh listrik jaringan (${CW.gwpLabel(r.gwp_report, 'id')}; faktor jaringan ${fmtId(r.grid_factor_kgco2_per_kwh, 3)} kgCO₂/kWh).`,
+    split: (d, c, o, tot) => `Dari inventaris ${fmtId(tot)} tCO₂eq, ${fmtId(d)} t berada dalam tanggung jawab langsung utilitas, ${fmtId(c)} t perlu koordinasi, dan ${fmtId(o)} t di luar tanggung jawabnya.`,
     est: n => `${n} masukan memakai perkiraan ECAM, bukan data terukur; garis dasar bersifat indikatif sampai diganti.`,
     hazards: 'bahaya iklim yang memengaruhi lokasi proyek', addData: 'data atau kajian tambahan yang diperlukan',
     notes: n => `Catatan dari profil utilitas: ${n}`,
@@ -131,8 +151,10 @@ function template({ facts: f, actions = [], plan, profile, breakdown, estimates 
   const ind = sel.map(a => { const r = raw.get(a.id); const i = r && INDICATORS[r.rule]; return i ? `${a.id}: ${i[lang] || i.en}` : null; });
   areas.push(lines(x.me, ind.some(Boolean) ? x.ind : null, list(ind), x.tbp(x.targets)));
 
+  const idText = i => (lang === 'id' && GUIDE_ID[i]) || {};
   return GUIDE.stage3.map((g, i) => ({
-    n: g.n, id: g.id, title: lang === 'id' ? TITLES_ID[i] : g.title, description: g.description, questions: g.questions || [],
+    n: g.n, id: g.id, title: lang === 'id' ? TITLES_ID[i] : g.title,
+    description: idText(i).description || g.description, questions: idText(i).questions || g.questions || [],
     text: areas[i] || x.tbp(g.description), status: /\[(To be provided|Perlu disediakan)/.test(areas[i] || '') ? 'template' : 'data',
   }));
 }
@@ -150,10 +172,47 @@ async function draft(input, { system, promptData, langName }) {
   const out = parseJson(await callClaude({ system, max_tokens: 2600, json: true, messages: [{ role: 'user', content }] }));
   const byN = new Map((out.areas || []).map(a => [Number(a.n), String(a.text || '').trim()]));
   const cit = R.citations([...byN.values()].join('\n'), r);
+  const known = numberKeys(JSON.stringify(input.facts) + '\n' + areas.map(a => a.text).join('\n'));
   return {
-    areas: areas.map(a => byN.get(a.n) ? { ...a, text: byN.get(a.n), status: 'ai' } : a),
+    areas: areas.map(a => {
+      const text = byN.get(a.n);
+      if (!text) return a;
+      const checks = checkArea(text, a.text, known, r);
+      return { ...a, text, status: 'ai', ...(checks ? { checks } : {}) };
+    }),
     ai: true, sources: cit.sources, evidence: R.evidenceRecord(r, cit),
   };
 }
 
-module.exports = { template, draft, INDICATORS };
+// Numbers next to letters (A01, tCO2eq, [S2]) are identifiers, not figures.
+const NUMBER = /(?<![\p{L}\d.,])\d+(?:[.,]\d+)*(?![\p{L}\d])/gu;
+const PLACEHOLDER = /\[(To be provided|To be completed|Perlu disediakan|Perlu dilengkapi)\s*:/gi;
+/** Digits only, so "81,653.2" (en) and "81.653,2" (id) match the same figure. */
+function numberKeys(text) {
+  const keys = new Set();
+  for (const m of String(text).replace(/\[S\d+\]/g, '').matchAll(NUMBER)) {
+    keys.add(m[0].replace(/[.,]/g, ''));
+    keys.add(m[0].split(/[.,]/)[0]);
+  }
+  return keys;
+}
+
+/**
+ * What an AI-written area needs checking for: figures that are in neither DATA nor the template,
+ * citation tags that match no retrieved passage, and placeholders the template had but the AI dropped.
+ * Returns null when nothing needs checking.
+ */
+function checkArea(text, templateText, known, r) {
+  const figures = [...new Set([...String(text).replace(/\[S\d+\]/g, '').matchAll(NUMBER)].map(m => m[0])
+    .filter(n => { const k = n.replace(/[.,]/g, ''); return +k > 10 && !known.has(k); }))];
+  const unknownTags = R.citations(text, r).unknown_tags;
+  const dropped = (String(templateText).match(PLACEHOLDER) || []).length > (String(text).match(PLACEHOLDER) || []).length;
+  const checks = {
+    ...(figures.length ? { unsupported_figures: figures.slice(0, 10) } : {}),
+    ...(unknownTags.length ? { unknown_tags: unknownTags } : {}),
+    ...(dropped ? { placeholders_dropped: true } : {}),
+  };
+  return Object.keys(checks).length ? checks : null;
+}
+
+module.exports = { template, draft, INDICATORS, checkArea, numberKeys, TITLES_ID, GUIDE_ID };

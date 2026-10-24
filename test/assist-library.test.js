@@ -134,7 +134,9 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
     console.log('  ok - no passage: prompts say so, project data is still sent, invented tags are reported and not cited');
 
     // ---------------------------------------------------------------- library not built (a checkout without knowledge/library/)
-    library.load(path.join(os.tmpdir(), 'cw-library-not-built-' + process.pid));
+    // a child of a fresh private directory that is never created, so it cannot already exist
+    const noLibParent = fs.mkdtempSync(path.join(os.tmpdir(), 'cw-no-lib-'));
+    library.load(path.join(noLibParent, 'library-not-built'));
     try {
       assert.strictEqual(library.summary().loaded, false);
       const health = await (await fetch(base + '/api/health')).json();
@@ -162,7 +164,7 @@ const { ensureLibrary } = require('./helpers/synthetic-library');
       const ev = require('../scripts/library/eval');
       assert.match(ev.prerequisite(), /not built/);
       assert.throws(() => ev.run(), e => e.code === 'LIBRARY_NOT_BUILT', 'evaluation refuses to score an absent library');
-    } finally { ai.setClient(null); lib.reload(); }
+    } finally { ai.setClient(null); lib.reload(); fs.rmdirSync(noLibParent); }
     console.log('  ok - library not built: reported as such (health, prompts, chat, templates), distinct from "no passage"; project data still used; evaluation reports a missing prerequisite');
 
     // ---------------------------------------------------------------- templates (AI off)

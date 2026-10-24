@@ -22,6 +22,7 @@ const MESSAGES = {
   plan_outdated: 'the project plan is outdated',
   custom_changed: 'a selected user-proposed action was edited after the selection was saved',
   custom_deleted: 'a selected user-proposed action was deleted',
+  action_rejected: 'a selected action was marked not relevant after the selection was saved',
   framework_changed: 'the financing route or framework changed',
 };
 const WHAT = { actions: 'Selected actions', plan: 'Project plan', proposal: 'Proposal' };
@@ -53,7 +54,7 @@ function optionsFor(assessment, meta, gwpIndex = 0) {
 }
 
 /** Problems with the selected actions for this assessment (empty when they match a fresh ECAM run). */
-function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet }) {
+function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet, rejected = null }) {
   if (actions != null && !Array.isArray(actions)) return ['Selected actions are malformed.'];
   const sel = (actions || []).filter(a => !(a && a.rule === 'baseline'));
   if (!sel.length) return [];
@@ -65,6 +66,8 @@ function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet 
   if (actionSet.revision !== CW.revision(assessment)) codes.push('assessment_changed');
   if ((actionSet.gwpIndex || 0) !== (gwpIndex || 0)) codes.push('gwp_changed');
   if (codes.length) return [describe('actions', codes)];
+  const dropped = CW.rejectedInSelection(sel, rejected);
+  if (dropped.length) return [describe('actions', ['action_rejected']) + ' ' + dropped.map(a => `"${titleOf(a)}"`).join(', ') + '.'];
   // user-proposed actions: structure and source assessment only; they carry no figures to recalculate
   const issues = [];
   const custom = sel.filter(CW.isCustom), calculated = sel.filter(a => !CW.isCustom(a));
@@ -78,6 +81,8 @@ function actionIssues({ assessment, meta, gwpIndex = 0, actions = [], actionSet 
   for (const a of calculated) {
     const o = fresh.get(a.key);
     if (!o) issues.push(`Action "${titleOf(a)}" is not produced by this assessment.`);
+    else if (o.rule === 'nrw_reduction' && titleOf(o) !== titleOf(a)) issues.push('Refresh the water-loss action: an earlier version called its measure NRW.');
+    else if (o.provisional_warning && (!a.provisional_warning || a.condition?.en !== o.condition.en)) issues.push('Refresh the pump action to retain its provisional calculation-boundary warning.');
     else if (!same(o.expected_kgco2, a.expected_kgco2) || !same(o.expected_kwh, a.expected_kwh)) issues.push(`The figures for "${titleOf(a)}" do not match the assessment.`);
   }
   return issues;
@@ -90,11 +95,11 @@ function requireCurrentActions(input) {
 }
 
 /** Throw 409 when the plan sent with a proposal request is outdated. */
-function requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile }) {
+function requireCurrentPlan({ assessment, meta, gwpIndex, actions, actionSet, plan, profile, rejected }) {
   if (!plan) return;
   const f = CW.freshness({
     assessments: meta?.id ? [{ id: meta.id, revision: CW.revision(assessment) }] : [],
-    gwpIndex, actionSet, selectedActions: actions, plan, profile,
+    gwpIndex, actionSet, selectedActions: actions, plan, profile, rejected,
   });
   if (f.plan.length) throw conflict('Regenerate or review the project plan first. ' + describe('plan', f.plan), [describe('plan', f.plan)]);
   if (CW.summedClaims({ plan }).plan) throw conflict(SUMMED.plan, [SUMMED.plan]);
@@ -135,11 +140,11 @@ function exportContext(body, { requireProposal = false } = {}) {
   const assessment = idx >= 0 ? list[idx] : null, meta = idx >= 0 ? metas[idx] : null;
   if (assessment && !issues.length) {
     const gwpIndex = body.gwpIndex || 0;
-    issues.push(...actionIssues({ assessment, meta, gwpIndex, actions, actionSet: body.actionSet }));
+    issues.push(...actionIssues({ assessment, meta, gwpIndex, actions, actionSet: body.actionSet, rejected: body.rejectedActions }));
     const f = CW.freshness({
       assessments: metas.map((m, i) => ({ id: m && m.id, revision: CW.revision(list[i]) })),
       gwpIndex, actionSet: body.actionSet, selectedActions: body.selectedActions,
-      plan: body.plan, proposal: body.proposal, profile: body.profile, financing: body.financing,
+      plan: body.plan, proposal: body.proposal, profile: body.profile, financing: body.financing, rejected: body.rejectedActions,
       customActions: Array.isArray(body.customActions) ? CW.customDefs(body.customActions, body.actionNotes) : undefined,
     });
     const customCodes = f.actions.filter(c => c.startsWith('custom_'));

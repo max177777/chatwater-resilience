@@ -42,6 +42,64 @@ const fresh = s => CW.freshness({
 const exportIssues = (s, opts) => { try { I.exportContext(s, opts); return []; } catch (e) { assert.strictEqual(e.status, 409); return e.issues; } };
 const docxText = async buf => (await (await JSZip.loadAsync(buf)).file('word/document.xml').async('string')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
 
+// ------------------------------------------------------------------ "Not relevant" (rejected) actions
+test('rejecting a saved action outdates actions, plan and proposal and blocks export; restoring clears it', async () => {
+  const s = await project();
+  const before = JSON.stringify({ plan: s.plan, proposal: s.proposal, actions: s.selectedActions });
+  const key = s.selectedActions[0].key;
+  s.rejectedActions = { [key]: { reason: 'synthetic: done last year', at: 'now' } };
+  const f = CW.freshness({ assessments: [{ id: 'a_main', revision: CW.revision(s.assessments[0]) }], gwpIndex: 0, actionSet: s.actionSet,
+    selectedActions: s.selectedActions, plan: s.plan, proposal: s.proposal, profile: s.profile, financing: s.financing, rejected: s.rejectedActions });
+  assert.deepStrictEqual(f.actions, ['action_rejected']);
+  assert.ok(f.plan.includes('actions_outdated') && f.proposal.includes('actions_outdated'));
+  const issues = exportIssues(s, { requireProposal: true });
+  assert.ok(issues.some(i => /not relevant/i.test(i) && i.includes(s.selectedActions[0].title.en)), issues.join(' | '));
+  assert.strictEqual(JSON.stringify({ plan: s.plan, proposal: s.proposal, actions: s.selectedActions }), before, 'notes, plan and proposal text are kept');
+  assert.throws(() => I.requireCurrentActions({ assessment: s.assessments[0], meta: s.assessmentMeta[0], gwpIndex: 0, actions: s.selectedActions, actionSet: s.actionSet, rejected: s.rejectedActions }), e => e.status === 409);
+  delete s.rejectedActions[key];
+  assert.deepStrictEqual(exportIssues(s, { requireProposal: true }), [], 'restoring the action makes the project exportable again');
+});
+
+test('rejecting an action that is not in the saved selection leaves every output current', async () => {
+  const s = await project();
+  const other = s.actionResult.options.find(o => o.rule !== 'baseline' && !s.selectedActions.some(a => a.key === o.key));
+  assert.ok(other, 'the sample offers an unselected action');
+  s.rejectedActions = { [other.key]: { reason: '', at: 'now' } };
+  const f = CW.freshness({ assessments: [{ id: 'a_main', revision: CW.revision(s.assessments[0]) }], gwpIndex: 0, actionSet: s.actionSet,
+    selectedActions: s.selectedActions, plan: s.plan, proposal: s.proposal, profile: s.profile, financing: s.financing, rejected: s.rejectedActions });
+  assert.deepStrictEqual(f, { options: [], actions: [], plan: [], proposal: [] });
+  assert.deepStrictEqual(exportIssues(s, { requireProposal: true }), []);
+});
+
+// ------------------------------------------------------------------ freshness after upstream edits
+test('both languages: rejection blocks both exports through HTTP until effective selection, plan and proposal are current', async () => {
+  const server = app.listen(0);
+  const post = async (route, body) => fetch(`http://localhost:${server.address().port}${route}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  try {
+    for (const lang of ['en', 'id']) {
+      const s = await project(); s.lang = lang;
+      const key = s.selectedActions[0].key;
+      s.selectedActions[0].notes = 'Synthetic note retained';
+      s.plan.deps = CW.planDeps({ assessmentId: 'a_main', assessment: s.assessments[0], actions: s.selectedActions, profile: s.profile });
+      s.proposal.deps = CW.proposalDeps({ assessmentId: 'a_main', assessment: s.assessments[0], actions: s.selectedActions, plan: s.plan, profile: s.profile, financing: s.financing });
+      const text = s.plan.summary;
+      s.rejectedActions = { [key]: { reason: 'synthetic rejection' } };
+      for (const route of ['/api/export', '/api/export/docx']) assert.strictEqual((await post(route, s)).status, 409);
+      delete s.rejectedActions[key];
+      assert.strictEqual((await post('/api/export/docx', s)).status, 200, `${lang}: undo restores consistency`);
+      s.rejectedActions[key] = { reason: 'synthetic rejection' };
+      s.selectedActions = s.selectedActions.filter(a => a.key !== key);
+      assert.strictEqual(s.plan.summary, text, 'old narrative remains available');
+      assert.strictEqual((await post('/api/export', s)).status, 409, 'saving effective selection alone does not make the old plan current');
+      const body = { assessment: s.assessments[0], meta: s.assessmentMeta[0], actions: s.selectedActions, actionSet: s.actionSet, profile: s.profile, rejectedActions: s.rejectedActions, lang };
+      s.plan = await (await post('/api/plan', body)).json();
+      assert.strictEqual((await post('/api/export/docx', s)).status, 409, 'old proposal still blocked after plan regeneration');
+      s.proposal = await (await post('/api/proposal', { ...body, route: 'general', plan: s.plan })).json();
+      for (const route of ['/api/export', '/api/export/docx']) assert.strictEqual((await post(route, s)).status, 200, `${lang}: ${route} after regeneration`);
+    }
+  } finally { server.close(); }
+});
+
 // ------------------------------------------------------------------ freshness after upstream edits
 test('a fresh project is current and exportable', async () => {
   const s = await project();
@@ -86,6 +144,7 @@ test('renaming an assessment or substage does not invalidate outputs or change a
 test('export uses the assessment the actions came from, not list position', async () => {
   const s = await project();
   const other = clone(sample[0]); other.General.Name = 'Other (synthetic)'; other.Water.Abstraction[0].wsa_nrg_cons = 10;
+    other.Water.Abstraction[0].wsa_nrg_pump = 10; // keep this unrelated assessment valid under CW-02's energy boundary check
   s.assessments = [other, s.assessments[0]];
   s.assessmentMeta = [meta(other, 'a_other'), s.assessmentMeta[0]];
   s.selectedAssessment = 0; // legacy index field is ignored
@@ -362,6 +421,7 @@ test('server rejects mixed-assessment and stale requests over HTTP', async () =>
   try {
     const s = await project();
     const other = clone(sample[0]); other.General.Name = 'Other (synthetic)'; other.Water.Abstraction[0].wsa_nrg_cons = 10;
+    other.Water.Abstraction[0].wsa_nrg_pump = 10; // keep this unrelated assessment valid under CW-02's energy boundary check
     const otherMeta = meta(other, 'a_other');
 
     // plan request: actions from one assessment, assessment data of another

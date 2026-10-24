@@ -19,7 +19,8 @@ const sample = require('../public/samples/utility-a-indonesia.json');
 const { meta, clone } = require('./helpers/fixtures');
 const EVAL = require('./eval/chat-questions.json');
 
-const LIB_DIR = path.join(__dirname, '..', 'knowledge', 'library');
+// the directory the application reads (CHATWATER_LIBRARY_DIR or knowledge/library)
+const LIB_DIR = library.DEFAULT_DIR;
 const assessment = sample[0];
 const m = meta(assessment, 'a_synth');
 const custom = (over = {}) => ({

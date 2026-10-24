@@ -163,9 +163,12 @@
   // ------------------------------------------------------------ freshness
   /**
    * ctx: { assessments: [{ id, revision }], gwpIndex, actionResult, actionSet, selectedActions, plan, proposal, profile, financing,
-   *        customActions? (customDefs(); when given, edited or deleted selected user actions mark the selection outdated) }
+   *        customActions? (customDefs(); when given, edited or deleted selected user actions mark the selection outdated),
+   *        rejected? ({ key: { reason, at } }; a saved selected action marked not relevant makes the selection outdated) }
    * Returns reason codes per output; an empty list means current.
    */
+  /** Saved selected actions the user has since marked not relevant. */
+  const rejectedInSelection = (selectedActions, rejected) => (selectedActions || []).filter(a => a && a.key && rejected && typeof rejected === 'object' && rejected[a.key]);
   function freshness(ctx) {
     const find = id => (ctx.assessments || []).find(a => a.id === id);
     const gwp = ctx.gwpIndex || 0;
@@ -191,6 +194,7 @@
         else if (fp(customContent(d)) !== fp(customContent(a))) out.actions.push('custom_changed');
       }
     }
+    if (ctx.rejected && typeof ctx.rejected === 'object' && sel.some(a => a.key && ctx.rejected[a.key])) out.actions.push('action_rejected');
     const actionsFp = actionsFingerprint(ctx.selectedActions);
     const profileFp = fp(ctx.profile);
     if (ctx.plan) {
@@ -393,7 +397,7 @@
     // responsibilities and capacity (responsibility.js)
     'resp_water_supply', 'resp_sewer', 'resp_wwtp', 'resp_onsite', 'resp_fs', 'capex', 'tech_capacity', 'data_availability'];
   const isObj = v => !!v && typeof v === 'object' && !Array.isArray(v);
-  const isEcamAssessment = o => isObj(o) && isObj(o.General) && STAGE_KEYS.every(([, lv, sl]) => isObj(o[lv]) && Array.isArray(o[lv][sl]));
+  const isEcamAssessment = o => isObj(o) && isObj(o.General) && STAGE_KEYS.every(([, lv, sl]) => isObj(o[lv]) && Array.isArray(o[lv][sl]) && o[lv][sl].every(ss => isObj(ss) && (ss.Configuration === undefined || (isObj(ss.Configuration) && isObj(ss.Configuration.Questions) && Object.values(ss.Configuration.Questions).every(v => typeof v === 'boolean')))));
   const looksLikeEcam = d => Array.isArray(d) ? d.some(o => isObj(o) && ('General' in o || 'Water' in o)) : isObj(d) && ('General' in d || 'Water' in d);
   /**
    * Check an ECAM file before anything is added: every assessment must be complete, or none is imported.
@@ -405,7 +409,8 @@
     if (isObj(data) && !looksLikeEcam(data) && PROFILE_KEYS.some(k => k in data)) return { ok: false, reason: 'profile_file' };
     const list = Array.isArray(data) ? data : [data];
     if (!list.length) return { ok: false, reason: 'empty' };
-    if (!list.every(isEcamAssessment)) return { ok: false, reason: 'not_ecam' };
+    const finiteTree = v => typeof v === 'number' ? Number.isFinite(v) : v && typeof v === 'object' ? Object.values(v).every(finiteTree) : true;
+    if (!list.every(finiteTree) || !list.every(isEcamAssessment)) return { ok: false, reason: 'not_ecam' };
     return { ok: true, assessments: list };
   }
   /** Profile fields from a JSON profile file. { ok: true, profile } | { ok: false, reason: 'not_json' | 'ecam_file' | 'no_profile_fields' } */
@@ -425,9 +430,68 @@
     return `${name} (${n})`;
   }
 
+  // ------------------------------------------------------------ display formatting
+  // Display only: calculations, saved state and exports' data files keep plain numbers.
+  const LOCALES = { en: 'en-US', id: 'id-ID' };
+  const locale = lang => LOCALES[lang] || LOCALES.en;
+  function formatNumber(n, lang, digits) {
+    if (n == null || !Number.isFinite(n)) return '–';
+    if (digits === undefined) {
+      const a = Math.abs(n);
+      digits = n === 0 ? 0 : a >= 1000 ? 0 : a >= 100 ? 1 : a >= 0.1 ? 2 : a >= 0.01 ? 3 : 4;
+    }
+    return new Intl.NumberFormat(locale(lang), { maximumFractionDigits: digits }).format(n);
+  }
+  /** Date-only strings (YYYY-MM-DD) are calendar dates and must not shift with the time zone. */
+  function formatDate(value, lang, withTime) {
+    if (value == null || value === '') return '–';
+    const dateOnly = typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    const opts = { dateStyle: 'medium', ...(withTime && !dateOnly ? { timeStyle: 'short' } : {}), ...(dateOnly ? { timeZone: 'UTC' } : {}) };
+    return new Intl.DateTimeFormat(locale(lang), opts).format(d);
+  }
+
+  /**
+   * Saved text whose last line stops mid-sentence (answers cut off by an output limit before that was
+   * detected). Lists, tables, headings and placeholders may end without a full stop.
+   */
+  function mayBeIncomplete(text, opts = {}) {
+    const lines = String(text || '').trim().split('\n').map(l => l.trim()).filter(Boolean);
+    const open = l => !(/^([-*•+]|\d+[.)]|#|\|)/.test(l) || /\]\s*$/.test(l)) && !/[.!?:;)\]"'”’…*_]\s*$/.test(l);
+    if (!lines.length) return false;
+    // anyParagraph: template text that quotes earlier AI text, which may stop before the template's own lines
+    return opts.anyParagraph ? lines.some(open) : open(lines[lines.length - 1]);
+  }
+
+  // Readable names for ECAM's GWP report identifiers; the identifier itself is kept, as ECAM files and citations use it.
+  const GWP_NAMES = {
+    'IPCC 5th AR (2014/2013) CCF': { en: 'IPCC Fifth Assessment Report, with climate–carbon feedbacks', id: 'Laporan Penilaian Kelima IPCC, dengan umpan balik iklim–karbon' },
+    'IPCC 5th AR (2014/2013)': { en: 'IPCC Fifth Assessment Report, without climate–carbon feedbacks', id: 'Laporan Penilaian Kelima IPCC, tanpa umpan balik iklim–karbon' },
+    'IPCC 4th AR (2007)': { en: 'IPCC Fourth Assessment Report', id: 'Laporan Penilaian Keempat IPCC' },
+    'IPCC 3th AR (2001)': { en: 'IPCC Third Assessment Report', id: 'Laporan Penilaian Ketiga IPCC' },
+    'IPCC 2nd AR (1995)': { en: 'IPCC Second Assessment Report', id: 'Laporan Penilaian Kedua IPCC' },
+    'IPCC 1st AR (1990)': { en: 'IPCC First Assessment Report', id: 'Laporan Penilaian Pertama IPCC' },
+  };
+  /** "IPCC Fourth Assessment Report (IPCC 4th AR (2007))"; unknown identifiers are returned as written. */
+  function gwpLabel(report, lang) {
+    const n = GWP_NAMES[report];
+    return n ? `${n[lang] || n.en} (${report})` : String(report || '');
+  }
+
+  // Unit words in ECAM's unit strings; symbols (kWh, m3, kgCO2eq, L) stay as written.
+  const UNIT_WORDS_ID = {
+    'g/person/day': 'g/orang/hari', 'kg/person/year': 'kg/orang/tahun', 'L/serv.pop./day': 'L/penduduk terlayani/hari', 'hours/day': 'jam/hari',
+    'm asl': 'm dpl', adimensional: 'tanpa satuan', years: 'tahun', days: 'hari', people: 'orang', number: 'jumlah', ratio: 'rasio',
+    moles: 'mol', 'Yes/No': 'Ya/Tidak', 'Fuel type': 'jenis bahan bakar', 'Pump type': 'jenis pompa', 'Pump size': 'ukuran pompa',
+    'Potabilization chain': 'rangkaian pengolahan air minum', sec: 'detik', min: 'menit', hour: 'jam', day: 'hari', month: 'bulan',
+  };
+  const unitLabel = (unit, lang) => (lang === 'id' && UNIT_WORDS_ID[unit]) || unit;
+
   return {
+    formatNumber, formatDate, mayBeIncomplete, gwpLabel, unitLabel,
     SCHEMA, STAGE_KEYS, canonical, hash, fp, revision, actionKey, substageId, withKeys, withCheckIds, assignLabels, mapLegacy,
-    isCustom, customContent, customDefs, actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, hasSummedClaim, summedClaims, migrate, unitView,
+    isCustom, customContent, customDefs, actionsFingerprint, planFingerprint, frameworkKey, planDeps, proposalDeps, freshness, rejectedInSelection, hasSummedClaim, summedClaims, migrate, unitView,
     commitVersion, regenerate, restoreVersion, loadSession, writeSession, isQuota,
     TRACKED_INPUTS, INPUT_ORIGINS, isTracked, inputState, needsConfirm, setInputOrigin, confirmInputValue,
     parseEcamFile, parseProfileJson, uniqueName,

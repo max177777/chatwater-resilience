@@ -58,17 +58,12 @@
   const rich = s => esc(s).replace(/&lt;(\/?)(sub|sup|b|i|br)\s*\/?&gt;/gi, '<$1$2>');
   const t = k => (UI[state.lang] && UI[state.lang][k]) ?? UI.en[k] ?? k;
   const tE = k => LANGS[state.lang]?.['#' + k] || LANGS.en['#' + k] || '';
+  /** True when an ECAM text is shown in English because the current language has no translation of it. */
+  const tEOriginal = k => state.lang !== 'en' && !LANGS[state.lang]?.['#' + k] && !!LANGS.en['#' + k];
   const stageLabel = k => (STAGE_LABELS[state.lang] || STAGE_LABELS.en)[k] || tE(k) || k;
   const L = o => (o && typeof o === 'object') ? (o[state.lang] || o.en) : (o ?? '');
-  function fmt(n, digits) {
-    if (n == null || !Number.isFinite(n)) return '–';
-    if (digits === undefined) {
-      const a = Math.abs(n);
-      digits = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 0.1 ? 2 : a >= 0.01 ? 3 : 4;
-      if (n === 0) digits = 0;
-    }
-    return new Intl.NumberFormat('en-US', { maximumFractionDigits: digits }).format(n);
-  }
+  const fmt = (n, digits) => CW.formatNumber(n, state.lang, digits);
+  const fmtDate = (v, withTime) => CW.formatDate(v, state.lang, withTime);
   function toast(msg) {
     const el = $('#toast'); el.textContent = msg; el.hidden = false;
     clearTimeout(toast.t); toast.t = setTimeout(() => (el.hidden = true), Math.max(2600, 60 * String(msg).length));
@@ -79,23 +74,36 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
+  /** Server errors arrive in English with a code; other languages show the translated message and keep the detail. */
+  function serverError(code, detail) {
+    if (state.lang === 'en') return detail;
+    const k = 'err_' + (code || 'request');
+    const msg = UI[state.lang]?.[k] || t('err_request');
+    return detail ? `${msg} (${t('err_detail_en')}: ${detail})` : msg;
+  }
   async function api(path, body, asBlob) {
-    const res = await fetch(path, { method: body ? 'POST' : 'GET', headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+    if (body?.assessment && body.meta?.id) body.inputStatus = state.inputStatus[body.meta.id] || null;
+    let res;
+    try { res = await fetch(path, { method: body ? 'POST' : 'GET', headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined }); }
+    catch { throw new Error(t('err_network')); }
     if (!res.ok) {
-      let msg = res.statusText;
-      try { msg = (await res.json()).error || msg; } catch {}
-      const e = new Error(msg); e.status = res.status; throw e;
+      let msg = res.statusText, code = null;
+      try { const j = await res.json(); msg = j.error || msg; code = j.code || null; } catch {}
+      const e = new Error(serverError(code, msg)); e.status = res.status; e.code = code; e.detail = msg; throw e;
     }
     return asBlob ? res.blob() : res.json();
   }
   // Citation list shown under AI drafts: [S1] Title, publisher year — locator · role · passage ID. Older saved
   // outputs have no role or passage ID and show as before.
   const roleBadge = r => r ? ` <span class="badge-role" data-role="${esc(r)}">${esc(t('chat_role_' + r))}</span>` : '';
+  // the locator part of a saved heading ("p. 12 — Section") in the interface language; section names stay as written
+  const headingText = x => (x.locator && x.locatorLabel && String(x.heading || '').startsWith(x.locatorLabel)
+    ? SN.locator(x.locator, state.lang) + x.heading.slice(x.locatorLabel.length) : x.heading);
   const sourcesHtml = list => list?.length ? `<div class="sources"><b>${esc(t('sources'))}</b><ol>${list.map(x =>
-    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${esc(x.cite)}` : ''}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}${roleBadge(x.role)}${x.passage_id ? ` <span class="muted small" data-passage-id>${esc(x.passage_id)}</span>` : ''}</li>`).join('')}</ol></div>` : '';
+    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${CV.noteHtml(x.cite, { t, esc, lang: state.lang }, 'date')}` : ''}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${x.passage_id ? ` <span class="muted small" data-passage-id>${esc(x.passage_id)}</span>` : ''}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.caveats || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ol></div>` : '';
   // Passages retrieved for template text, which cites none of them
   const relatedHtml = list => list?.length ? `<div class="sources related"><b>${esc(t('related_reading'))}</b><ul>${list.map(x =>
-    `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(x.heading)}</span>` : ''}${roleBadge(x.role)}</li>`).join('')}</ul></div>` : '';
+    `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ul></div>` : '';
   // What the library was searched for, the library build, and what the citation checks do and do not cover
   const evidenceHtml = (ev, cited) => ev?.searched ? `<div class="small muted ev-note" data-evidence data-library-build="${esc(ev.library_build || '')}">${esc(t('chat_searched'))}: ${esc(ev.searched.query || '–')}${ev.searched.status === 'none' ? ` — ${esc(t('chat_no_passage'))}` : ev.searched.status === 'unavailable' ? ` — <span data-library-unavailable>${esc(t('chat_library_unavailable'))}</span>` : ''} · ${esc(t('ev_build'))} ${esc(ev.library_build || '–')}${cited ? ` · ${esc(t('ev_checks'))}` : ''}${ev.unknown_tags?.length ? ` <span class="dc-flag" data-unknown-tags>${esc(t('chat_unknown_tag').replace('{list}', ev.unknown_tags.join(', ')))}</span>` : ''}</div>` : '';
   const busy = (btn, on, label) => {
@@ -107,7 +115,7 @@
   // ---------------------------------------------------------------- ECAM scenarios
   /** Record how the Stage 1 form set a tracked input: 'manual', 'estimate' (ECAM estimate) or 'typical' (typical value). */
   function markEntered(prefix, stage, code, origin = 'manual') {
-    if (!Global || !CW.isTracked(prefix, code)) return;
+    if (!Global) return;
     CW.setInputOrigin(state.inputStatus, idOf(Global), idOf(stage, 's'), code, origin, stage[code]);
   }
   function substageById(sc, sid) {
@@ -156,7 +164,15 @@
   function duplicateScenario() {
     const o = JSON.parse(JSON.stringify(Global));
     o.General.Name += state.lang === 'id' ? ' (salinan)' : ' (copy)';
-    Scenarios.push(Ecam.from(o)); setCurrent(Scenarios.length - 1);
+    const previous = Global, oldMeta = metaOf(previous);
+    const copy = Ecam.from(o); Scenarios.push(copy);
+    const newMeta = metaOf(copy), oldStatus = state.inputStatus[oldMeta.id];
+    if (oldStatus) {
+      const rec = plain(oldStatus); rec.s = {};
+      for (const [p] of CW.STAGE_KEYS) oldMeta.substages[p].forEach((sid,i) => { if (oldStatus.s?.[sid]) rec.s[newMeta.substages[p][i]] = plain(oldStatus.s[sid]); });
+      state.inputStatus[newMeta.id] = rec;
+    }
+    setCurrent(Scenarios.length - 1);
   }
   function deleteScenario() {
     if (Scenarios.length < 2) return;
@@ -164,11 +180,20 @@
   }
   /** Add checked ECAM assessments (CW.parseEcamFile), renaming copies whose name is already used. Returns the names as loaded. */
   function addAssessments(list) {
-    const built = list.map(o => Ecam.from(o)); // throws before anything is added
+    const built = list.map(o => {
+      const draft = plain(o);
+      for (const c of ['AssessmentPeriodStart','AssessmentPeriodEnd']) if (!(c in draft.General)) draft.General[c] = null;
+      for (const [p,lv,sl] of CW.STAGE_KEYS) for (const ss of draft[lv][sl]) {
+        const st = Structure.find(s => s.prefix === p), defaults = new st.class();
+        // An absent imported input remains absent; ECAM constructor zeros are not evidence.
+        for (const [code,value] of Object.entries(defaults)) if (typeof value === 'number' && !Object.hasOwn(ss,code)) ss[code] = null;
+      }
+      return Ecam.from(draft);
+    }); // throws before anything is added
     const names = [];
     for (const s of built) {
       s.General.Name = CW.uniqueName(s.General.Name || 'Assessment', Scenarios.map(x => x.General.Name));
-      Scenarios.push(s); names.push(s.General.Name);
+      Scenarios.push(s); state.inputStatus[idOf(s)] = {origin:'imported',s:{}}; names.push(s.General.Name);
     }
     setCurrent(Scenarios.length - built.length);
     return names;
@@ -207,7 +232,7 @@
       catch (e) { r = { ok: false, error: e, quota: CW.isQuota(e) }; }
     }
     storageFail = r.ok || r.locked ? null : { quota: !!r.quota, message: r.error?.message || '' };
-    $('#save-status').textContent = r.ok ? `${t('saved')} · ${new Date().toLocaleTimeString()}` : t('not_saved');
+    $('#save-status').textContent = r.ok ? `${t('saved')} · ${new Intl.DateTimeFormat(state.lang === 'id' ? 'id-ID' : 'en-US', { timeStyle: 'short' }).format(new Date())}` : t('not_saved');
     renderStorageAlert();
     return r.ok;
   }
@@ -260,7 +285,7 @@
       assessments: Scenarios.map(s => ({ id: idOf(s), revision: CW.revision(s) })),
       gwpIndex: state.gwpIndex, actionResult: state.actionResult, actionSet: state.actionSet,
       selectedActions: state.selectedActions, plan: state.plan, proposal: state.proposal,
-      profile: state.profile, financing: state.financing,
+      profile: state.profile, financing: state.financing, rejected: state.rejectedActions,
       customActions: CW.customDefs(state.customActions, state.actionNotes),
     });
   }
@@ -316,7 +341,7 @@
       <button class="link" data-dismiss-error>${esc(t('dismiss'))}</button></div>` : '';
   function previousControl(what) {
     const prev = state.previous?.[what];
-    return prev ? `<button class="btn" data-restore="${what}">${esc(t('restore_previous'))} <span class="muted small">(${esc(new Date(prev.at).toLocaleString())})</span></button>` : '';
+    return prev ? `<button class="btn" data-restore="${what}">${esc(t('restore_previous'))} <span class="muted small">(${esc(fmtDate(prev.at, true))})</span></button>` : '';
   }
 
   async function generatePlan(btn, lang) {
@@ -325,7 +350,7 @@
     if (state.plan && !confirm(t('confirm_replace_plan'))) return;
     busy(btn, true, t('drafting'));
     try {
-      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, inputStatus: state.inputStatus?.[idOf(sc)] || null, estimates: estimatesList(sc).length, lang }));
+      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, inputStatus: state.inputStatus?.[idOf(sc)] || null, estimates: estimatesList(sc).length, lang, rejectedActions: state.rejectedActions }));
       state.ui.genError = null;
     } catch (err) { state.ui.genError = { what: 'plan', message: err.message }; }
     save(); render();
@@ -343,7 +368,7 @@
         route: f.route, customFramework: f.customFramework, guideText: f.guideText,
         actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: state.profile,
         assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang,
-        pathways: f.pathways || [], estimates: estimatesList(sc).length,
+        pathways: f.pathways || [], estimates: estimatesList(sc).length, rejectedActions: state.rejectedActions,
       }));
       state.ui.genError = null;
       return go('finance:draft');
@@ -355,6 +380,7 @@
   function applyShell() {
     document.documentElement.lang = state.lang;
     document.querySelectorAll('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+    document.querySelectorAll('[data-t-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.tAria)));
     document.querySelectorAll('[data-lang]').forEach(b => b.classList.toggle('on', b.dataset.lang === state.lang));
     document.querySelectorAll('[data-loc]').forEach(b => b.classList.toggle('on', b.dataset.loc === state.location));
     document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === state.ui.view.split(':')[0]));
@@ -363,10 +389,13 @@
     document.querySelectorAll('[data-tab]').forEach(b => { b.classList.toggle('stale', !!staleTab[b.dataset.tab]); b.title = staleTab[b.dataset.tab] ? t('tab_outdated') : ''; });
     $('#ai-chip').textContent = t(META.ai ? 'ai_chip_on' : 'ai_chip_off');
     $('#ai-chip').classList.toggle('off', !META.ai);
-    $('#profile-chip').textContent = state.profile?.name ? `${state.profile.name}${state.profile.location ? ' · ' + state.profile.location : ''}` : '';
+    const chipText = state.profile?.name ? `${state.profile.name}${state.profile.location ? ' · ' + state.profile.location : ''}` : (sourceAssessment()?.General?.Name || '');
+    $('#profile-chip').textContent = chipText;
+    $('#profile-chip').hidden = !chipText;
     $('#chat-input').placeholder = t('chat_placeholder');
     $('#chat').classList.toggle('collapsed', !state.ui.chatOpen);
     $('#chat-toggle').textContent = state.ui.chatOpen ? '–' : '+';
+    $('#chat-toggle').setAttribute('aria-label', t(state.ui.chatOpen ? 'aria_hide_chat' : 'aria_show_chat'));
   }
 
   function go(view) { state.ui.view = view; save(); render(); window.scrollTo({ top: 0 }); }
@@ -390,34 +419,22 @@
     renderChat();
   }
 
-  // ---------------------------------------------------------------- stage 1: choose module + profile
+  // ---------------------------------------------------------------- stage 1: choose module (ECAM is the entry point)
   function viewChoose(root) {
     root.innerHTML = `
       <div class="page-head"><h1>${esc(t('choose_module'))}</h1><p class="muted">${esc(t('choose_module_sub'))}</p></div>
-      <div class="card"><h2>${esc(t('ecam_available'))}</h2><p>${esc(t('ecam_desc'))}</p>
-        <button class="btn primary" data-go="assess:entry">ECAM</button>
-        <a class="btn" href="https://climatesmartwater.org/ecam/" target="_blank" rel="noopener" style="margin-left:6px">climatesmartwater.org/ecam ↗</a></div>
+      <div class="card" data-entry="ecam"><h2>${esc(t('ecam_available'))}</h2><p>${esc(t('ecam_desc'))}</p>
+        <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn primary" data-go="assess:entry">${esc(t('start_or_load_ecam'))}</button>
+        <a class="btn" href="https://climatesmartwater.org/ecam/" target="_blank" rel="noopener">climatesmartwater.org/ecam ↗</a></div>
+        <p class="small muted" style="margin:10px 0 0">${esc(t('entry_hint'))}</p></div>
       <div class="card muted-card"><h2>${esc(t('later_modules'))}</h2>
         <p><b>CREAT</b> · ${esc(t('creat_desc'))}</p>
-        <p style="margin:0"><b>WHO</b> · ${esc(t('who_desc'))}</p></div>
-      <div class="card"><div class="row"><div class="grow"><h3>${esc(t('profile_title'))}</h3>
-        <p class="muted small" style="margin:0">${state.profile?.name ? esc(profileLine()) : esc(t('profile_missing'))}</p></div>
-        <button class="btn" data-act="profile">${esc(t('upload_profile'))}</button></div></div>
-      <div class="actions-row"><button class="btn primary" data-go="assess:entry">${esc(t('start_assessment'))}</button></div>`;
-    root.querySelector('[data-act=profile]').onclick = openProfile;
-  }
-  function profileLine() {
-    const p = state.profile || {};
-    return [p.name, p.location, p.country, p.service_type && t('p_type_' + p.service_type), p.served && `${fmt(+p.served)} ${state.lang === 'id' ? 'jiwa terlayani' : 'people served'}`].filter(Boolean).join(' · ');
+        <p style="margin:0"><b>WHO</b> · ${esc(t('who_desc'))}</p></div>`;
   }
 
-  const PROFILE_FIELDS = [
-    ['name', 'p_name', 'text'], ['location', 'p_location', 'text'], ['country', 'p_country', 'country'],
-    ['service_type', 'p_type', 'type'], ['population', 'p_pop', 'number'], ['served', 'p_served', 'number'],
-    ['connections', 'p_conn', 'number'], ['volume', 'p_volume', 'number'], ['staff', 'p_staff', 'number'],
-    ['contact', 'p_contact', 'text'], ['notes', 'p_notes', 'textarea'],
-  ];
-  /** Responsibility and capacity questions (responsibility.js). Unanswered areas are pre-filled from the service type only. */
+  // Fields of the optional-details form. Other saved profile fields (population, contact, notes, …) are kept as they are.
+  const DETAIL_FIELDS = [['name', 'p_name'], ['location', 'p_location']];
+  /** Responsibility and capacity questions (responsibility.js). Unanswered areas are pre-filled from a saved service type only. */
   function responsibilityFields(p) {
     const suggested = RS.answered(p) ? {} : RS.suggestedRoles(p.service_type);
     const prefilled = Object.keys(suggested).length > 0;
@@ -433,64 +450,34 @@
         <div class="grid2">${areas}</div></fieldset>
       <fieldset class="resp-fields"><legend>${esc(t('cap_title'))}</legend><div class="grid2">${caps}</div></fieldset>`;
   }
-  function openProfile() {
-    const p = state.profile || { country: state.location === 'indonesia' ? 'Indonesia' : '' };
-    const field = ([k, lab, type]) => {
-      const v = esc(p[k] ?? '');
-      let input;
-      if (type === 'country') input = `<select name="${k}"><option value=""></option>${Object.keys(Countries).map(c => `<option ${c === p[k] ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>`;
-      else if (type === 'type') input = `<select name="${k}">${['water', 'ww', 'both'].map(o => `<option value="${o}" ${p[k] === o ? 'selected' : ''}>${esc(t('p_type_' + o))}</option>`).join('')}</select>`;
-      else if (type === 'textarea') input = `<textarea class="field" name="${k}" rows="3">${v}</textarea>`;
-      else input = `<input type="${type}" name="${k}" value="${v}" ${type === 'number' ? 'step="any" min="0"' : ''}>`;
-      return `<label class="field"${type === 'textarea' ? ' style="grid-column:1/-1"' : ''}><span>${esc(t(lab))}</span>${input}</label>`;
-    };
+  /**
+   * Optional details next to the assessment: what the responsibility split, pathways and the proposal title use.
+   * Blank answers stay blank ("not specified"); nothing is derived from the ECAM numbers.
+   */
+  function openDetails() {
+    const p = state.profile || {};
     const m = $('#modal');
-    m.innerHTML = `<form class="box" id="profile-form"><h2>${esc(t('profile_title'))}</h2><p class="muted">${esc(t('profile_sub'))}</p>
-      <div class="row" style="margin-bottom:12px"><label class="btn sm">${esc(t('p_upload'))}<input type="file" id="profile-file" accept=".csv,.json" hidden></label>
-        <button type="button" class="link" id="profile-template">${esc(t('p_template'))}</button></div>
-      <div class="grid2">${PROFILE_FIELDS.map(field).join('')}</div>
+    m.innerHTML = `<form class="box" id="details-form" aria-labelledby="details-title"><h2 id="details-title">${esc(t('details_title'))}</h2><p class="muted">${esc(t('details_sub'))}</p>
+      <div class="grid2">${DETAIL_FIELDS.map(([k, lab]) => `<label class="field"><span>${esc(t(lab))}</span><input type="text" name="${k}" value="${esc(p[k] ?? '')}" placeholder="${esc(t('not_specified'))}"></label>`).join('')}</div>
       ${responsibilityFields(p)}
-      <div class="actions-row"><button type="button" class="btn" id="profile-cancel">${esc(t('cancel'))}</button><button class="btn primary">${esc(t('p_apply'))}</button></div></form>`;
+      <div class="actions-row"><button type="button" class="btn" id="details-cancel">${esc(t('cancel'))}</button><button class="btn primary">${esc(t('details_apply'))}</button></div></form>`;
     m.hidden = false;
-    $('#profile-cancel').onclick = () => (m.hidden = true);
-    $('#profile-template').onclick = () => download('field,value\n' + [...PROFILE_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS].map(k => `${k},`).join('\n') + '\n', 'utility-profile-template.csv', 'text/csv');
-    $('#profile-file').onchange = e => {
-      const f = e.target.files[0];
-      e.target.value = ''; // the same file can be chosen again
-      if (!f) return;
-      f.text().then(txt => {
-        let data = {};
-        if (/\.json$/i.test(f.name)) {
-          const r = CW.parseProfileJson(txt);
-          if (!r.ok) return toast(t('profile_' + r.reason));
-          data = r.profile;
-        } else txt.split(/\r?\n/).slice(1).forEach(line => {
-          const i = line.indexOf(','); if (i < 0) return;
-          data[line.slice(0, i).trim()] = line.slice(i + 1).trim().replace(/^"|"$/g, '');
-        });
-        const form = $('#profile-form');
-        let filled = 0;
-        for (const k of [...PROFILE_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS]) if (data[k] != null && form.elements[k]) { form.elements[k].value = data[k]; filled++; }
-        toast(t(filled ? 'profile_filled' : 'profile_no_profile_fields'));
-      }).catch(() => toast(t('profile_not_json')));
-    };
-    $('#profile-form').onsubmit = e => {
+    $('#details-cancel').onclick = () => (m.hidden = true);
+    $('#details-form').onsubmit = e => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      state.profile = Object.fromEntries([...PROFILE_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS].map(k => [k, String(fd.get(k) ?? '').trim()]));
-      // reuse the profile in the current assessment where it is still empty
-      if (Global) {
-        if (/^(Untitled assessment|Assessment|Penilaian)( \d+)?$/.test(Global.General.Name) && state.profile.name) Global.General.Name = state.profile.name;
-        const c = Countries[state.profile.country];
-        if (c && !Global.General.Country) Object.assign(Global.General, { Country: state.profile.country, Currency: c.currency, conv_kwh_co2: c.conv_kwh_co2, prot_con: c.prot_con, bod_pday: c.bod_pday });
-        if (!Global.Water.ws_resi_pop && +state.profile.population) Global.Water.ws_resi_pop = +state.profile.population;
-        if (!Global.Waste.ww_resi_pop && +state.profile.population) Global.Waste.ww_resi_pop = +state.profile.population;
-      }
-      m.hidden = true; save(); toast(t('p_saved')); render();
+      const answers = Object.fromEntries([...DETAIL_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS].map(k => [k, String(fd.get(k) ?? '').trim()]));
+      if (state.profile || Object.values(answers).some(Boolean)) state.profile = { ...(state.profile || {}), ...answers };
+      m.hidden = true; save(); toast(t('details_saved')); render();
     };
   }
 
+  function assessmentValidity(sc = Global) {
+    const InputCodes = Object.fromEntries(Structure.filter(s => s.sublevel).map(s => {const defaults = new s.class(); return [s.prefix,Object.keys(defaults).filter(c => typeof defaults[c] === 'number')];}));
+    return AV.validate(sc, {Info, Questions, Tables, InputCodes, meta:metaOf(sc), inputStatus:state.inputStatus[idOf(sc)]});
+  }
   function finishAssessment() {
+    if (!assessmentValidity().valid) { go('assess:results'); return; }
     state.finished[idOf(Global)] = new Date().toISOString();
     state.selectedAssessmentId = idOf(Global);
     save(); toast(t('finished'));
@@ -499,6 +486,7 @@
 
   // ---------------------------------------------------------------- stage 2: actions
   function summaryOf(sc) {
+    if (!assessmentValidity(sc).valid) return "Not assessed — correct draft inputs";
     const g = sc.TotalGHG();
     const rows = CWForm.stageTotals(sc).sort((a, b) => b.total - a.total);
     const top = rows[0];
@@ -525,7 +513,7 @@
 
   function viewActionsSelect(root) {
     const orphans = orphanActions();
-    if (!Scenarios.some(s => s.TotalGHG().total > 0)) {
+    if (!Scenarios.some(s => assessmentValidity(s).valid)) {
       root.innerHTML = `<div class="page-head"><h1>${esc(t('identify_title'))}</h1></div><div class="notice warn">${esc(t('no_assessments'))}</div>
         ${orphanNotice(orphans)}<button class="btn primary" data-go="assess:entry">${esc(t('tab_assess'))}</button>`;
       bindOrphans(root, orphans);
@@ -538,7 +526,7 @@
       ${orphanNotice(orphans)}
       ${savedFrom && idOf(savedFrom) !== state.selectedAssessmentId ? `<div class="notice small">${esc(t('actions_saved_for'))}: <b>${esc(savedFrom.General.Name)}</b></div>` : ''}
       <div class="card result-list">${Scenarios.map(s => `<label><input type="radio" name="asel" value="${esc(idOf(s))}" ${idOf(s) === state.selectedAssessmentId ? 'checked' : ''}>
-        <div><b>${esc(s.General.Name)}</b> <span class="muted small">${esc(s.General.AssessmentPeriodStart)} – ${esc(s.General.AssessmentPeriodEnd)}${state.finished[idOf(s)] ? ' · ✓' : ''}</span><br>
+        <div><b>${esc(s.General.Name)}</b> <span class="muted small">${esc(fmtDate(s.General.AssessmentPeriodStart))} – ${esc(fmtDate(s.General.AssessmentPeriodEnd))}${state.finished[idOf(s)] ? ' · ✓' : ''}</span><br>
         <span class="small">${esc(summaryOf(s))}</span></div></label>`).join('')}</div>
       <div class="actions-row"><button class="btn primary" id="show-options">${esc(t('show_options'))}</button></div>`;
     root.querySelectorAll('[name=asel]').forEach(r => r.onchange = () => { state.selectedAssessmentId = r.value; save(); });
@@ -580,7 +568,7 @@
   const openCards = new Set();
   function cardCtx(aid) {
     return {
-      t, L, esc, fmt, stageLabel,
+      t, L, esc, fmt, stageLabel, lang: state.lang,
       labelOf: code => rich(tE(code + '_descr') || tE(code) || code),
       unitView: code => CW.unitView(Units, Info, byId(aid) || Global, code),
       status: (sid, code, value) => inputStatusOf(aid, sid, code, value),
@@ -606,7 +594,7 @@
   }
 
   // ---------------------------------------------------------------- meeting feedback (Oct 20)
-  const fuCtx = () => ({ t, L, esc, fmt, stageLabel,
+  const fuCtx = () => ({ t, L, esc, fmt, stageLabel, lang: state.lang,
     componentText: (p, c) => { const src = AS.sourceOfOutput(p, c); return src ? t('src_' + src) : String(tE(`${p}_KPI_GHG_${c}_descr`) || c).replace(/<[^>]+>/g, ''); } });
   /** Stage 1 results and Stage 2: total inventory vs what the utility can act on (or the contributor panel when the profile is not answered). */
   function responsibilityHtml(sc, ctx) {
@@ -791,6 +779,13 @@
     render();
   }
 
+  // shares stored as fractions (0.1) are shown as percentages; unknown keys keep their code
+  const ASSUMPTION_SHARE = ['solar_share', 'biogas_capture'];
+  const assumptionText = (k, v) => {
+    const label = t('asm_' + k);
+    const value = ASSUMPTION_SHARE.includes(k) ? fmt(100 * v, 0) + ' %' : fmt(v, 2);
+    return `${label === 'asm_' + k ? k : label}: ${value}`;
+  };
   function viewActionsCompare(root) {
     const r = state.actionResult;
     if (!r || r.legacy) return go('actions:select');
@@ -817,7 +812,8 @@
         : DC.card(o, ctx, { ...common, checks: r.checks, explainHtml: explainHtml(o) });
     };
     const rejectedRow = o => `<div class="card dcard rejected" data-card="${esc(o.key)}" data-rejected><div class="row"><span class="grow"><b>${esc(o.id)}</b> · ${esc(L(o.title))}
-        ${rejected[o.key]?.reason ? `<div class="small muted">${esc(t('rejected_reason'))}: ${esc(rejected[o.key].reason)}</div>` : ''}</span>
+        ${rejected[o.key]?.reason ? `<div class="small muted">${esc(t('rejected_reason'))}: ${esc(rejected[o.key].reason)}</div>` : ''}
+        ${inSavedSelection(o.key) ? `<div class="small dc-flag-inline" data-rejected-saved>${esc(t('rejected_in_saved'))}</div>` : ''}</span>
         <button class="btn sm" data-restore-action="${esc(o.key)}">${esc(t('act_restore'))}</button></div></div>`;
     const groups = {};
     for (const o of AS.sortOptions(all, sort)) { const g = o.rule === 'baseline' ? 'baseline' : RS.groupOf(o, state.profile, rejected); (groups[g] = groups[g] || []).push(o); }
@@ -848,7 +844,7 @@
       ${sort === 'original' ? '' : `<p class="small muted" data-sort-note="${sort}">${esc(t('sort_note').replace('{days}', fmt(days, 0)))}</p>`}
       <div class="dcards">${cards}</div>
       <div class="row" style="margin:4px 0 10px"><button class="btn" id="add-custom">+ ${esc(t('add_custom'))}</button></div>
-      <details class="small" style="margin-top:12px"><summary>${esc(t('assumptions_title'))}</summary><div class="notice small">${esc(Object.entries(r.assumptions).map(([k, v]) => `${k} = ${v}`).join(' · '))}</div></details>
+      <details class="small" style="margin-top:12px"><summary>${esc(t('assumptions_title'))}</summary><ul class="notice small" data-assumptions>${Object.entries(r.assumptions).map(([k, v]) => `<li>${esc(assumptionText(k, v))}</li>`).join('')}</ul></details>
       <div class="actions-row"><button class="btn" data-go="actions:select">${esc(t('back'))}</button><button class="btn primary" id="save-actions" ${optionsStale ? 'disabled' : ''}>${esc(t('save_actions'))}</button></div>`;
     root.querySelector('#toggle-details').onclick = () => { state.ui.showDetails = !showDetails; if (showDetails) openCards.clear(); save(); render(); };
     root.querySelector('#action-sort').onchange = e => { state.ui.actionSort = e.target.value; save(); render(); };
@@ -886,16 +882,26 @@
       } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
     });
     root.querySelector('#add-custom').onclick = () => openCustomForm(r.assessmentId, null);
-    root.querySelectorAll('[data-act=edit-profile]').forEach(b => b.onclick = openProfile);
+    root.querySelectorAll('[data-act=edit-profile]').forEach(b => b.onclick = openDetails);
     const optionByKey = k => r.options.find(x => x.key === k) || customByKey(k);
+    // Not relevant: the action leaves the selection; its notes, the saved selection and generated text are kept.
+    // A saved selection that still contains it is outdated (freshness: action_rejected) until saved again.
     root.querySelectorAll('[data-reject]').forEach(b => b.onclick = () => {
+      const key = b.dataset.reject, o = optionByKey(key), id = o ? o.id : '';
+      const saved = inSavedSelection(key), picked = state.selectedKeys.includes(key);
+      if ((saved || picked) && !confirm(t(saved ? 'reject_confirm_saved' : 'reject_confirm_picked').replaceAll('{id}', id))) return;
       const reason = prompt(t('reject_prompt'), '');
       if (reason === null) return;
-      rejected[b.dataset.reject] = { reason: reason.trim().slice(0, 500), at: new Date().toISOString() };
-      state.selectedKeys = state.selectedKeys.filter(k => k !== b.dataset.reject);
+      rejected[key] = { reason: reason.trim().slice(0, 500), at: new Date().toISOString(), ...(picked ? { picked: true } : {}) };
+      state.selectedKeys = state.selectedKeys.filter(k => k !== key);
       save(); render();
     });
-    root.querySelectorAll('[data-restore-action]').forEach(b => b.onclick = () => { delete rejected[b.dataset.restoreAction]; save(); render(); });
+    root.querySelectorAll('[data-restore-action]').forEach(b => b.onclick = () => {
+      const key = b.dataset.restoreAction, was = rejected[key] || {};
+      delete rejected[key];
+      if (was.picked || inSavedSelection(key)) state.selectedKeys = [...new Set([...state.selectedKeys, key])];
+      save(); render();
+    });
     const askAlternatives = async (b, mode) => {
       const o = optionByKey(b.dataset.alt || b.dataset.revise);
       const sc = byId(r.assessmentId);
@@ -955,12 +961,21 @@
   function conceptHtml(p) {
     const cp = p && p.concept;
     if (!cp || !cp.areas) return '';
+    const checks = a => {
+      const c = a.status === 'ai' ? a.checks || {} : {};
+      return [c.unsupported_figures ? t('pc_check_figures').replace('{list}', c.unsupported_figures.join(', ')) : '',
+        c.unknown_tags ? t('pc_check_tags').replace('{list}', c.unknown_tags.join(', ')) : '',
+        c.placeholders_dropped ? t('pc_check_placeholders') : '',
+        a.status === 'ai' && CW.mayBeIncomplete(a.text) ? t('may_be_incomplete') : '']
+        .filter(Boolean).map(s => `<div class="small dc-flag" data-pc-check>${esc(s)}</div>`).join('');
+    };
     return `<div class="card" data-concept><h2>${esc(t('pc_title'))}</h2><p class="small muted">${esc(t('pc_sub'))}</p>
+      ${cp.ai_failed ? `<div class="notice warn small" data-pc-ai-failed>${esc(t('pc_ai_failed'))}</div>` : ''}
       <div id="pc-review">${FU.reviewChecklist(conceptParts(p), fuCtx())}</div>
       ${cp.areas.map((a, i) => `<div class="pc-area" data-area="${a.n}"><div class="row"><h3 class="grow" style="margin:0">${a.n}. ${esc(a.title)}
           <span class="pc-st pc-${esc(a.status)}" data-pc-status="${i}">${esc(t('pc_status_' + a.status))}</span></h3>
           <label class="small"><input type="checkbox" data-pc-reviewed="${i}" ${a.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label></div>
-        <div class="small muted">${esc(a.description || '')}</div>
+        <div class="small muted">${esc(a.description || '')}</div>${checks(a)}
         ${a.questions && a.questions.length ? `<details class="small"><summary>${esc(t('pc_questions'))}</summary><ul>${a.questions.map(q => `<li>${esc(q)}</li>`).join('')}</ul></details>` : ''}
         <textarea data-pc="${i}" rows="${Math.min(12, Math.max(4, String(a.text || '').split('\n').length + 1))}">${esc(a.text)}</textarea></div>`).join('')}
       ${cp.ai ? sourcesHtml(cp.sources) : ''}</div>`;
@@ -979,6 +994,7 @@
       const max = p.total_weeks || 1;
       body = `<div class="card"><div class="row"><h2 class="grow">${esc(t('project_summary'))}</h2><button type="button" class="btn sm" data-chat="plan">${esc(t('chat_btn_plan'))}</button></div>
           ${p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
+          ${p.ai === true && CW.mayBeIncomplete(p.summary) ? `<div class="small dc-flag" data-incomplete="plan">${esc(t('may_be_incomplete'))}</div>` : ''}
           <div class="section-edit"><textarea id="plan-summary">${esc(p.summary || '')}</textarea></div>${p.ai === false ? relatedHtml(p.related || p.sources) : sourcesHtml(p.sources)}${evidenceHtml(p.evidence, p.ai !== false)}</div>
         ${conceptHtml(p)}
         <div class="card" style="overflow:auto"><div class="row"><h2 class="grow">${esc(t('tasks'))}</h2><span class="muted">${esc(t('total_duration'))}: <b>${p.total_weeks}</b> ${esc(t('weeks_unit'))}</span></div>
@@ -1115,12 +1131,12 @@
     busy(btn, true, t('download_all'));
     try {
       const blob = await api('/api/export', exportState(), true);
-      download(blob, `${(state.profile?.name || 'chatwater').replace(/[^\w-]+/g, '_')}-chatwater-files.zip`);
+      download(blob, `${(state.profile?.name || sourceAssessment()?.General?.Name || 'chatwater').replace(/[^\w-]+/g, '_')}-chatwater-files.zip`);
     } catch (err) { toast(t('error') + ': ' + err.message); }
     busy(btn, false);
   }
 
-  const draftParts = p => (p.sections || []).map(s => ({ where: s.title, text: s.text, ai: s.ai === true, reviewed: !!s.reviewed }));
+  const draftParts = p => (p.sections || []).map(s => ({ where: s.title, text: s.text, ai: s.ai === true || s.quotes_plan_summary === 'ai', reviewed: !!s.reviewed }));
   function viewDraft(root) {
     const p = state.proposal;
     if (!p) return go('finance');
@@ -1140,7 +1156,7 @@
         : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
       ${evidenceNotice()}
       <div id="draft-review">${FU.reviewChecklist(draftParts(p), fuCtx())}</div>
-      ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2>${s.ai === true ? `<label class="small" style="margin-right:8px"><input type="checkbox" data-sec-reviewed="${i}" ${s.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label>` : ''}<button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div><textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
+      ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2>${s.ai === true || s.quotes_plan_summary === 'ai' ? `<label class="small" style="margin-right:8px"><input type="checkbox" data-sec-reviewed="${i}" ${s.reviewed ? 'checked' : ''}> ${esc(t('pc_reviewed'))}</label>` : ''}<button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div>${s.quotes_plan_summary === 'ai' ? `<div class="small dc-flag">${esc(t('sec_quotes_ai_summary'))}</div>` : ''}${(s.ai === true && CW.mayBeIncomplete(s.text)) || (s.quotes_plan_summary === 'ai' && CW.mayBeIncomplete(s.text, { anyParagraph: true })) ? `<div class="small dc-flag" data-incomplete="${i}">${esc(t('may_be_incomplete'))}</div>` : ''}<textarea data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
         <button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(t('download_word'))}</button>
@@ -1185,7 +1201,7 @@
   }
   const chatThread = aid => (state.chatThreads || (state.chatThreads = {}))[aid] || [];
   const chatFocusFor = aid => (state.ui.chatFocus && state.ui.chatFocus.aid === aid ? state.ui.chatFocus : null);
-  const chatViewCtx = () => ({ t, esc, fmt });
+  const chatViewCtx = () => ({ t, esc, fmt, fmtDate, stageLabel, inputLabel: code => tE(code + '_descr') || code, lang: state.lang });
   // only the latest answers keep their full context and excerpts in storage
   function compactThread(list) {
     let full = 0;
@@ -1240,6 +1256,8 @@
         plan: state.plan?.deps?.assessmentId === aid ? state.plan : null,
         proposal: state.proposal?.deps?.assessmentId === aid ? state.proposal : null,
         profile: state.profile, financing: state.financing,
+        rejectedActions: Object.fromEntries(Object.entries(state.rejectedActions || {}).filter(([k]) => k.startsWith(aid + '|'))),
+        estimateUse: state.estimateUse?.[aid] || null,
         otherAssessments: Scenarios.filter(s => s !== sc).map(s => ({ id: idOf(s), name: s.General.Name })),
       });
       thread.push({ role: 'assistant', assessmentId: aid, ai: res.ai, content: res.reply || '', local: res.ai === false,
@@ -1301,6 +1319,7 @@
     const loc = e.target.closest('[data-loc]');
     if (loc) { state.location = loc.dataset.loc; state.lang = loc.dataset.loc === 'indonesia' ? 'id' : 'en'; save(); return render(); }
   });
+  window.addEventListener('pagehide', () => persist());
   $('#btn-checkpoint').onclick = checkpoint;
   $('#chat-clear').onclick = () => {
     const sc = chatAssessment(), aid = sc ? idOf(sc) : null;
@@ -1315,9 +1334,9 @@
 
   // ---------------------------------------------------------------- boot
   window.App = {
-    get state() { return state; }, fillEstimates, recordEstimate, isEstimate, estimatesList, responsibilityHtml, openProfile, fuCtx, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
+    get state() { return state; }, fmtDate, tEOriginal, fillEstimates, recordEstimate, isEstimate, estimatesList, responsibilityHtml, openDetails, fuCtx, t, tE, rich, esc, fmt, L, save, toast, download, askChat, stageLabel,
     idOf, cardCtx, contributorOf, relatedActions, metaOf,
-    setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
+    assessmentValidity, setCurrent, setGwp, newScenario, duplicateScenario, deleteScenario, loadSample, importEcamText, render, finishAssessment, markEntered,
   };
 
   async function boot() {

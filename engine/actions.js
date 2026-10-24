@@ -13,17 +13,19 @@
 const t = (kg) => kg / 1000; // kg -> t
 const fmt = (n, d = 0) => (n == null || !Number.isFinite(n)) ? '–'
   : n.toLocaleString('en-US', { maximumFractionDigits: d });
+const fmtId = (n, d = 0) => (n == null || !Number.isFinite(n)) ? '–'
+  : n.toLocaleString('id-ID', { maximumFractionDigits: d });
 
 // Scenario assumptions are explicit and editable here (and shown in the UI).
 const ASSUMPTIONS = {
-  nrw_reduction_points: 5,     // percentage points of NRW reduced in scenario
+  nrw_reduction_points: 5,     // percentage points of water loss reduced in scenario
   solar_share: 0.10,           // share of grid electricity replaced by solar PV
   desludging_emptied_pct: 33,  // % of produced faecal sludge emptied per year (scheduled desludging about every 3 years)
   biogas_capture: 0.5,         // share of WWTP treatment CH4 captured in scenario
 };
 
 // Trigger thresholds used by the rules below (and reported by ruleChecks).
-const NRW_TRIGGER = 0.15;      // non-revenue water share above which NRW reduction is offered
+const NRW_TRIGGER = 0.15;      // water-loss share above which water-loss reduction is offered
 
 function substages(r, prefix) { return r.substages.filter(s => s.prefix === prefix); }
 
@@ -71,8 +73,9 @@ const RULES = [
         expected_kgco2: o[p + '_KPI_ghg_estm_red'],
         evidence: {
           en: `Measured electromechanical efficiency is ${fmt(o[p + '_KPI_nrg_elec_eff'], 1)}% against an expected ${fmt(s.inputs?.[p + '_pmp_exff'], 0)}%.`,
-          id: `Efisiensi elektromekanis terukur ${fmt(o[p + '_KPI_nrg_elec_eff'], 1)}% dibandingkan target ${fmt(s.inputs?.[p + '_pmp_exff'], 0)}%.`,
+          id: `Efisiensi elektromekanis terukur ${fmtId(o[p + '_KPI_nrg_elec_eff'], 1)}% dibandingkan target ${fmtId(s.inputs?.[p + '_pmp_exff'], 0)}%.`,
         },
+        basis_text: { en: "ECAM's estimated energy saving and emission reduction if this pump reached its expected efficiency.", id: "Perkiraan penghematan energi dan penurunan emisi dari ECAM bila pompa ini mencapai efisiensi yang diharapkan." },
         basis: `ECAM ${p}_KPI_nrg_estm_sav and ${p}_KPI_ghg_estm_red`,
         condition: { en: 'Duty-point test and design review', id: 'Uji titik kerja dan tinjauan desain' },
       };
@@ -96,9 +99,10 @@ const RULES = [
       expected_text: { en: 'Evidence for a decision', id: 'Bukti untuk pengambilan keputusan' },
       evidence: {
         en: `${fmt(s.energy_kwh)} kWh grid electricity (${fmt(100 * s.energy_kwh / r.energy_kwh, 0)}% of the utility total) but no pump efficiency data yet.`,
-        id: `${fmt(s.energy_kwh)} kWh listrik PLN (${fmt(100 * s.energy_kwh / r.energy_kwh, 0)}% dari total) tetapi belum ada data efisiensi pompa.`,
+        id: `${fmtId(s.energy_kwh)} kWh listrik PLN (${fmtId(100 * s.energy_kwh / r.energy_kwh, 0)}% dari total) tetapi belum ada data efisiensi pompa.`,
       },
-      basis: 'ECAM energy inputs; pump-efficiency questions not answered',
+      basis_text: { en: "The electricity entered in ECAM for this stage; the pump-efficiency questions are not answered yet.", id: "Listrik yang diisikan di ECAM untuk tahap ini; pertanyaan efisiensi pompa belum dijawab." },
+        basis: 'ECAM energy inputs; pump-efficiency questions not answered',
       condition: { en: 'Audit scope and cost', id: 'Lingkup dan biaya audit' },
     }),
   },
@@ -108,8 +112,8 @@ const RULES = [
       && (1 - s.inputs.wsd_auth_con / s.inputs.wsd_vol_dist) > NRW_TRIGGER),
     trigger: s => ({
       text: {
-        en: `Non-revenue water is above ${NRW_TRIGGER * 100}% (distributed water not counted as authorized consumption).`,
-        id: `Air tak berekening di atas ${NRW_TRIGGER * 100}% (air yang didistribusikan tetapi tidak tercatat sebagai konsumsi resmi).`,
+        en: `Water loss is above ${NRW_TRIGGER * 100}% (distributed water not counted as authorized consumption).`,
+        id: `Kehilangan air di atas ${NRW_TRIGGER * 100}% (air yang didistribusikan tetapi tidak tercatat sebagai konsumsi resmi).`,
       },
       values: [
         { code: 'wsd_vol_dist', value: s.inputs.wsd_vol_dist, unit: 'm³' },
@@ -127,16 +131,17 @@ const RULES = [
       const kwh = m3Saved * kwhPerM3;
       return {
         category: 'water',
-        title: { en: `Reduce non-revenue water – ${s.name}`, id: `Penurunan air tak berekening – ${s.name}` },
+        title: { en: `Reduce water loss – ${s.name}`, id: `Penurunan kehilangan air – ${s.name}` },
         expected_kwh: kwh, expected_kgco2: kwh * r.factors.conv_kwh_co2,
         scenario: {
-          en: `Scenario: NRW cut by ${ASSUMPTIONS.nrw_reduction_points} percentage points at ${fmt(kwhPerM3, 2)} kWh/m³`,
-          id: `Skenario: ATR turun ${ASSUMPTIONS.nrw_reduction_points} poin persen pada ${fmt(kwhPerM3, 2)} kWh/m³`,
+          en: `Scenario: water loss cut by ${ASSUMPTIONS.nrw_reduction_points} percentage points at ${fmt(kwhPerM3, 2)} kWh/m³`,
+          id: `Skenario: kehilangan air turun ${ASSUMPTIONS.nrw_reduction_points} poin persen pada ${fmtId(kwhPerM3, 2)} kWh/m³`,
         },
         evidence: {
-          en: `Non-revenue water is about ${fmt(100 * nrw, 0)}% (distributed ${fmt(i.wsd_vol_dist)} m³, authorized consumption ${fmt(i.wsd_auth_con)} m³).`,
-          id: `Air tak berekening sekitar ${fmt(100 * nrw, 0)}% (didistribusikan ${fmt(i.wsd_vol_dist)} m³, konsumsi resmi ${fmt(i.wsd_auth_con)} m³).`,
+          en: `Water loss is about ${fmt(100 * nrw, 0)}% (distributed ${fmt(i.wsd_vol_dist)} m³, authorized consumption ${fmt(i.wsd_auth_con)} m³).`,
+          id: `Kehilangan air sekitar ${fmtId(100 * nrw, 0)}% (didistribusikan ${fmtId(i.wsd_vol_dist)} m³, konsumsi resmi ${fmtId(i.wsd_auth_con)} m³).`,
         },
+        basis_text: { en: "Distributed volume, authorised consumption and water-supply electricity from ECAM; the reduction itself is a scenario.", id: "Volume air yang didistribusikan, konsumsi resmi, dan listrik air minum dari ECAM; besar penurunannya berupa skenario." },
         basis: 'ECAM wsd_vol_dist, wsd_auth_con and water-supply energy inputs',
         condition: { en: 'Water balance (IWA) and DMA metering', id: 'Neraca air (IWA) dan meter DMA' },
       };
@@ -180,8 +185,9 @@ const RULES = [
         },
         evidence: {
           en: `Containment emits ${fmt(t(ghg))} tCO2eq, ${fmt(100 * ghg / r.totals.total, 0)}% of the utility total.`,
-          id: `Penampungan menghasilkan ${fmt(t(ghg))} tCO2eq, ${fmt(100 * ghg / r.totals.total, 0)}% dari total.`,
+          id: `Penampungan menghasilkan ${fmtId(t(ghg))} tCO2eq, ${fmtId(100 * ghg / r.totals.total, 0)}% dari total.`,
         },
+        basis_text: { en: "ECAM containment emissions, recalculated with ECAM's own estimates of the sludge emptied and the organic load (BOD) it removes.", id: "Emisi penampungan dari ECAM, dihitung ulang dengan perkiraan ECAM sendiri untuk lumpur yang dikuras dan beban organik (BOD) yang ikut terbuang." },
         basis: 'ECAM wwo_KPI_GHG_containment, re-run with Estimations.wwo_fslu_emp and wwo_bod_rmvd',
         condition: { en: 'Containment survey and IPLT (sludge treatment) capacity', id: 'Survei penampungan dan kapasitas IPLT' },
       };
@@ -209,8 +215,9 @@ const RULES = [
         expected_text: { en: 'Up to the full untreated-discharge emission', id: 'Hingga seluruh emisi pembuangan tak terolah' },
         evidence: {
           en: `${fmt(s.inputs?.wwc_vol_coll_unt)} m³ collected wastewater is discharged untreated: ${fmt(t(ghg), 1)} tCO2eq.`,
-          id: `${fmt(s.inputs?.wwc_vol_coll_unt)} m³ air limbah terkumpul dibuang tanpa pengolahan: ${fmt(t(ghg), 1)} tCO2eq.`,
+          id: `${fmtId(s.inputs?.wwc_vol_coll_unt)} m³ air limbah terkumpul dibuang tanpa pengolahan: ${fmtId(t(ghg), 1)} tCO2eq.`,
         },
+        basis_text: { en: "ECAM emissions from collected wastewater discharged untreated. This is an upper bound: treating the water would add some treatment emissions.", id: "Emisi ECAM dari air limbah terkumpul yang dibuang tanpa pengolahan. Ini batas atas: mengolah air tersebut akan menambah sebagian emisi pengolahan." },
         basis: 'ECAM wwc_KPI_GHG_cso (upper bound; treatment emissions would partly replace it)',
         condition: { en: 'Hydraulic study and WWTP spare capacity', id: 'Studi hidrolika dan kapasitas cadangan IPAL' },
       };
@@ -242,8 +249,9 @@ const RULES = [
         },
         evidence: {
           en: `Treatment process emits ${fmt(t(ch4), 1)} tCO2eq as CH4.`,
-          id: `Proses pengolahan mengemisikan ${fmt(t(ch4), 1)} tCO2eq sebagai CH4.`,
+          id: `Proses pengolahan mengemisikan ${fmtId(t(ch4), 1)} tCO2eq sebagai CH4.`,
         },
+        basis_text: { en: "ECAM methane (CH₄) emissions from the treatment process; the captured share is a scenario.", id: "Emisi metana (CH₄) dari proses pengolahan menurut ECAM; bagian yang ditangkap berupa skenario." },
         basis: 'ECAM wwt_KPI_GHG_tre (CH4)',
         condition: { en: 'Biogas yield test and gas-use options', id: 'Uji hasil biogas dan opsi pemanfaatan gas' },
       };
@@ -262,8 +270,9 @@ const RULES = [
         category: 'energy',
         title: { en: `Reduce diesel use in engines – ${s.name}`, id: `Kurangi penggunaan solar pada genset – ${s.name}` },
         expected_kwh: null, expected_kgco2: null,
-        expected_text: { en: `Benefit not yet calculated (fuel emits ${fmt(t(ghg), 1)} tCO2eq)`, id: `Manfaat belum dihitung (bahan bakar ${fmt(t(ghg), 1)} tCO2eq)` },
-        evidence: { en: `On-site engines emit ${fmt(t(ghg), 1)} tCO2eq.`, id: `Mesin di lokasi mengemisikan ${fmt(t(ghg), 1)} tCO2eq.` },
+        expected_text: { en: `Benefit not yet calculated (fuel emits ${fmt(t(ghg), 1)} tCO2eq)`, id: `Manfaat belum dihitung (bahan bakar ${fmtId(t(ghg), 1)} tCO2eq)` },
+        evidence: { en: `On-site engines emit ${fmt(t(ghg), 1)} tCO2eq.`, id: `Mesin di lokasi mengemisikan ${fmtId(t(ghg), 1)} tCO2eq.` },
+        basis_text: { en: "ECAM emissions from fuel burned on site.", id: "Emisi ECAM dari bahan bakar yang dibakar di lokasi." },
         basis: `ECAM ${s.prefix}_KPI_GHG_fuel`,
         condition: { en: 'Generator run-hours log and grid reliability', id: 'Catatan jam operasi genset dan keandalan listrik' },
       };
@@ -291,8 +300,9 @@ const RULES = [
         },
         evidence: {
           en: `Utility uses ${fmt(r.energy_kwh)} kWh of grid electricity at ${r.factors.conv_kwh_co2} kgCO2/kWh.`,
-          id: `Utilitas memakai ${fmt(r.energy_kwh)} kWh listrik PLN dengan faktor ${r.factors.conv_kwh_co2} kgCO2/kWh.`,
+          id: `Utilitas memakai ${fmtId(r.energy_kwh)} kWh listrik PLN dengan faktor ${fmtId(r.factors.conv_kwh_co2, 3)} kgCO2/kWh.`,
         },
+        basis_text: { en: "Total grid electricity in ECAM multiplied by the grid emission factor; the replaced share is a scenario.", id: "Total listrik PLN dalam ECAM dikalikan faktor emisi jaringan; bagian yang digantikan berupa skenario." },
         basis: 'ECAM TotalNRG x conv_kwh_co2',
         condition: { en: 'Site area, PLN net-metering rules and tariff', id: 'Luas lahan, aturan PLN dan tarif' },
       };
@@ -323,9 +333,10 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
     expected_kwh: 0, expected_kgco2: 0,
     evidence: {
       en: `Baseline: ${fmt(t(results.totals.total))} tCO2eq and ${fmt(results.energy_kwh)} kWh over ${fmt(results.period.days)} days.`,
-      id: `Garis dasar: ${fmt(t(results.totals.total))} tCO2eq dan ${fmt(results.energy_kwh)} kWh selama ${fmt(results.period.days)} hari.`,
+      id: `Garis dasar: ${fmtId(t(results.totals.total))} tCO2eq dan ${fmtId(results.energy_kwh)} kWh selama ${fmtId(results.period.days)} hari.`,
     },
-    basis: 'ECAM TotalGHG, TotalNRG',
+    basis_text: { en: "ECAM total emissions and total energy use.", id: "Total emisi dan total penggunaan energi menurut ECAM." },
+        basis: 'ECAM TotalGHG, TotalNRG',
     condition: { en: 'No claimed saving', id: 'Tidak ada klaim penghematan' },
   }];
   for (const rule of RULES) {
@@ -336,6 +347,12 @@ function suggestActions(results, assessment, engine, gwpIndex = 0) {
   const checks = ruleChecks(results, where);
   const status = v => (typeof v === 'number' && Number.isFinite(v) ? 'quantified' : 'not_quantified');
   options.forEach(o => {
+    if (o.rule === 'pump_upgrade' && o.trigger?.review?.includes('pump_energy_basis')) {
+      const warning = {en:'Provisional estimate: ECAM subtracts estimated new pump electricity from total substage electricity. Other equipment may be included in the saving. A pump-only boundary has not been established; Chimdi must approve the methodology before this benefit is used.', id:'Perkiraan sementara: ECAM mengurangi listrik pompa baru dari listrik total subtahap. Penghematan dapat mencakup peralatan lain. Batas khusus pompa belum ditetapkan; Chimdi perlu menyetujui metodologinya sebelum manfaat ini digunakan.'};
+      o.provisional_warning = warning;
+      for (const lang of ['en','id']) o.condition[lang] += ' ' + warning[lang];
+      for (const lang of ['en','id']) o.basis_text[lang] += ' ' + warning[lang];
+    }
     o.benefit_status = { kgco2: status(o.expected_kgco2), kwh: status(o.expected_kwh), ...o.benefit_status };
   });
   options.forEach((o, k) => { if (!o.id) o.id = 'A' + String(k).padStart(2, '0'); });

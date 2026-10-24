@@ -38,13 +38,13 @@
     const { esc, fmt } = ctx;
     if (!values || !values.length) return '';
     const shown = n => fmt(n, typeof n === 'number' && n !== 0 && Math.abs(n) < 10 ? 3 : undefined);
-    return `<ul class="dc-values">${values.map(v => `<li data-value="${esc(v.code || v.label)}">${valueLabel(v, ctx)}: <b>${esc(shown(v.value))}</b> ${esc(v.unit || '')}</li>`).join('')}</ul>`;
+    return `<ul class="dc-values">${values.map(v => `<li data-value="${esc(v.code || v.label)}">${valueLabel(v, ctx)}: <b>${esc(shown(v.value))}</b> ${esc(CW.unitLabel(v.unit || '', ctx.lang))}</li>`).join('')}</ul>`;
   }
 
   /** Value and unit as the Stage 1 form shows them. */
   function shown(code, value, ctx) {
     const u = ctx.unitView ? ctx.unitView(code) : { unit: '', mult: 1 };
-    return { text: value == null ? '–' : ctx.fmt(value / (u.mult || 1)), unit: String(u.unit || '').replace(/\bm3\b/g, 'm³') };
+    return { text: value == null ? '–' : ctx.fmt(value / (u.mult || 1)), unit: CW.unitLabel(String(u.unit || ''), ctx.lang).replace(/\bm3\b/g, 'm³') };
   }
   const userSet = s => s.confirmed || s.origin === 'manual';
   function statusText(s, t) {
@@ -204,7 +204,8 @@
             <div class="small"><span class="muted">${esc(t('assessment_data'))}:</span> ${esc(L(o.evidence))}</div></dd>
           <dt>${esc(t('est_benefit'))}</dt><dd>${benefit(o, ctx)}
             ${o.scenario ? `<div class="small"><span class="muted">${esc(t('scenario'))}:</span> ${esc(L(o.scenario))}</div>` : ''}
-            <div class="small"><span class="muted">${esc(t('basis'))}:</span> <code>${esc(o.basis)}</code></div></dd>
+            <div class="small" data-basis><span class="muted">${esc(t('basis'))}:</span> ${o.basis_text ? esc(L(o.basis_text)) : `<code>${esc(o.basis)}</code>`}</div>
+            ${o.basis_text && /\b(?:\w+_\w+|TotalGHG|TotalNRG)\b/.test(o.basis || '') ? `<div class="small muted" data-basis-codes>${esc(t('basis_codes'))}: <code>${esc((o.basis.match(/\b(?:\w+_\w+|TotalGHG|TotalNRG)\b/g) || []).join(', '))}</code></div>` : ''}</dd>
           ${sourceDetails(o, ctx)}
           ${base ? '' : `<dt>${esc(t('supporting_doc'))}</dt><dd data-support>${esc(t('no_supporting_doc'))}</dd>
           <dt>${esc(t('before_deciding'))}</dt><dd><div class="small"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</div>

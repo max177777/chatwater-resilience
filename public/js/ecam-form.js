@@ -20,7 +20,7 @@ const CWForm = (() => {
     if (!i) return '';
     if (i.magnitude === 'Currency') return Global.General.Currency;
     if (i.magnitude === 'Option') return '';
-    return base ? (i.unit || '') : CW.unitView(Units, Info, Global, code).unit;
+    return CW.unitLabel(base ? (i.unit || '') : CW.unitView(Units, Info, Global, code).unit, A().state.lang);
   }
   function labelOf(code) {
     return A().tE(code + '_descr') || A().tE(code) || code;
@@ -45,14 +45,15 @@ const CWForm = (() => {
     const { t, esc, fmt } = A();
     const info = Info[code] || {};
     const id = 'in_' + code;
+    const status = AV.state(A().state.inputStatus[A().idOf(Global)], A().idOf(stage, 's'), code, stage[code]);
     let control = '', extra = '';
     if (info.magnitude === 'Option' && info.table && Tables[info.table]) {
       control = `<select id="${id}" data-code="${code}" data-kind="option">` +
-        Tables[info.table].map((row, i) => `<option value="${i}" ${stage[code] == i ? 'selected' : ''}>${esc(A().tE(row.name) || row.name)}</option>`).join('') +
+        `${status === 'missing' ? '<option value="" selected>Choose / Pilih</option>' : ''}` + Tables[info.table].map((row, i) => `<option value="${i}" ${status !== 'missing' && stage[code] == i ? 'selected' : ''}>${esc(A().tE(row.name) || row.name)}</option>`).join('') +
         '</select>';
     } else {
-      const shown = stage[code] / mult(code);
-      control = `<input type="number" step="any" id="${id}" data-code="${code}" data-kind="num" value="${Number.isFinite(shown) ? +shown.toPrecision(12) : 0}">`;
+      const shown = typeof stage[code] === 'number' ? stage[code] / mult(code) : stage[code];
+      control = `<input type="text" inputmode="decimal" id="${id}" data-code="${code}" data-kind="num" value="${status === 'missing' ? '' : esc(typeof shown === 'number' && Number.isFinite(shown) ? +shown.toPrecision(12) : (shown ?? ''))}">`;
       const ex = Exceptions[code];
       if (ex && Tables[ex.table]) {
         extra += `<select class="small" data-code="${code}" data-kind="exception" aria-label="${esc(t('select_option'))}">
@@ -77,13 +78,14 @@ const CWForm = (() => {
         }
       }
     }
+    if (status === 'unconfirmed') extra += '<span class="small muted">Provenance unconfirmed / Sumber belum dikonfirmasi</span>';
     const expla = A().tE(code + '_expla');
     return `<tr class="${nested ? 'nested' : ''}">
       <td class="lab"><label for="${id}">${A().rich(labelOf(code))}</label>
         ${expla ? `<button type="button" class="link qhelp" data-help="${code}">${esc(t('more_info'))}</button>` : ''}
-        <div class="expla" id="help_${code}" hidden>${A().rich(expla)}<br><button type="button" class="link" data-ask="${code}">${esc(t('ask_chat'))}</button></div>
+        <div class="expla" id="help_${code}" hidden>${A().tEOriginal(code + '_expla') ? `<div class="small muted" data-help-original>${esc(t('ecam_help_original'))}</div><div lang="en">${A().rich(expla)}</div>` : A().rich(expla)}<br><button type="button" class="link" data-ask="${code}">${esc(t('ask_chat'))}</button></div>
       </td>
-      <td class="val">${control}${extra}</td>
+      <td class="val">${control}${extra}<div class="field-error" data-error="${code}" role="status"></div></td>
       <td class="unit">${A().rich(unitOf(code))}</td>
     </tr>`;
   }
@@ -96,7 +98,7 @@ const CWForm = (() => {
       <td class="unit"><label><input type="radio" name="q_${q}" data-q="${q}" value="0" ${!on ? 'checked' : ''} ${hiddenQ ? 'disabled' : ''}> ${esc(t('no'))}</label>
       <label><input type="radio" name="q_${q}" data-q="${q}" value="1" ${on ? 'checked' : ''} ${hiddenQ ? 'disabled' : ''}> ${esc(t('yes'))}</label></td></tr>`;
     if (on && !hiddenQ) {
-      for (const code of Questions[q].variables) if (typeof ss[code] === 'number') html += inputRow(code, ss, true);
+      for (const code of Questions[q].variables) if (Object.hasOwn(ss,code) && typeof ss[code] !== 'function') html += inputRow(code, ss, true);
     }
     return html;
   }
@@ -111,10 +113,13 @@ const CWForm = (() => {
 
   // --- outputs ------------------------------------------------------------
   function outputsTable(struct, ss) {
+    if (!A().assessmentValidity().valid) return '<p role="status">Cannot calculate — correct draft inputs. / Tidak dapat dihitung — perbaiki data draf.</p>';
     const { t, esc, fmt } = A();
     const rows = (struct.class.equations || []).map(eq => {
+      const available = AV.availability(ss, eq, {Questions, sid:A().idOf(ss,'s'), inputStatus:A().state.inputStatus[A().idOf(Global)]});
+      if (['unknown','unavailable','not_applicable'].includes(available.status)) return `<tr><td>${A().rich(labelOf(eq))}</td><td>${esc(available.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate')}: ${esc((available.missing || []).join(', '))}</td></tr>`;
       const v = safeNum(() => outputTotal(ss[eq]()));
-      if (v === null || v === 0) return '';
+      if (v === null) return '';
       const isGHG = /_KPI_GHG/.test(eq);
       const unit = isGHG ? 'kgCO₂eq' : unitOf(eq, true);
       return `<tr${isGHG && eq === struct.prefix + '_KPI_GHG' ? ' style="font-weight:700"' : ''}><td>${A().rich(labelOf(eq))}</td><td class="num">${fmt(v)}</td><td class="unit small muted">${A().rich(unit)}</td></tr>`;
@@ -124,6 +129,7 @@ const CWForm = (() => {
 
   // --- KPI strip ----------------------------------------------------------
   function kpis() {
+    if (!A().assessmentValidity().valid) return '<div class="notice warn">Not assessed — draft inputs need correction. / Belum dinilai — perbaiki data draf.</div>';
     const { t, fmt } = A();
     const g = Global.TotalGHG(), e = Global.TotalNRG();
     const pop = Global.Water.ws_serv_pop() || Global.Waste.ww_serv_pop() || 0;
@@ -138,13 +144,15 @@ const CWForm = (() => {
     const { t, esc, state } = A();
     const g = Global.General;
     const countries = Object.keys(Countries);
-    const gwp = GWP_reports.map((r, i) => `<option value="${i}" ${state.gwpIndex == i ? 'selected' : ''}>${esc(r.report)}</option>`).join('');
-    const num = (k, unit) => `<label class="field"><span>${esc(t(k))}</span><div class="row"><input type="number" step="any" data-gen="${k}" value="${g[k]}" class="grow"><span class="small muted">${unit}</span></div></label>`;
+    const gwp = GWP_reports.map((r, i) => `<option value="${i}" ${state.gwpIndex == i ? 'selected' : ''}>${esc(CW.gwpLabel(r.report, state.lang))}</option>`).join('');
+    // display only: binary floating-point noise (e.g. 0.30000000000000004) is hidden; the stored value is unchanged unless the user edits it
+    const shown = v => (typeof v === 'number' && Number.isFinite(v) ? String(+v.toPrecision(12)) : esc(v ?? ''));
+    const num = (k, unit) => `<label class="field"><span>${esc(t(k))}</span><div class="row"><input type="text" inputmode="decimal" data-numeric="1" data-gen="${k}" value="${shown(g[k])}" class="grow"><span data-error="${k}" class="field-error"></span><span class="small muted">${esc(CW.unitLabel(unit, state.lang))}</span></div></label>`;
     return `<div class="card"><h2>${esc(t('general'))}</h2>
       <label class="field"><span>${esc(t('a_name'))}</span><input type="text" data-gen="Name" value="${esc(g.Name)}"></label>
       <div class="grid2">
-        <label class="field"><span>${esc(t('period'))} — ${esc(t('from'))}</span><input type="date" data-gen="AssessmentPeriodStart" value="${esc(g.AssessmentPeriodStart)}"></label>
-        <label class="field"><span>${esc(t('to'))} (${A().fmt(Global.Days())} ${esc(t('days'))})</span><input type="date" data-gen="AssessmentPeriodEnd" value="${esc(g.AssessmentPeriodEnd)}"></label>
+        <label class="field"><span>${esc(t('period'))} — ${esc(t('from'))}</span><input type="date" data-gen="AssessmentPeriodStart" value="${esc(g.AssessmentPeriodStart)}"><span data-error="AssessmentPeriodStart" class="field-error"></span></label>
+        <label class="field"><span>${esc(t('to'))} (${Global.Days() > 0 ? A().fmt(Global.Days()) : '—'} ${esc(t('days'))})</span><input type="date" data-gen="AssessmentPeriodEnd" value="${esc(g.AssessmentPeriodEnd)}"><span data-error="AssessmentPeriodEnd" class="field-error"></span></label>
         <label class="field"><span>${esc(t('country'))}</span><select data-gen="Country"><option value=""></option>${countries.map(c => `<option ${c === g.Country ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></label>
         <label class="field"><span>${esc(t('currency'))}</span><input type="text" data-gen="Currency" value="${esc(g.Currency)}" maxlength="3"></label>
       </div>
@@ -164,7 +172,7 @@ const CWForm = (() => {
   function stagePanel(level) {
     const { t, esc } = A();
     const obj = Global[level];
-    const codes = Object.keys(obj).filter(k => typeof obj[k] === 'number');
+    const codes = Object.keys(obj).filter(k => Info[k] && Info[k].magnitude !== 'text' && typeof obj[k] !== 'function');
     return `<div class="card"><h2>${esc(A().stageLabel(level))} — ${esc(t('stage_level_inputs'))}</h2>
       <table class="inputs"><tbody>${codes.map(c => inputRow(c, obj)).join('')}</tbody></table></div>`;
   }
@@ -172,7 +180,7 @@ const CWForm = (() => {
   function substagePanel(sel) {
     const { t, esc } = A();
     const ss = sel.obj, struct = sel.struct;
-    const codes = Object.keys(ss).filter(k => typeof ss[k] === 'number' && !Questions.is_inside(k));
+    const codes = Object.keys(ss).filter(k => Info[k] && Info[k].magnitude !== 'text' && typeof ss[k] !== 'function' && !Questions.is_inside(k));
     const qs = Questions.get_questions(ss);
     return `<div class="card">
       <div class="row" style="margin-bottom:8px"><h2 class="grow" style="margin:0">${esc(A().stageLabel(struct.prefix))} · ${esc(ss.name)}</h2>
@@ -232,18 +240,56 @@ const CWForm = (() => {
         </div>
       </div>`;
     bindEntry(root, sel);
+    showErrors(root,sel);
   }
 
+  function summaryHtml() {
+    const {esc} = A(), v = A().assessmentValidity();
+    return `<div class="notice warn" role="status"><b>Draft assessment: correct the inputs below. / Penilaian draf: perbaiki data berikut.</b><ul>${v.issues.map((x,i) => `<li><button class="link" data-validity-issue="${i}">${esc(labelOf(x.code))}: ${esc(x.message)}</button></li>`).join('')}</ul></div>`;
+  }
+  function bindIssues(root) {
+    root.querySelectorAll('[data-validity-issue]').forEach(b => b.onclick = () => {
+      const x = A().assessmentValidity().issues[+b.dataset.validityIssue];
+      A().state.ui.sel = x.kind === 'ss' ? {kind:'ss',prefix:x.prefix,index:x.index} : x.kind === 'stage' ? {kind:'stage',level:x.level} : {kind:'general'};
+      A().state.ui.view = 'assess:entry'; A().save(); A().render();
+      const field = document.querySelector(`[data-code="${x.code}"], [data-gen="${x.code}"]`);
+      field?.focus(); field?.scrollIntoView({block:'center'});
+    });
+  }
+  function showErrors(root,sel) {
+    const issues = A().assessmentValidity().issues;
+    root.querySelectorAll('[data-error]').forEach(el => {
+      el.textContent = issues.filter(x => x.code === el.dataset.error && (sel.kind !== 'ss' || (x.prefix === sel.prefix && x.index === sel.index))).map(x => x.message).join(' ');
+    });
+    root.querySelectorAll('[data-gen], [data-code]').forEach(el => {
+      const bad = issues.some(x => x.code === (el.dataset.gen || el.dataset.code) && (sel.kind !== 'ss' || (x.prefix === sel.prefix && x.index === sel.index)));
+      el.setAttribute('aria-invalid',String(bad));
+    });
+    let box = root.querySelector('#validity-summary');
+    if (!box) { box = document.createElement('div'); box.id='validity-summary'; root.querySelector('#panel')?.prepend(box); }
+    box.innerHTML = issues.length ? summaryHtml() : ''; bindIssues(box);
+  }
+  function parseNumber(raw, multiplier = 1) {
+    if (!raw.trim()) return null;
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(raw.trim())) return raw;
+    const n = Number(raw) * multiplier;
+    return Number.isFinite(n) ? n : raw;
+  }
   function refreshLive(sel) {
     document.getElementById('kpis').innerHTML = kpis();
     if (sel.kind === 'ss') {
       const out = document.getElementById('ss-outputs');
       if (out) out.innerHTML = outputsTable(sel.struct, sel.obj);
     }
+    showErrors(document.getElementById('panel').closest('main') || document,sel);
     A().save();
   }
 
+  let entryBindings;
   function bindEntry(root, sel) {
+    entryBindings?.abort();
+    entryBindings = new AbortController();
+    const events = {signal:entryBindings.signal};
     const app = A();
     const stage = sel.obj;
     const entered = (code, origin) => { if (sel.kind === 'ss') app.markEntered(sel.struct.prefix, stage, code, origin); };
@@ -252,20 +298,19 @@ const CWForm = (() => {
     root.addEventListener('input', e => {
       const el = e.target;
       if (el.dataset.kind === 'num' && stage) {
-        const v = parseFloat(el.value);
-        stage[el.dataset.code] = Number.isFinite(v) ? v * mult(el.dataset.code) : 0;
+        stage[el.dataset.code] = parseNumber(el.value, mult(el.dataset.code));
         entered(el.dataset.code);
         refreshLive(sel);
       } else if (el.dataset.gen && el.tagName !== 'SELECT') {
         const k = el.dataset.gen;
-        if (el.type === 'number') {
-          Global.General[k] = parseFloat(el.value) || 0;
+        if (el.dataset.numeric) {
+          Global.General[k] = parseNumber(el.value);
           if (k === 'conv_kwh_co2') applyGridFactor();
         } else Global.General[k] = el.value;
         if (k === 'Name') document.querySelector(`#sc-select option[value="${app.state.current}"]`).textContent = el.value;
         refreshLive(sel);
       }
-    });
+    }, events);
 
     root.addEventListener('change', e => {
       const el = e.target;
@@ -289,7 +334,7 @@ const CWForm = (() => {
         app.save(); return app.render();
       }
       if (el.dataset.q) { setQuestion(stage, el.dataset.q, el.value === '1'); app.save(); return app.render(); }
-    });
+    }, events);
 
     root.addEventListener('click', e => {
       const b = e.target.closest('button, [data-sel]');
@@ -328,7 +373,7 @@ const CWForm = (() => {
         list.splice(sel.index, 1);
         app.state.ui.sel = { kind: 'general' }; app.save(); app.render();
       }
-    });
+    }, events);
   }
 
   function applyGridFactor() {
@@ -364,7 +409,21 @@ const CWForm = (() => {
     });
   }
 
+  function waterBalanceHtml() {
+    const {esc,fmt} = A();
+    return Global.Water.Distribution.map(ss => {
+      const metric = code => {
+        const av = AV.availability(ss,code,{Questions,sid:A().idOf(ss,'s'),inputStatus:A().state.inputStatus[A().idOf(Global)]});
+        return av.status === 'available' ? fmt(safeNum(() => ss[code]()),2)+'%' : esc(av.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate: '+(av.missing || []).map(labelOf).join(', '));
+      };
+      return `<p>${esc(ss.name)}: NRW ${metric('wsd_SL_nr_water')} · ${A().state.lang === 'id' ? 'Kehilangan air' : 'Water loss'} ${metric('wsd_SL_water_loss')}</p>`;
+    }).join('');
+  }
   function renderResults(root) {
+    if (!A().assessmentValidity().valid) {
+      root.innerHTML = summaryHtml() + '<button class="btn" data-go="assess:entry">Back to draft inputs / Kembali ke data</button>';
+      bindIssues(root); return;
+    }
     const { t, esc, fmt } = A();
     const g = Global.TotalGHG(), e = Global.TotalNRG();
     const rows = stageTotals(Global);
@@ -380,9 +439,9 @@ const CWForm = (() => {
     const relatedCell = x => esc((related.bySid[A().idOf(x.ss, 's')] || []).join(', ') || '–');
     root.innerHTML = `
       <div class="page-head"><h1>${esc(t('results_title'))} · ${esc(Global.General.Name)}</h1>
-        <p class="muted">${esc(t('results_sub'))} ${esc(Global.General.AssessmentPeriodStart)} – ${esc(Global.General.AssessmentPeriodEnd)} · ${esc(gp.report)} · ${Global.General.conv_kwh_co2} kgCO₂/kWh</p>
+        <p class="muted">${esc(t('results_sub'))} ${esc(A().fmtDate(Global.General.AssessmentPeriodStart))} – ${esc(A().fmtDate(Global.General.AssessmentPeriodEnd))} · ${esc(CW.gwpLabel(gp.report, A().state.lang))} · ${A().fmt(Global.General.conv_kwh_co2, 3)} kgCO₂/kWh</p>
         <div class="chat-entry"><button type="button" class="btn sm" data-chat="result">${esc(t('chat_btn_results'))}</button><button type="button" class="btn sm" data-chat="missing">${esc(t('chat_btn_missing'))}</button></div></div>
-      <div class="kpis">${kpis()}</div>
+      <div class="kpis">${kpis()}</div><div class="card">${waterBalanceHtml()}</div>
       ${A().responsibilityHtml(Global, ctx)}
       ${FU.estimatesSummary(A().estimatesList(Global), A().fuCtx())}
       <div class="card"><h2>${esc(t('by_stage'))}</h2>
@@ -402,7 +461,7 @@ const CWForm = (() => {
       <div class="actions-row"><button class="btn" data-go="assess:entry">${esc(t('back_to_data'))}</button><button class="btn primary" data-act="finish">${esc(t('finish_assessment'))}</button></div>`;
     drawChart(rows);
     root.querySelector('[data-act=finish]').onclick = () => A().finishAssessment();
-    root.querySelectorAll('[data-act=edit-profile]').forEach(b => b.onclick = () => A().openProfile());
+    root.querySelectorAll('[data-act=edit-profile]').forEach(b => b.onclick = () => A().openDetails());
   }
 
   let chart;

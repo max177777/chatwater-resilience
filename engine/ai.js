@@ -68,12 +68,24 @@ async function post(url, headers, body) {
   return data;
 }
 
+/** An answer cut off at the output limit is not a finished text: callers fall back or report the failure. */
+function incompleteError() {
+  const e = providerError('The AI answer was cut off before it finished (output limit reached); the partial text was not used.');
+  e.incomplete = true;
+  return e;
+}
+
 // ------------------------------------------------------------ Anthropic (Claude)
 async function callAnthropic({ system, messages, max_tokens }) {
   const data = await post('https://api.anthropic.com/v1/messages',
     { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
     { model: modelFor('anthropic'), max_tokens, system, messages });
-  return (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+  return anthropicText(data);
+}
+function anthropicText(data) {
+  const text = (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
+  if (data?.stop_reason === 'max_tokens') throw incompleteError();
+  return text;
 }
 
 // ------------------------------------------------------------ Gemini (Google)
@@ -115,6 +127,8 @@ function geminiText(data) {
     throw providerError(`The AI service declined the request (${c.finishReason}).`);
   }
   if (!text.trim() && c.finishReason === 'MAX_TOKENS') throw providerError('The AI service ran out of output space before answering.');
+  // thinking tokens count against the same limit, so a long reasoning phase can cut the answer mid-sentence
+  if (c.finishReason === 'MAX_TOKENS') throw incompleteError();
   return text;
 }
 async function callGemini(req) {
@@ -155,5 +169,5 @@ module.exports = {
   callLLM, callClaude: callLLM, aiEnabled, info, setClient, parseJson,
   get MODEL() { return info().model; },
   // for tests
-  _geminiRequest: geminiRequest, _geminiText: geminiText, _geminiContents: geminiContents, _provider: provider,
+  _geminiRequest: geminiRequest, _geminiText: geminiText, _anthropicText: anthropicText, _geminiContents: geminiContents, _provider: provider,
 };

@@ -1,0 +1,468 @@
+{
+  "_note": "Indonesian wording of frameworks/stage-guidance.json (team framework, Stage 2 rows and Stage 4 lists), keyed by row id. Arrays follow the order of the English file; a row or item missing here is shown in English and marked as original language. Prepared by ChatWater; awaiting Silvia's review (docs/indonesian-review.md).",
+  "review_status": "Draf kerja tim. Belum ditinjau pihak eksternal. Tautan dari baris Tahap 2 ke tahap ECAM dan sumber emisi ditambahkan oleh ChatWater dan menunggu tinjauan tim.",
+  "group_titles": {
+    "Water supply: emission outputs and potential actions": "Air minum: keluaran emisi dan kemungkinan kegiatan",
+    "Sanitation: emission outputs and potential actions": "Sanitasi: keluaran emisi dan kemungkinan kegiatan",
+    "Water supply indicators": "Indikator air minum",
+    "Sanitation indicators": "Indikator sanitasi"
+  },
+  "stage2": {
+    "s2-a-water-abstraction-electricity-indirect": {
+      "output": "Pengambilan air baku — listrik (tidak langsung)",
+      "questions": [
+        "Apakah penggunaan energi per satuan air yang diambil tergolong tinggi?",
+        "Apakah penurunan muka air tanah, kekeringan, perubahan tinggi muka sungai, atau bertambahnya head pemompaan meningkatkan kebutuhan energi?",
+        "Apakah pompa beroperasi secara efisien?"
+      ],
+      "actions": [
+        "Audit efisiensi pompa",
+        "penggerak kecepatan variabel (VSD)",
+        "penggantian pompa atau penyesuaian ukuran",
+        "optimalisasi jadwal pemompaan",
+        "diversifikasi sumber air atau sumber air yang tahan iklim",
+        "pemompaan tenaga surya bila layak secara teknis dan finansial"
+      ]
+    },
+    "s2-a-water-abstraction-fuel-engines": {
+      "output": "Pengambilan air baku — mesin berbahan bakar",
+      "questions": [
+        "Apakah mesin diesel atau bensin dipakai untuk pemompaan rutin atau saat listrik PLN padam?",
+        "Berapa banyak bahan bakar yang dikonsumsi?",
+        "Apakah pemadaman listrik atau bahaya iklim meningkatkan ketergantungan pada mesin cadangan?"
+      ],
+      "actions": [
+        "Perbaiki perawatan mesin",
+        "optimalkan pembebanan mesin",
+        "tingkatkan keandalan pasokan listrik",
+        "kaji tenaga surya dengan baterai atau alternatif lain yang sesuai",
+        "siapkan cadangan bahan bakar dan prosedur listrik cadangan untuk aset penting"
+      ]
+    },
+    "s2-a-water-treatment-electricity-indirect": {
+      "output": "Pengolahan air minum — listrik (tidak langsung)",
+      "questions": [
+        "Proses pengolahan mana yang paling banyak memakai listrik?",
+        "Apakah kualitas air baku memburuk saat banjir, kekeringan, atau ledakan alga sehingga pengolahan harus lebih intensif?",
+        "Apakah peralatan beroperasi secara efisien?"
+      ],
+      "actions": [
+        "Optimalkan operasi pengolahan dan pembubuhan bahan kimia",
+        "tingkatkan efisiensi pompa dan pengaduk",
+        "optimalkan aerasi bila relevan",
+        "pasang pemantauan energi",
+        "lindungi peralatan pengolahan penting dari banjir",
+        "kaji listrik dari energi terbarukan"
+      ]
+    },
+    "s2-a-water-treatment-fuel-engines": {
+      "output": "Pengolahan air minum — mesin berbahan bakar",
+      "questions": [
+        "Apakah bahan bakar dipakai untuk listrik cadangan, pemompaan, atau operasi pengolahan lain?",
+        "Apakah cuaca ekstrem membuat genset lebih sering dipakai?"
+      ],
+      "actions": [
+        "Perbaiki perawatan dan pembebanan genset",
+        "perkuat ketahanan pasokan listrik",
+        "kaji sistem cadangan yang lebih rendah karbon",
+        "prioritaskan pasokan cadangan untuk proses pengolahan yang esensial"
+      ]
+    },
+    "s2-a-water-distribution-electricity-indirect": {
+      "output": "Distribusi air minum — listrik (tidak langsung)",
+      "questions": [
+        "Stasiun pompa mana yang intensitas energinya paling tinggi?",
+        "Apakah kebocoran, masalah pengelolaan tekanan, topografi, atau head pemompaan yang berlebihan meningkatkan kebutuhan energi?",
+        "Apakah kekeringan atau pasokan yang tidak kontinu mengubah pola operasi?"
+      ],
+      "actions": [
+        "Deteksi dan perbaikan kebocoran",
+        "pengelolaan tekanan",
+        "optimalisasi pompa",
+        "pembagian zona jaringan yang efisien",
+        "reservoir dan distribusi gravitasi bila memungkinkan",
+        "energi terbarukan di stasiun pompa yang sesuai"
+      ]
+    },
+    "s2-a-water-distribution-fuel-engines": {
+      "output": "Distribusi air minum — mesin berbahan bakar",
+      "questions": [
+        "Apakah mesin dipakai untuk menjaga tekanan atau pasokan saat listrik padam?",
+        "Zona distribusi mana yang paling terdampak gangguan listrik, banjir, atau panas ekstrem?"
+      ],
+      "actions": [
+        "Listrik cadangan yang andal",
+        "sistem tenaga surya dengan baterai yang tepat sasaran",
+        "peningkatan efisiensi genset",
+        "kapasitas pompa cadangan",
+        "rencana distribusi darurat dan pengelolaan suku cadang penting"
+      ]
+    },
+    "s2-b-collection-electricity-indirect": {
+      "output": "Pengumpulan air limbah — listrik (tidak langsung)",
+      "questions": [
+        "Stasiun pompa angkat atau aset pengumpulan mana yang paling banyak memakai energi?",
+        "Apakah infiltrasi air hujan atau air tanah menambah volume yang dipompa?",
+        "Apakah pompa sering tersumbat atau kelebihan beban?"
+      ],
+      "actions": [
+        "Inspeksi dan rehabilitasi saluran air limbah",
+        "pengurangan infiltrasi dan aliran masuk",
+        "optimalisasi pompa",
+        "perawatan preventif",
+        "perlindungan banjir untuk stasiun pompa angkat",
+        "listrik cadangan untuk aset pemompaan penting"
+      ]
+    },
+    "s2-b-collection-fuel-engines": {
+      "output": "Pengumpulan air limbah — mesin berbahan bakar",
+      "questions": [
+        "Apakah mesin berbahan bakar dipakai untuk memompa air limbah atau sebagai listrik cadangan?",
+        "Apakah banjir, gangguan listrik, atau masalah akses meningkatkan pemakaiannya?"
+      ],
+      "actions": [
+        "Tingkatkan efisiensi genset",
+        "perkuat sistem listrik cadangan",
+        "jaga persediaan bahan bakar darurat",
+        "kaji sumber listrik alternatif yang sesuai"
+      ]
+    },
+    "s2-b-collection-generation-in-sewers-ch-n-o": {
+      "output": "Pengumpulan air limbah — pembentukan di saluran (CH₄/N₂O)",
+      "questions": [
+        "Apakah waktu tinggal yang lama, aliran yang tergenang, kondisi hangat, atau zona anaerobik turut membentuk metana?",
+        "Apakah penyumbatan atau banjir di saluran menimbulkan masalah operasional?"
+      ],
+      "actions": [
+        "Kurangi genangan yang dapat dihindari",
+        "jaga kapasitas penyaluran saluran",
+        "perbaiki pengelolaan aliran dan pemantauan titik rawan",
+        "kaji opsi mitigasi metana bila memungkinkan. Jangan menganggap bahwa menambah aerasi atau aliran otomatis merupakan solusi terbaik"
+      ]
+    },
+    "s2-b-collection-untreated-wastewater-discharge-where-included-in-": {
+      "output": "Pengumpulan air limbah — pembuangan air limbah tanpa pengolahan, bila termasuk dalam inventarisasi ECAM",
+      "questions": [
+        "Apakah air limbah melewati (bypass) pengolahan atau dibuang tanpa pengolahan?",
+        "Apakah hujan lebat, luapan saluran, atau kapasitas yang tidak memadai turut berperan?",
+        "Masyarakat dan badan air penerima mana yang paling terpapar?"
+      ],
+      "actions": [
+        "Kurangi aliran masuk dan infiltrasi",
+        "tambah kapasitas hidraulik bila dapat dibenarkan",
+        "terapkan pemantauan dan pengendalian luapan",
+        "susun rencana operasi musim hujan",
+        "perluas cakupan pengolahan dan lindungi badan air penerima"
+      ]
+    },
+    "s2-b-treatment-electricity-indirect": {
+      "output": "Pengolahan air limbah — listrik (tidak langsung)",
+      "questions": [
+        "Proses mana—terutama aerasi, pemompaan, pengadukan, dan penanganan lumpur—yang paling banyak memakai energi?",
+        "Apakah aliran masuk saat hujan, perubahan kekuatan air limbah, atau kinerja peralatan yang buruk meningkatkan kebutuhan?"
+      ],
+      "actions": [
+        "Optimalkan aerasi dan kendali proses",
+        "ganti peralatan yang tidak efisien",
+        "kurangi infiltrasi dan aliran masuk yang dapat dihindari",
+        "perbaiki pemantauan energi",
+        "kaji listrik dari energi terbarukan dan pasokan listrik yang tangguh"
+      ]
+    },
+    "s2-b-treatment-fuel-engines": {
+      "output": "Pengolahan air limbah — mesin berbahan bakar",
+      "questions": [
+        "Berapa banyak bahan bakar yang dipakai genset dan mesin lain di instalasi pengolahan?",
+        "Apakah gangguan listrik mengganggu kesinambungan pengolahan?"
+      ],
+      "actions": [
+        "Tingkatkan efisiensi dan perawatan genset",
+        "lindungi operasi pengolahan yang penting",
+        "susun rencana listrik cadangan",
+        "kaji sistem cadangan hibrida atau terbarukan"
+      ]
+    },
+    "s2-b-treatment-process-emissions-ch-n-o": {
+      "output": "Pengolahan air limbah — emisi proses (CH₄/N₂O)",
+      "questions": [
+        "Konfigurasi pengolahan dan kondisi operasi mana yang turut menghasilkan emisi?",
+        "Apakah suhu, beban, aerasi, atau kondisi penyisihan nitrogen memengaruhi emisi?",
+        "Apakah kinerja pengolahan menurun saat cuaca ekstrem?"
+      ],
+      "actions": [
+        "Optimalkan operasi proses dan kendali aerasi",
+        "perbaiki pengelolaan proses penyisihan nitrogen",
+        "kaji penangkapan metana atau modifikasi proses pengolahan bila sesuai",
+        "pantau emisi dan kinerja efluen"
+      ]
+    },
+    "s2-b-treatment-biogas": {
+      "output": "Pengolahan air limbah — biogas",
+      "questions": [
+        "Apakah biogas dihasilkan, dimanfaatkan untuk energi, dibakar (flaring), dijual, atau hilang karena kebocoran?",
+        "Apakah digester anaerobik beroperasi dengan andal?",
+        "Apakah risiko banjir, panas, atau listrik memengaruhi penanganan gas?"
+      ],
+      "actions": [
+        "Deteksi dan perbaiki kebocoran",
+        "perbaiki sistem pengumpulan gas dan keselamatan",
+        "kaji pembangkit listrik dan panas gabungan (CHP) atau pemulihan energi langsung",
+        "optimalkan digestasi",
+        "pertahankan pembakaran (flaring) yang sesuai sebagai langkah keselamatan bila pemulihan energi belum tersedia"
+      ]
+    },
+    "s2-b-treatment-treated-wastewater-discharge": {
+      "output": "Pengolahan air limbah — pembuangan air limbah terolah",
+      "questions": [
+        "Apakah efluen memenuhi persyaratan baku mutu yang berlaku?",
+        "Apakah badan air penerima rentan terhadap debit rendah, suhu tinggi, banjir, atau berkurangnya pengenceran?",
+        "Apakah kondisi pembuangan memburuk saat kejadian ekstrem?"
+      ],
+      "actions": [
+        "Perbaiki kendali proses dan pemantauan efluen",
+        "tambah atau optimalkan pengolahan bila dapat dibenarkan",
+        "susun pengelolaan pembuangan yang tanggap iklim",
+        "pertimbangkan pemanfaatan ulang yang aman bila sesuai dan diizinkan",
+        "lindungi kualitas badan air penerima"
+      ]
+    },
+    "s2-b-onsite-sanitation-process-emissions-and-biogas-where-include": {
+      "output": "Sanitasi setempat — emisi proses dan biogas, bila termasuk",
+      "questions": [
+        "Sistem penampungan atau pengolahan terdesentralisasi mana yang turut menghasilkan emisi?",
+        "Apakah pembentukan metana, kebocoran, praktik pengurasan, atau pengolahan dan pembuangan lumpur tinja menimbulkan risiko lingkungan?",
+        "Apakah banjir atau perubahan air tanah mengancam keutuhan penampungan?"
+      ],
+      "actions": [
+        "Perbaiki keutuhan penampungan",
+        "terapkan pengurasan terjadwal yang aman",
+        "perkuat pengangkutan dan pengolahan lumpur tinja",
+        "kaji pemulihan biogas yang sesuai",
+        "lindungi prasarana sanitasi yang rentan dari dampak banjir dan air tanah"
+      ]
+    },
+    "s2-c1-energy-consumption-per-unit-of-water-abstracted-treated-or-d": {
+      "output": "Konsumsi energi per satuan air yang diambil, diolah, atau didistribusikan",
+      "questions": [
+        "Tahap mana yang intensitas energinya paling tinggi?",
+        "Apakah kinerjanya memburuk dari waktu ke waktu?",
+        "Apakah perbedaannya dijelaskan oleh kondisi operasi atau oleh inefisiensi yang dapat dihindari?"
+      ],
+      "actions": [
+        "Audit energi per tahap",
+        "optimalisasi proses",
+        "rehabilitasi pompa",
+        "pemantauan dan target energi"
+      ]
+    },
+    "s2-c1-energy-consumption-per-unit-of-pumped-water": {
+      "output": "Konsumsi energi per satuan air yang dipompa",
+      "questions": [
+        "Apakah pompa beroperasi mendekati kondisi desainnya?",
+        "Apakah kebutuhan head, debit, atau efisiensi pompa menyebabkan konsumsi energi berlebihan?"
+      ],
+      "actions": [
+        "Penjadwalan pompa",
+        "penyesuaian ukuran pompa",
+        "penggerak kecepatan variabel (VSD)",
+        "peningkatan impeler dan motor",
+        "perawatan preventif"
+      ]
+    },
+    "s2-c1-standardized-energy-consumption": {
+      "output": "Konsumsi energi terstandar",
+      "questions": [
+        "Apakah kinerja tetap buruk setelah memperhitungkan head pompa, sehingga sistem lebih dapat dibandingkan dengan instalasi lain?"
+      ],
+      "actions": [
+        "Kajian rinci sistem pompa",
+        "penggantian peralatan",
+        "optimalisasi hidraulik",
+        "bandingkan teknologi alternatif sebelum berinvestasi"
+      ]
+    },
+    "s2-c1-electromechanical-efficiency-of-pumps": {
+      "output": "Efisiensi elektromekanis pompa",
+      "questions": [
+        "Apakah efisiensi pompa terukur rendah?",
+        "Apakah komponen yang aus, kinerja motor yang buruk, atau ukuran yang tidak tepat turut berperan?"
+      ],
+      "actions": [
+        "Pengujian pompa dan motor",
+        "overhaul atau penggantian",
+        "perbaikan perawatan",
+        "pemasangan motor yang efisien"
+      ]
+    },
+    "s2-c1-unit-head-loss-and-hydraulic-performance": {
+      "output": "Kehilangan head per satuan dan kinerja hidraulik",
+      "questions": [
+        "Apakah kehilangan akibat gesekan, penyempitan pipa, pipa yang terlalu kecil, atau prasarana yang memburuk menambah kebutuhan pemompaan?"
+      ],
+      "actions": [
+        "Inspeksi pipa",
+        "rehabilitasi yang tepat sasaran",
+        "pembersihan sumbatan",
+        "pemodelan hidraulik",
+        "peningkatan pipa yang sesuai"
+      ]
+    },
+    "s2-c1-water-losses-and-distribution-performance-where-available-in": {
+      "output": "Kehilangan air dan kinerja distribusi, bila tersedia dalam penilaian",
+      "questions": [
+        "Apakah kebocoran, masalah tekanan, atau pasokan yang tidak kontinu menyebabkan pemborosan energi atau gangguan layanan?"
+      ],
+      "actions": [
+        "Pengendalian kebocoran aktif",
+        "pengelolaan tekanan",
+        "zona meter distrik (DMA)",
+        "perbaikan meteran dan pengelolaan aset"
+      ]
+    },
+    "s2-c1-water-treatment-performance-and-service-coverage": {
+      "output": "Kinerja pengolahan air minum dan cakupan layanan",
+      "questions": [
+        "Apakah kapasitas pengolahan memadai saat kualitas air baku memburuk atau saat hujan ekstrem?",
+        "Apakah utilitas menyediakan air yang andal dan aman bagi penduduk yang dilayaninya?"
+      ],
+      "actions": [
+        "Optimalisasi proses pengolahan",
+        "pasokan bahan kimia yang tangguh",
+        "perlindungan sumber air baku",
+        "rencana pengolahan darurat",
+        "peningkatan kapasitas bila dapat dibenarkan"
+      ]
+    },
+    "s2-c2-energy-consumption-per-unit-of-wastewater-collected-or-treat": {
+      "output": "Konsumsi energi per satuan air limbah yang dikumpulkan atau diolah",
+      "questions": [
+        "Apakah kebutuhan pemompaan, infiltrasi, efisiensi peralatan, atau proses pengolahan menyebabkan kebutuhan energi tinggi?"
+      ],
+      "actions": [
+        "Rehabilitasi saluran air limbah",
+        "pengendalian infiltrasi",
+        "optimalisasi pompa",
+        "kendali aerasi",
+        "audit energi"
+      ]
+    },
+    "s2-c2-electromechanical-efficiency-and-standardized-pumping-energy": {
+      "output": "Efisiensi elektromekanis dan energi pemompaan terstandar",
+      "questions": [
+        "Apakah pompa air limbah tidak efisien, tersumbat, kelebihan beban, atau beroperasi dalam kondisi hidraulik yang tidak menguntungkan?"
+      ],
+      "actions": [
+        "Perawatan pompa",
+        "perbaikan penanganan padatan",
+        "penggantian pompa",
+        "optimalisasi operasi"
+      ]
+    },
+    "s2-c2-treatment-performance-and-effluent-quality": {
+      "output": "Kinerja pengolahan dan kualitas efluen",
+      "questions": [
+        "Apakah proses pengolahan memenuhi persyaratan kinerja yang berlaku dalam kondisi cuaca normal maupun ekstrem?"
+      ],
+      "actions": [
+        "Kendali proses",
+        "peningkatan pengolahan",
+        "perlindungan banjir",
+        "prosedur operasi musim hujan",
+        "pemantauan efluen"
+      ]
+    },
+    "s2-c2-population-connected-to-wastewater-collection-and-treatment": {
+      "output": "Penduduk yang terhubung ke pengumpulan dan pengolahan air limbah",
+      "questions": [
+        "Wilayah mana yang belum memiliki layanan sanitasi yang memadai?",
+        "Apakah masyarakat berpenghasilan rendah atau yang rawan banjir lebih banyak yang belum terlayani?"
+      ],
+      "actions": [
+        "Perluasan jaringan yang tepat sasaran",
+        "pengolahan terdesentralisasi atau berbasis alam bila sesuai",
+        "perencanaan sanitasi yang inklusif",
+        "penentuan prioritas wilayah layanan"
+      ]
+    },
+    "s2-c2-wastewater-generated-but-not-collected-or-treated": {
+      "output": "Air limbah yang dihasilkan tetapi tidak dikumpulkan atau diolah",
+      "questions": [
+        "Apakah air limbah tanpa pengolahan masuk ke saluran drainase, sungai, atau lingkungan?",
+        "Dapatkah curah hujan melampaui kemampuan sistem?"
+      ],
+      "actions": [
+        "Perluas cakupan layanan",
+        "kendalikan luapan",
+        "perbaiki kapasitas drainase dan saluran air limbah",
+        "kembangkan solusi pengolahan terdesentralisasi yang aman"
+      ]
+    },
+    "s2-c2-sludge-management-and-disposal": {
+      "output": "Pengelolaan dan pembuangan lumpur",
+      "questions": [
+        "Apakah lumpur dikuras, diangkut, diolah, dan dibuang atau dimanfaatkan kembali dengan aman?",
+        "Apakah banjir atau gangguan akses memengaruhi pengelolaan lumpur?"
+      ],
+      "actions": [
+        "Perbaiki pengeringan dan pengolahan lumpur",
+        "perkuat pengaturan pengangkutan dan pembuangan",
+        "kaji pemulihan sumber daya yang aman",
+        "susun rencana kontinjensi"
+      ]
+    },
+    "s2-c2-biogas-generation-and-utilization": {
+      "output": "Produksi dan pemanfaatan biogas",
+      "questions": [
+        "Apakah biogas ditangkap dan dimanfaatkan secara efektif?",
+        "Apakah kebocoran, pembakaran (flaring), atau peralatan yang tidak andal mengurangi manfaatnya?"
+      ],
+      "actions": [
+        "Deteksi kebocoran",
+        "perbaiki penangkapan gas",
+        "pemulihan energi",
+        "perawatan peralatan",
+        "pemantauan metana"
+      ]
+    },
+    "s2-c2-onsite-sanitation-and-faecal-sludge-service-performance": {
+      "output": "Kinerja sanitasi setempat dan layanan lumpur tinja",
+      "questions": [
+        "Apakah sistem penampungan rentan terhadap banjir atau intrusi air tanah?",
+        "Apakah layanan pengurasan dan pengolahan memadai dan aman?"
+      ],
+      "actions": [
+        "Perbaiki keutuhan penampungan",
+        "pengurasan terjadwal",
+        "layanan penyedotan lumpur tinja yang teregulasi",
+        "kapasitas pengolahan lumpur tinja yang tangguh",
+        "pembuangan dan pemanfaatan ulang yang aman"
+      ]
+    }
+  },
+  "stage4": {
+    "cost_components": [
+      "Studi kelayakan dan desain teknis",
+      "Perkiraan belanja modal (CAPEX) yang dibutuhkan untuk melaksanakan proyek",
+      "Biaya studi kelayakan, desain teknis, pengadaan, pemasangan, pelatihan, dan pemantauan",
+      "Termasuk cadangan kontinjensi, pajak, inflasi, dan eskalasi harga",
+      "Perkiraan umur proyek dan waktu kemungkinan penggantian besar"
+    ],
+    "financing_resources": [
+      "Dana yang tersedia dari utilitas",
+      "Dana dari pemerintah"
+    ],
+    "funding_gap": [
+      "Kesenjangan pendanaan",
+      "Sumber pendanaan"
+    ],
+    "outputs": [
+      "Anggaran awal",
+      "analisis kesenjangan pendanaan",
+      "daftar pendek calon sumber pendanaan",
+      "asumsi keuangan",
+      "justifikasi manfaat iklim",
+      "draf catatan konsep pendanaan"
+    ],
+    "note": "Kerangka kerja mencantumkan \"Kesenjangan pendanaan\" dan \"Sumber pendanaan\" tanpa rincian lebih lanjut; ChatWater tidak menghitung keduanya."
+  }
+}

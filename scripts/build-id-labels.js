@@ -5,6 +5,8 @@ const fs = require('fs'), path = require('path');
 const E = require('../engine/ecam-engine')._ecam;
 const en = require('../vendor/ecam/languages/en.json');
 const terms = require('./ecam-id-terms.json');
+// Application-owned help translations; terminology awaits Silvia's review.
+const help = require('./ecam-id-help.json');
 const keys = new Set();
 for (const k of Object.keys(E.Info)) keys.add(k + '_descr');
 for (const s of E.Structure) (s.class.equations || []).forEach(e => keys.add(e + '_descr'));
@@ -16,6 +18,11 @@ for (const k of keys) {
   if (!v) continue;
   const id = terms[v.trim()];
   if (id) out['#' + k] = id; else missing.push(v);
+}
+for (const [k, v] of Object.entries(en)) {
+  if (!k.endsWith('_expla') || !v) continue;
+  if (!help[k]) throw new Error(`Missing Indonesian ECAM help: ${k}`);
+  out[k] = help[k];
 }
 fs.writeFileSync(path.join(__dirname, '..', 'public', 'i18n', 'ecam.id.json'), JSON.stringify(out, null, 1));
 console.log(Object.keys(out).length, 'labels written;', missing.length, 'missing', missing.slice(0, 10));
