@@ -79,8 +79,20 @@ function incompleteError() {
 async function callAnthropic({ system, messages, max_tokens }) {
   const data = await post('https://api.anthropic.com/v1/messages',
     { 'x-api-key': process.env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01' },
-    { model: modelFor('anthropic'), max_tokens, system, messages });
+    { model: modelFor('anthropic'), max_tokens: anthropicMaxTokens(max_tokens), system, messages });
   return anthropicText(data);
+}
+/**
+ * Callers' max_tokens is the intended answer size; the prompts set the actual length. With document
+ * excerpts in the context, answers that cite several sources can run past that size, and a cut-off
+ * answer is rejected. Leave headroom (as for Gemini's thinking tokens) so a complete answer fits.
+ * LLM_MAX_OUTPUT_TOKENS overrides the headroom-adjusted value.
+ */
+function anthropicMaxTokens(requested) {
+  const override = +process.env.LLM_MAX_OUTPUT_TOKENS;
+  if (Number.isFinite(override) && override > 0) return Math.round(override);
+  const base = +requested || 1500;
+  return Math.max(base * 2, base + 2048);
 }
 function anthropicText(data) {
   const text = (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n');
