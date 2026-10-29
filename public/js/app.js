@@ -439,6 +439,8 @@
     $('#profile-chip').hidden = false;
     let demoNote=$('#demo-instructions');if(!demoNote){demoNote=document.createElement('p');demoNote.id='demo-instructions';demoNote.className='notice';$('#view').insertAdjacentElement('beforebegin',demoNote);}demoNote.hidden=!state.demoAssessments?.[idOf(identityAssessment()||Global)];demoNote.textContent=t('demo_steps');
     $('#profile-chip').onclick=openDetails;$('#profile-chip').setAttribute('role','button');$('#profile-chip').tabIndex=0;$('#profile-chip').onkeydown=e=>{if(e.key==='Enter'||e.key===' ')openDetails();};$('#profile-chip').title=t('details_title');
+    // A visible button for the same form, on every stage (participant review: utility data needed for stages 2–4)
+    const ub=$('#utility-btn');if(ub){ub.textContent='✎ '+t('utility_data_btn');ub.onclick=openDetails;}
     $('#chat-input').placeholder = t('chat_placeholder');
     $('#chat').classList.toggle('collapsed', !state.ui.chatOpen);
     $('#chat-toggle').textContent = state.ui.chatOpen ? '–' : '+';
@@ -1296,7 +1298,8 @@
         ${state.proposal ? `<button class="btn" data-go="finance:draft">${esc(t('open_draft'))}</button>` : ''}
         ${previousControl('proposal')}
         ${exportScopeNotice()}<button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button>
-        <button class="btn primary" id="draft" ${upstreamStale||!supported ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
+        <button class="btn primary" id="draft" ${upstreamStale||!supported ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>
+      <div id="inactive-options">${FU.inactiveOptions(pathwayCache.match, fuCtx())}</div>`;
     root.querySelector('#start-gcf')?.addEventListener('click',startGcfConcept);
     root.querySelector('#recover-gcf-transition')?.addEventListener('click',recoverGcfTransition);
     bindPreliminaryInputs(root);
@@ -1317,9 +1320,13 @@
   }
   async function loadPathways(root) {
     const el = root.querySelector('#pathways');
-    if (!el || !state.selectedActions.length) return;
+    if (!el) return;
+    if (!state.selectedActions.length) { // nothing to match yet; still list the planned (inactive) options
+      try { const m = await api('/api/pathways', { actions: [], profile: state.profile, lang: state.lang }); const io = root.querySelector('#inactive-options'); if (io) io.innerHTML = FU.inactiveOptions(m, fuCtx()); } catch (err) { /* keep the static list */ }
+      return;
+    }
     const key = CW.fp({ a: state.selectedActions.map(a => a.key || a.id), p: state.profile, l: state.lang });
-    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); if(!PC.demoSupported(state.financing)||state.proposal&&state.proposal.route!==PC.ROUTE)el.querySelectorAll('[data-fp]').forEach(cb=>cb.disabled=true); };
+    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); const io = root.querySelector('#inactive-options'); if (io) io.innerHTML = FU.inactiveOptions(pathwayCache.match, fuCtx()); if(!PC.demoSupported(state.financing)||state.proposal&&state.proposal.route!==PC.ROUTE)el.querySelectorAll('[data-fp]').forEach(cb=>cb.disabled=true); };
     if (pathwayCache.key === key && pathwayCache.match) return paint();
     try {
       pathwayCache.match = await api('/api/pathways', { actions: state.selectedActions, profile: state.profile, lang: state.lang });

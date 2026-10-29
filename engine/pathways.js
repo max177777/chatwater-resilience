@@ -77,7 +77,9 @@ function match({ actions = [], profile = null, lang = 'en' } = {}) {
 
 // A separate ID avoids silently reinterpreting historical broad climate-fund selections.
 const GCF_DEMO={...PATHWAYS.pathways.find(p=>p.id==='climate_fund'),id:'gcf',name:{en:'Green Climate Fund (GCF) — preliminary concept',id:'Green Climate Fund (GCF) — konsep awal'},documents:[]};
-function demoMatch(input){const out=match(input),convert=p=>({...p,...GCF_DEMO});return {...out,matched:out.matched.filter(p=>p.id==='climate_fund').map(convert),other:out.other.filter(p=>p.id==='climate_fund').map(convert)};}
+function demoMatch(input){const out=match(input),convert=p=>({...p,...GCF_DEMO});return {...out,matched:out.matched.filter(p=>p.id==='climate_fund').map(convert),other:out.other.filter(p=>p.id==='climate_fund').map(convert),inactive:inactivePathways()};}
+/** Pathways kept visible for future development but not selectable in the GCF-only demo (display only). */
+function inactivePathways(){return PATHWAYS.pathways.filter(p=>p.id!=='climate_fund').map(p=>({id:p.id,name:p.name,summary:p.summary}));}
 /** The pathways the user ticked, as drafting sees them (no eligibility claims). */
 function forFacts(ids, lang = 'en') {
   const L = o => (o && typeof o === 'object') ? (o[lang] || o.en) : o;

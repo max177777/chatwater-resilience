@@ -178,7 +178,7 @@ const CWForm = (() => {
         ${num('N_HH', 'kgN/kgN')}
       </div></details>
 
-      <label class="field"><span>${esc(t('comments'))}</span><textarea class="field" data-gen="Comments" rows="3">${esc(g.Comments)}</textarea></label>
+      <label class="field"><span>${esc(t('comments'))}</span><span class="small muted" id="comments-hint" data-comments-hint>${esc(t('comments_hint'))}</span><textarea class="field" data-gen="Comments" rows="3" aria-describedby="comments-hint">${esc(g.Comments)}</textarea></label>
     </div>`;
   }
 
