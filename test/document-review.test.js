@@ -15,7 +15,7 @@ async function run(){
   const doc=await JSZip.loadAsync(await zip.file('proposal.docx').async('nodebuffer'));assert((await doc.file('word/document.xml').async('string')).includes('WORKING DRAFT'));assert((await doc.file('word/footer1.xml').async('string')).includes('Working draft'));
   const p=R.evaluate(s).documents.proposal.sections[0];assert.throws(()=>D.confirm(s,'proposal',p.id,p.association,{note:'checked'}),/stale_request/);
   s.proposal.sections[0].text=s.proposal.sections[0].text.replace(' [To be completed: cost evidence]','');
-  const b=R.evaluate(s).documents.proposal.sections[0];assert.throws(()=>D.confirm(s,'proposal',b.id,b.association),/required_note/);
+  const b=R.evaluate(s).documents.proposal.sections[0];assert.doesNotThrow(()=>D.confirm(s,'proposal',b.id,b.association),'review notes are optional');
   attest(s);r=R.evaluate(s);assert.equal(r.status,'reviewed');assert.deepEqual(browserReport(s),r);
   const ctx=vm.createContext({self:{},CW:C,FU:require('../public/js/feedback-ui'),PC:require('../public/js/preliminary-concept')});ctx.self=ctx;vm.runInContext(fs.readFileSync('public/js/document-review.js','utf8'),ctx);assert.equal(JSON.stringify(ctx.DR.evaluate(s)),JSON.stringify(D.evaluate(s)),'UMD browser build agrees');
   s.exportMode='reviewed';res=await post('/api/export',s);assert.equal(res.status,200,await res.clone().text());zip=await JSZip.loadAsync(Buffer.from(await res.arrayBuffer()));

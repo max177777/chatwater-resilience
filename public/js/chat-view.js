@@ -28,6 +28,12 @@
     return `<details class="small src-notes" ${attr}><summary><b>${ctx.esc(ctx.t('chat_warnings'))}</b> (${items.length})</summary><ul>${items.join('')}</ul></details>`;
   }
 
+  /** One source as a short line: title, page and a link to open it; the quoted passage is one click away. */
+  function sourceLine(p, ctx, tag) {
+    const { t, esc } = ctx;
+    const role = ROLES.includes(p.role) ? p.role : null;
+    return `<li class="src-line" data-passage="${esc(p.id || p.passage_id || '')}" data-source="${esc(p.sourceId || p.source_id || '')}"><details><summary>📄 ${tag ? `<b>[${esc(tag)}]</b> ` : ''}${esc(p.title)}${locatorText(p, ctx) ? ` · <span data-locator>${esc(locatorText(p, ctx))}</span>` : ''}${role ? ` <span class="badge-role role-${role}" data-role="${role}">${esc(t('chat_role_' + role))}</span>` : ''}</summary><blockquote class="quote" data-quote>${esc(p.text || '')}</blockquote></details>${p.url ? ` <a href="${esc(p.url)}" target="_blank" rel="noopener" data-source-link>${esc(t('chat_open_source'))} ↗</a>` : ''}</li>`;
+  }
   function excerpt(p, ctx, tag) {
     const { t, esc } = ctx;
     const role = ROLES.includes(p.role) ? p.role : null;
@@ -142,18 +148,16 @@
     const searched = ret.query ? `<div class="small muted" data-searched="${esc(ret.query_from || '')}">${esc(t('chat_searched'))}: ${esc(ret.query.slice(0, 160))}</div>` : '';
     if (m.error) return `<div class="msg bot" data-chat-error>${esc(m.content)}</div>`;
     if (m.ai === false) {
-      return `<div class="msg bot" data-ai="off"><div class="notice small" data-ai-off-label>${esc(t('chat_ai_off_head'))}</div>${other}${focusProblem}${searched}
-        ${ret.status === 'found' ? `<div class="small"><b>${esc(t('chat_excerpts'))}</b></div>${ret.passages.map(p => excerpt(p, ctx)).join('')}` : noPassage}
+      return `<div class="msg bot" data-ai="off"><div class="notice small" data-ai-off-label>${esc(t('chat_ai_off_head'))}</div>${other}${focusProblem}
+        ${ret.status === 'found' ? `<div class="small"><b>${esc(t('chat_excerpts'))}</b></div><ul class="src-list small">${ret.passages.map(p => sourceLine(p, ctx)).join('')}</ul>` : noPassage}
         ${contextPanel(m.context, ctx, false)}</div>`;
     }
     const support = (m.support || []).map(s => s.status === 'unknown_source' ? '' :
       `<li data-support="${esc(s.status)}">[${esc(s.id)}] ${esc(t(s.status === 'low_overlap' ? 'chat_support_low' : 'chat_support_overlap').replace('{p}', Math.round(100 * s.overlap)))}</li>`).join('');
     return `<div class="msg bot" data-ai="on"><div class="small muted" data-ai-label>${esc(t('chat_ai_answer_label'))}</div>${other}${focusProblem}${dropped}
       <div class="reply">${esc(m.content)}</div>
-      ${(m.sources || []).length ? `<div class="small"><b>${esc(t('chat_cited'))}</b></div>${m.sources.map(p => excerpt(p, ctx, p.tag)).join('')}` : ''}
-      ${(m.unknown_tags || []).length ? `<div class="small dc-flag" data-unknown-tags>${esc(t('chat_unknown_tag').replace('{list}', m.unknown_tags.join(', ')))}</div>` : ''}
-      ${support ? `<ul class="small muted support">${support}</ul>` : ''}${searched}
-      ${ret.status === 'none' || ret.status === 'unavailable' ? noPassage : (ret.passages.length > (m.sources || []).length ? `<details class="small"><summary>${esc(t('chat_excerpts'))} (${ret.passages.length})</summary>${ret.passages.map((p, i) => excerpt(p, ctx, 'S' + (i + 1))).join('')}</details>` : '')}
+      ${(m.sources || []).length ? `<div class="small src-head"><b>${esc(t('chat_cited'))}</b></div><ul class="src-list small">${m.sources.map(p => sourceLine(p, ctx, p.tag)).join('')}</ul>` : ''}
+      ${ret.status === 'unavailable' ? noPassage : ''}
       ${contextPanel(m.context, ctx, false)}</div>`;
   }
 
@@ -165,5 +169,5 @@
       <div class="small muted" data-readonly>${esc(t('chat_readonly'))}${ai ? '' : ' ' + esc(t('chat_ai_off_short'))}</div>`;
   }
 
-  return { excerpt, contextPanel, assistant, scope, focusLabel, qualificationsHtml, noteHtml };
+  return { excerpt, sourceLine, contextPanel, assistant, scope, focusLabel, qualificationsHtml, noteHtml };
 });
