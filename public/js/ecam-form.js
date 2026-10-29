@@ -238,6 +238,7 @@ const CWForm = (() => {
         <label class="small muted">${esc(t('assessments'))}</label>
         <select id="sc-select" style="width:auto;min-width:220px">${opts}</select>
         <button class="btn sm" data-act="new-sc">${esc(t('new_assessment'))}</button>
+        <button class="btn sm" data-act="rename-sc">${esc(t('rename'))}</button>
         <button class="btn sm" data-act="dup-sc">${esc(t('duplicate'))}</button>
         <button class="btn sm danger" data-act="del-sc" ${Scenarios.length < 2 ? 'disabled' : ''}>${esc(t('delete'))}</button>
         <span class="spacer"></span>
@@ -387,6 +388,12 @@ const CWForm = (() => {
       }
       if (act === 'new-sc') { app.newScenario(); return app.render(); }
       if (act === 'dup-sc') { app.duplicateScenario(); return app.render(); }
+      if (act === 'rename-sc') { // rename the active assessment; names stay unique; IDs, results and saved work are unchanged
+        const n = (prompt(app.t('rename_assessment'), Global.General.Name) || '').trim();
+        if (!n || n === Global.General.Name) return;
+        Global.General.Name = CW.uniqueName(n, Scenarios.filter(x => x !== Global).map(x => x.General.Name));
+        app.save(); return app.render();
+      }
       if (act === 'del-sc') { if (confirm(app.t('confirm_delete'))) { app.deleteScenario(); app.render(); } return; }
       if (act === 'save-ecam') return app.download(JSON.stringify([Global], null, 2), Global.General.Name + '.json', 'application/json');
       if (act === 'load-sample') return app.loadSample();

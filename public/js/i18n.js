@@ -1191,3 +1191,7 @@ Object.assign(UI.id, {
   fo_guide: 'Proposal dari panduan pendanaan yang diunggah',
   fo_guide_sum: 'Menyusun proposal mengikuti struktur panduan pendanaan yang Anda unggah.',
 });
+
+// Rename the active assessment from the Assessments toolbar
+Object.assign(UI.en, { rename_assessment: 'New name for this assessment' });
+Object.assign(UI.id, { rename_assessment: 'Nama baru untuk penilaian ini' });
