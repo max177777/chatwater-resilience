@@ -49,7 +49,7 @@ const CWForm = (() => {
     let control = '', extra = '';
     if (info.magnitude === 'Option' && info.table && Tables[info.table]) {
       control = `<select id="${id}" data-code="${code}" data-kind="option">` +
-        `${status === 'missing' ? '<option value="" selected>Choose / Pilih</option>' : ''}` + Tables[info.table].map((row, i) => `<option value="${i}" ${status !== 'missing' && stage[code] == i ? 'selected' : ''}>${esc(A().tE(row.name) || row.name)}</option>`).join('') +
+        `${status === 'missing' ? `<option value="" selected>${esc(t('select_option'))}</option>` : ''}` + Tables[info.table].map((row, i) => `<option value="${i}" ${status !== 'missing' && stage[code] == i ? 'selected' : ''}>${esc(A().tE(row.name) || row.name)}</option>`).join('') +
         '</select>';
     } else {
       const shown = typeof stage[code] === 'number' ? stage[code] / mult(code) : stage[code];
@@ -79,9 +79,9 @@ const CWForm = (() => {
       }
     }
     const source=CW.inputState(A().state.inputStatus[A().idOf(Global)],A().inputSid(stage),code,stage[code]);
-    extra += `<div class="small muted" data-input-provenance="${code}">${esc(source.origin)} · ${esc(status)}${status === 'unconfirmed' ? ' — legacy/imported value; zero-entry intent was not recorded' : ''}${source.confirmed ? ' · confirmed' : ''}</div>
-      <button type="button" class="link small" data-confirm-input="${code}" ${typeof stage[code]!=='number'||!Number.isFinite(stage[code])?'disabled':''}>Confirm this value${stage[code] === 0 ? ' (zero)' : ''}</button>
-      <button type="button" class="link small" data-unknown-input="${code}">Mark unknown (keep stored value)</button>`;
+    extra += `<div class="small muted" data-input-provenance="${code}">${esc(t('in_'+source.origin))} · ${esc(t('status_'+status))}${status === 'unconfirmed' ? ' — '+esc(t('legacy_zero')) : ''}${source.confirmed ? ' · '+esc(t('status_confirmed')) : ''}</div>
+      <button type="button" class="link small" data-confirm-input="${code}" ${typeof stage[code]!=='number'||!Number.isFinite(stage[code])?'disabled':''}>${esc(t('confirm_value'))}${stage[code] === 0 ? ' (0)' : ''}</button>
+      <button type="button" class="link small" data-unknown-input="${code}">${esc(t('mark_unknown'))}</button>`;
     const expla = A().tE(code + '_expla');
     return `<tr class="${nested ? 'nested' : ''}">
       <td class="lab"><label for="${id}">${A().rich(labelOf(code))}</label>
@@ -125,7 +125,7 @@ const CWForm = (() => {
     const { t, esc, fmt } = A();
     const rows = (struct.class.equations || []).map(eq => {
       const available = sub?.availability[eq] || {status:'untracked'};
-      if (!['available'].includes(available.status)) return `<tr><td>${A().rich(labelOf(eq))}</td><td>${esc(available.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate')}: ${esc((available.missing || []).join(', '))}</td></tr>`;
+      if (!['available'].includes(available.status)) return `<tr><td>${A().rich(labelOf(eq))}</td><td>${esc(t(available.status === 'not_applicable' ? 'not_applicable' : 'cannot_calculate'))}: ${esc(ss.name)} — ${esc((available.missing || []).map(labelOf).join(', '))} <button class="link" data-go="assess:entry">${esc(t('correct_inputs'))}</button></td></tr>`;
       const v = outputTotal(sub?.outputs[eq]);
       if (v === null) return '';
       const isGHG = /_KPI_GHG/.test(eq);
@@ -138,14 +138,14 @@ const CWForm = (() => {
   // --- KPI strip ----------------------------------------------------------
   function kpis() {
     const result=A().reviewedResults();
-    if (!A().assessmentValidity().valid || !result.completeness.complete) return `<div class="notice warn">Not assessed: incomplete total. ${result.completeness.known_subtotal == null ? '' : 'Known subtotal (incomplete): '+A().fmt(result.completeness.known_subtotal/1000)+' tCO₂eq'}</div>`;
+    if (!A().assessmentValidity().valid || !result.completeness.complete) return `<div class="notice warn">${A().esc(A().t('incomplete_total'))} ${result.completeness.known_subtotal == null ? '' : A().esc(A().t('known_subtotal'))+': '+A().fmt(result.completeness.known_subtotal/1000)+' tCO₂eq'}</div>`;
     const { t, fmt } = A();
     const reviewed=A().reviewedResults(), g=reviewed.totals,e=reviewed.energy_kwh;
     const pop = reviewed.population.ws_serv_pop > 0 ? reviewed.population.ws_serv_pop : reviewed.population.ws_serv_pop === 0 ? reviewed.population.ww_serv_pop : null;
     const years = reviewed.period.days / 365;
-    return `<div class="kpi"><div class="v">${fmt(g.total / 1000)}</div><div class="l">${t('total_ghg')} (tCO₂eq)</div></div>
+    return `<div class="kpi"><div class="v">${fmt(g.total / 1000)}</div><div class="l">${t('selected_total')} (tCO₂eq)</div></div>
       <div class="kpi"><div class="v">${fmt(e)}</div><div class="l">${t('total_energy')} (kWh)</div></div>
-      <div class="kpi"><div class="v">${pop > 0 && years > 0 ? fmt(g.total / pop / years) : 'Cannot calculate'}</div><div class="l">kgCO₂eq ${t('per_capita')}</div></div>`;
+      <div class="kpi"><div class="v">${pop > 0 && years > 0 ? fmt(g.total / pop / years) : A().esc(A().t('population_missing')) + `<button class="link" data-sel="ss:${Global.Water.Distribution.length?'wsd':Global.Waste.Treatment.length?'wwt':'wwo'}:0">${A().esc(A().t('correct_inputs'))}</button>`}</div><div class="l">kgCO₂eq ${t('per_capita')}</div></div>`;
   }
 
   // --- general panel -------------------------------------------------------
@@ -156,9 +156,10 @@ const CWForm = (() => {
     const gwp = GWP_reports.map((r, i) => `<option value="${i}" ${state.gwpIndex == i ? 'selected' : ''}>${esc(CW.gwpLabel(r.report, state.lang))}</option>`).join('');
     // display only: binary floating-point noise (e.g. 0.30000000000000004) is hidden; the stored value is unchanged unless the user edits it
     const shown = v => (typeof v === 'number' && Number.isFinite(v) ? String(+v.toPrecision(12)) : esc(v ?? ''));
-    const generalSource=k=>{const source=CW.inputState(state.inputStatus[A().idOf(Global)],'General',k,g[k]),av=RSData.input(state.inputStatus[A().idOf(Global)],'General',k,g[k],Info,Tables);return esc(source.origin)+' · '+esc(av.status)+(source.confirmed?' · confirmed':'');};
-    const num = (k, unit) => `<label class="field"><span>${esc(t(k))}</span><div class="row"><input type="text" inputmode="decimal" data-numeric="1" data-gen="${k}" value="${shown(g[k])}" class="grow"><span data-error="${k}" class="field-error"></span><span class="small muted">${esc(CW.unitLabel(unit, state.lang))}</span></div><span class="small muted" data-input-provenance="${k}">${generalSource(k)}</span><button type="button" class="link small" data-confirm-input="${k}" ${typeof g[k]!=='number'||!Number.isFinite(g[k])?'disabled':''}>Confirm factor</button> <button type="button" class="link small" data-unknown-input="${k}">Mark unknown (keep value)</button></label>`;
-    return `<div class="card"><h2>${esc(t('general'))}</h2>
+    const generalSource=k=>{const source=CW.inputState(state.inputStatus[A().idOf(Global)],'General',k,g[k]),av=RSData.input(state.inputStatus[A().idOf(Global)],'General',k,g[k],Info,Tables);return esc(t('in_'+source.origin))+' · '+esc(t('status_'+av.status))+(source.confirmed?' · '+esc(t('status_confirmed')):'');};
+    const num = (k, unit) => `<label class="field"><span>${esc(t(k))}</span><div class="row"><input type="text" inputmode="decimal" data-numeric="1" data-gen="${k}" value="${shown(g[k])}" class="grow"><span data-error="${k}" class="field-error"></span><span class="small muted">${esc(CW.unitLabel(unit, state.lang))}</span></div><span class="small muted" data-input-provenance="${k}">${generalSource(k)}</span><button type="button" class="link small" data-confirm-input="${k}" ${typeof g[k]!=='number'||!Number.isFinite(g[k])?'disabled':''}>${esc(t('confirm_factor'))}</button> <button type="button" class="link small" data-unknown-input="${k}">${esc(t('mark_unknown'))}</button></label>`;
+    return `<div class="card"><h2>${esc(t('general'))}</h2><details open><summary>${esc(t('more_info'))}</summary><p>${esc(t('input_legend'))}</p></details><p>${esc(t('period_help'))}</p><button type="button" class="btn sm" data-last-year>${esc(t('last_year'))}</button>
+      <label class="field"><span>${esc(t('p_type'))}</span><select data-service-scope><option value="">${esc(t('not_specified'))}</option>${['water','wastewater','both'].map(v=>`<option value="${v}" ${state.profile?.service_type===v?'selected':''}>${esc(v==='water'?(state.lang==='id'?'Air minum (PDAM/PAM)':'Drinking water (PDAM/PAM)'):v==='both'?(state.lang==='id'?'Air minum dan air limbah':'Water and wastewater'):(state.lang==='id'?'Air limbah':'Wastewater'))}</option>`).join('')}</select></label>
       <label class="field"><span>${esc(t('a_name'))}</span><input type="text" data-gen="Name" value="${esc(g.Name)}"></label>
       <div class="grid2">
         <label class="field"><span>${esc(t('period'))} — ${esc(t('from'))}</span><input type="date" data-gen="AssessmentPeriodStart" value="${esc(g.AssessmentPeriodStart)}"><span data-error="AssessmentPeriodStart" class="field-error"></span></label>
@@ -169,14 +170,15 @@ const CWForm = (() => {
       <label class="field"><span>${esc(t('gwp'))}</span><select id="gwp-select">${gwp}</select></label>
       <div class="grid2">
         ${num('conv_kwh_co2', 'kgCO₂/kWh')}
+      </div><details ${state.profile?.service_type==='water'?'hidden':''}><summary>${esc(t('advanced_factors'))}</summary><div class="grid2">
         ${num('prot_con', 'kg/person/year')}
         ${num('bod_pday', 'g/person/day')}
         ${num('F_IND_COM', 'kgN/kgN')}
         ${num('F_NON_CON', 'kgN/kgN')}
         ${num('N_HH', 'kgN/kgN')}
-      </div>
-      <div class="small muted">General factors keep their original source classification. Confirmation does not make a default measured.</div>
-      <label class="field"><span>${esc(t('comments'))}</span><textarea class="field" data-gen="Comments" rows="3">${esc(g.Comments)}</textarea></label>
+      </div></details>
+
+      <label class="field"><span>${esc(t('comments'))}</span><span class="small muted" id="comments-hint" data-comments-hint>${esc(t('comments_hint'))}</span><textarea class="field" data-gen="Comments" rows="3" aria-describedby="comments-hint">${esc(g.Comments)}</textarea></label>
     </div>`;
   }
 
@@ -256,8 +258,8 @@ const CWForm = (() => {
   }
 
   function summaryHtml() {
-    const {esc} = A(), v = A().assessmentValidity();
-    return `<div class="notice warn" role="status"><b>Draft assessment: correct the inputs below. / Penilaian draf: perbaiki data berikut.</b><ul>${v.issues.map((x,i) => `<li><button class="link" data-validity-issue="${i}">${esc(labelOf(x.code))}: ${esc(x.message)}</button></li>`).join('')}</ul></div>`;
+    const {esc,t} = A(), v = A().assessmentValidity();
+    return `<div class="notice warn" role="status"><b>${esc(t('incomplete_total'))}</b><ul>${v.issues.map((x,i) => `<li><button class="link" data-validity-issue="${i}">${esc(labelOf(x.code))}: ${esc(x.message)}</button></li>`).join('')}</ul></div>`;
   }
   function bindIssues(root) {
     root.querySelectorAll('[data-validity-issue]').forEach(b => b.onclick = () => {
@@ -294,7 +296,7 @@ const CWForm = (() => {
       if (out) out.innerHTML = outputsTable(sel.struct, sel.obj);
     }
     const obj=sel.obj || Global.General, app=A(), rec=app.state.inputStatus[app.idOf(Global)],sid=app.inputSid(obj);
-    document.querySelectorAll('[data-input-provenance]').forEach(el=>{const code=el.dataset.inputProvenance,source=CW.inputState(rec,sid,code,obj[code]),status=AV.state(rec,sid,code,obj[code]);el.textContent=source.origin+' · '+status+(status==='unconfirmed'?' — legacy/imported value; source or entry intent was not recorded':'')+(source.confirmed?' · confirmed':'');});
+    document.querySelectorAll('[data-input-provenance]').forEach(el=>{const code=el.dataset.inputProvenance,source=CW.inputState(rec,sid,code,obj[code]),status=AV.state(rec,sid,code,obj[code]);el.textContent=source.origin+' · '+status+(status==='unconfirmed'?' — legacy/imported value; source or entry intent was not recorded':'')+(source.confirmed?' · '+esc(t('status_confirmed')):'');});
     document.querySelectorAll('[data-confirm-input]').forEach(b=>{const value=obj[b.dataset.confirmInput];b.disabled=typeof value!=='number'||!Number.isFinite(value);});
     showErrors(document.getElementById('panel').closest('main') || document,sel);
     A().save();
@@ -330,6 +332,7 @@ const CWForm = (() => {
 
     root.addEventListener('change', e => {
       const el = e.target;
+      if(el.hasAttribute('data-service-scope')){app.state.profile={...(app.state.profile||{}),service_type:el.value};app.save();return app.render();}
       if (el.id === 'sc-select') { app.setCurrent(+el.value); return app.render(); }
       if (el.id === 'gwp-select') { app.setGwp(+el.value); return refreshLive(sel); }
       if (el.id === 'load-ecam') return loadEcamFile(el);
@@ -357,6 +360,7 @@ const CWForm = (() => {
       const b = e.target.closest('button, [data-sel]');
       if (!b) return;
       if (b.dataset.confirmInput) return app.changeInputStatus(stage || Global.General,b.dataset.confirmInput);
+      if (b.hasAttribute('data-last-year')) {const y=new Date().getFullYear()-1;Global.General.AssessmentPeriodStart=`${y}-01-01`;Global.General.AssessmentPeriodEnd=`${y+1}-01-01`;app.save();return app.render();}
       if (b.dataset.unknownInput) return app.changeInputStatus(stage || Global.General,b.dataset.unknownInput,true);
       if (b.dataset.act === 'save-project') return app.saveProjectBackup();
       if (b.dataset.sel) {
@@ -428,11 +432,11 @@ const CWForm = (() => {
   }
 
   function waterBalanceHtml() {
-    const {esc,fmt} = A();
+    const {esc,fmt,t} = A();
     return Global.Water.Distribution.map(ss => {
       const metric = code => {
         const sub=A().reviewedResults().substages.find(s=>s.sid===A().idOf(ss,'s')), av=sub?.availability[code] || {status:'untracked'};
-        return av.status === 'available' ? fmt(sub.outputs[code],2)+'%' : esc(av.status === 'not_applicable' ? 'Not applicable' : 'Cannot calculate: '+(av.missing || []).map(labelOf).join(', '));
+        return av.status === 'available' ? fmt(sub.outputs[code],2)+'%' : esc(av.status === 'not_applicable' ? t('not_applicable') : t('cannot_calculate')+': '+(av.missing || []).map(labelOf).join(', '));
       };
       return `<p>${esc(ss.name)}: NRW ${metric('wsd_SL_nr_water')} · ${A().state.lang === 'id' ? 'Kehilangan air' : 'Water loss'} ${metric('wsd_SL_water_loss')}</p>`;
     }).join('');
@@ -440,7 +444,7 @@ const CWForm = (() => {
   function renderResults(root) {
     const r=A().reviewedResults();
     if (!A().assessmentValidity().valid || !r.completeness.complete) {
-      root.innerHTML = summaryHtml() + `<div class="card"><h2>Incomplete assessment total</h2><p>${r.completeness.status}. Known subtotal: ${r.completeness.known_subtotal == null ? 'unknown' : A().fmt(r.completeness.known_subtotal/1000)+' tCO₂eq (incomplete)'}</p><ul>${r.substages.map(s=>`<li><button class="link" data-status-substage="${s.prefix}:${s.index}">${A().esc(s.name)}</button>: ${A().esc(s.availability[s.prefix+'_KPI_GHG'].status)} — ${A().esc((s.availability[s.prefix+'_KPI_GHG'].missing || []).join(', '))}</li>`).join('')}</ul><p>Confirm ambiguous zeros or mark them unknown in the input form. Stored values and edited documents are retained.</p></div>` + '<button class="btn" data-go="assess:entry">Back to draft inputs / Kembali ke data</button>';
+      root.innerHTML = summaryHtml() + `<div class="card"><h2>${A().esc(A().t('incomplete_total'))}</h2><p>${A().esc(A().t('status_'+r.completeness.status))}. ${A().esc(A().t('known_subtotal'))}: ${r.completeness.known_subtotal == null ? A().t('status_unknown') : A().fmt(r.completeness.known_subtotal/1000)+' tCO₂eq'}</p><ul>${r.substages.map(s=>`<li><button class="link" data-status-substage="${s.prefix}:${s.index}">${A().esc(s.name)}</button>: ${A().esc(A().t('status_'+s.availability[s.prefix+'_KPI_GHG'].status))} — ${A().esc((s.availability[s.prefix+'_KPI_GHG'].missing || []).map(c=>labelOf(c)).join(', '))}</li>`).join('')}</ul><p>${A().esc(A().t('input_legend'))}</p></div>` + `<button class="btn" data-go="assess:entry">${A().esc(A().t('correct_inputs'))}</button>`;
       bindIssues(root);
       root.querySelectorAll('[data-status-substage]').forEach(b=>b.onclick=()=>{const [prefix,index]=b.dataset.statusSubstage.split(':');A().state.ui.sel={kind:'ss',prefix,index:+index};A().state.ui.view='assess:entry';A().save();A().render();});
       return;

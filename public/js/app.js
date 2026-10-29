@@ -51,6 +51,12 @@
   if (loaded.problem) storageLock = { kind: loaded.problem, quota: !!loaded.quota, original: loaded.original };
   state.ui = Object.assign(defaults().ui, state.ui || {});
 
+  UtilityIdentity.migrate(state,newId);
+  const identityAssessment = () => chatAssessment();
+  Object.defineProperty(state,'profile',{enumerable:true,configurable:true,
+    get(){const sc=identityAssessment();return sc?UtilityIdentity.resolve(state,idOf(sc)):null;},
+    set(value){const sc=identityAssessment();if(!sc)return;const uid=UtilityIdentity.create(state,idOf(sc),state.assessmentUtilities[idOf(sc)],newId);state.utilities[uid]=value;}});
+
   let LANGS = { en: {}, id: {} }; // ECAM label dictionaries
   let META = { ai: false };
 
@@ -107,7 +113,7 @@
   const relatedHtml = list => list?.length ? `<div class="sources related"><b>${esc(t('related_reading'))}</b><ul>${list.map(x =>
     `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ul></div>` : '';
   // What the library was searched for, the library build, and what the citation checks do and do not cover
-  const evidenceHtml = (ev, cited) => ev?.searched ? `<div class="small muted ev-note" data-evidence data-library-build="${esc(ev.library_build || '')}">${esc(t('chat_searched'))}: ${esc(ev.searched.query || '–')}${ev.searched.status === 'none' ? ` — ${esc(t('chat_no_passage'))}` : ev.searched.status === 'unavailable' ? ` — <span data-library-unavailable>${esc(t('chat_library_unavailable'))}</span>` : ''} · ${esc(t('ev_build'))} ${esc(ev.library_build || '–')}${cited ? ` · ${esc(t('ev_checks'))}` : ''}${ev.unknown_tags?.length ? ` <span class="dc-flag" data-unknown-tags>${esc(t('chat_unknown_tag').replace('{list}', ev.unknown_tags.join(', ')))}</span>` : ''}</div>` : '';
+  const evidenceHtml = (ev, cited) => ev?.searched ? `<details class="small muted ev-note" data-evidence data-library-build="${esc(ev.library_build || '')}"><summary>${esc(t('more_info'))}</summary>${esc(t('chat_searched'))}: ${esc(ev.searched.query || '–')}${ev.searched.status === 'none' ? ` — ${esc(t('chat_no_passage'))}` : ev.searched.status === 'unavailable' ? ` — <span data-library-unavailable>${esc(t('chat_library_unavailable'))}</span>` : ''} · ${esc(t('ev_build'))} ${esc(ev.library_build || '–')}${cited ? ` · ${esc(t('ev_checks'))}` : ''}${ev.unknown_tags?.length ? ` <span class="dc-flag" data-unknown-tags>${esc(t('chat_unknown_tag').replace('{list}', ev.unknown_tags.join(', ')))}</span>` : ''}</details>` : '';
   const busy = (btn, on, label) => {
     if (!btn) return;
     if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label || '')}`; }
@@ -179,13 +185,18 @@
   function newScenario() {
     const s = new Ecam();
     const n = Scenarios.length + 1;
-    s.General.Name = (state.profile?.name || (state.lang === 'id' ? 'Penilaian' : 'Assessment')) + (n > 1 ? ' ' + n : '');
+    const currentUtility=state.assessmentUtilities[Global ? idOf(Global) : ''];
+    const reuse=currentUtility && confirm(state.lang==='id'?'Gunakan utilitas yang sama? Pilih Batal untuk membuat utilitas lain.':'Reuse the current utility? Choose Cancel to create another utility.');
+    UtilityIdentity.create(state,idOf(s),reuse?currentUtility:null,newId);
+    s.General.Name = (state.lang === 'id' ? 'Penilaian' : 'Assessment') + ' ' + n;
     if (state.location === 'indonesia' || state.profile?.country) {
       const country = state.profile?.country || 'Indonesia';
       const c = Countries[country];
       if (c) Object.assign(s.General, { Country: country, Currency: c.currency, conv_kwh_co2: c.conv_kwh_co2, prot_con: c.prot_con, bod_pday: c.bod_pday });
     }
-    if (state.profile?.population) { s.Water.ws_resi_pop = +state.profile.population || 0; s.Waste.ww_resi_pop = +state.profile.population || 0; }
+    const utility=UtilityIdentity.resolve(state,idOf(s));
+    if (utility?.population) { s.Water.ws_resi_pop = +utility.population || 0; s.Waste.ww_resi_pop = +utility.population || 0; }
+    state.generatedNames={...state.generatedNames,[idOf(s)]:{number:n,value:s.General.Name}};
     // untouched inputs of an assessment started here are defaults; imported ones stay unconfirmed
     state.inputStatus[idOf(s)] = { origin: 'new', s: {} };
     Scenarios.push(s);
@@ -197,6 +208,7 @@
     o.General.Name += state.lang === 'id' ? ' (salinan)' : ' (copy)';
     const previous = Global, oldMeta = metaOf(previous);
     const copy = Ecam.from(o); Scenarios.push(copy);
+    state.assessmentUtilities[idOf(copy)]=state.assessmentUtilities[idOf(previous)];
     const newMeta = metaOf(copy), oldStatus = state.inputStatus[oldMeta.id];
     if (oldStatus) {
       state.inputStatus[newMeta.id] = CW.duplicateInputStatus(oldStatus,oldMeta,newMeta);
@@ -231,14 +243,18 @@
     return true;
   }
   async function loadSample() {
+    if(!confirm(t('demo_accept')))return;
     let text;
-    try { text = await fetch('/samples/utility-a-indonesia.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
+    try { text = await fetch('/samples/complete-example.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
     catch { return toast(t('sample_unavailable')); }
-    // the sample comes with a hypothetical profile (responsibilities included) unless the user already has one
-    if (!state.profile || !state.profile.name) {
-      try { const r = CW.parseProfileJson(await fetch('/samples/utility-a-profile.json').then(x => x.text())); if (r.ok) state.profile = r.profile; } catch { /* the sample still loads */ }
-    }
-    importEcamText(text);
+    if(!importEcamText(text))return;
+    const demo=DemoExample.build(plain(Global),metaOf(Global),state.lang);
+    const uid=UtilityIdentity.create(state,idOf(Global),null,newId);state.utilities[uid]=demo.profile;
+    state.inputStatus[idOf(Global)]=demo.record;
+    state.demoAssessments={...state.demoAssessments,[idOf(Global)]:{language:state.lang,origin:demo.record.provenance}};
+    if(state.plan||state.proposal)state.completeExamplePrevious={plan:plain(state.plan),proposal:plain(state.proposal),financing:plain(state.financing)};
+    state.financing=demo.financing;state.financingAssessmentId=idOf(Global);
+    state.ui.view='assess:entry';save();render();
   }
 
   // ---------------------------------------------------------------- persistence
@@ -309,7 +325,7 @@
       assessments: Scenarios.map(s => ({ id: idOf(s), revision: CW.revision(s), supportRevision:reviewedResults(s).supportRevision })),
       gwpIndex: state.gwpIndex, actionResult: state.actionResult, actionSet: state.actionSet,
       selectedActions: state.selectedActions, plan: state.plan, proposal: state.proposal,
-      profile: state.profile, financing: state.financing, rejected: state.rejectedActions,
+      profile: UtilityIdentity.resolve(state,state.actionSet?.assessmentId || state.plan?.deps?.assessmentId), financing: state.financing, rejected: state.rejectedActions,
       customActions: CW.customDefs(state.customActions, state.actionNotes),
     });
   }
@@ -358,7 +374,7 @@
     const lib = META.library;
     if (!lib) return '';
     if (!lib.loaded) return `<div class="notice small warn" data-evidence-notice="missing"><b>${esc(t('evidence_title'))}</b> ${esc(t('evidence_body_missing'))}</div>`;
-    return `<div class="notice small" data-evidence-notice="library" data-library-build="${esc(lib.build_id || '')}">${esc(t('evidence_body_library').replace('{n}', lib.sources).replace('{build}', lib.build_id || '–'))}</div>`;
+    return `<div class="notice small" data-evidence-notice="library" data-library-build="${esc(lib.build_id || '')}">${esc(t('evidence_body_library').replace('{n}', lib.sources).replace('{build}', t('diagnostics')))}<details><summary>${esc(t('diagnostics'))}</summary>${esc(lib.build_id||'–')}</details></div>`;
   }
   const genErrorNotice = what => state.ui.genError?.what === what
     ? `<div class="notice error" data-gen-error="${what}"><b>${esc(t('gen_failed_' + what))}</b> ${esc(state.ui.genError.message)}<br>${esc(t('gen_failed_kept'))}
@@ -375,7 +391,7 @@
     if (state.plan && !confirm(t('confirm_replace_plan'))) return;
     state.ui.reviewGenerating=true;render();
     try {
-      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: state.profile, inputStatus: state.inputStatus?.[idOf(sc)] || null, estimates: estimatesList(sc).length, lang, rejectedActions: state.rejectedActions }));
+      await CW.regenerate(state, 'plan', () => api('/api/plan', { actions: state.selectedActions, actionSet: state.actionSet, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, profile: UtilityIdentity.resolve(state,idOf(sc)), inputStatus: state.inputStatus?.[idOf(sc)] || null, estimates: estimatesList(sc).length, lang, rejectedActions: state.rejectedActions }));
       state.ui.genError = null;
     } catch (err) { state.ui.genError = { what: 'plan', message: err.message }; }
     finally{state.ui.reviewGenerating=false;}
@@ -394,7 +410,7 @@
     try {
       await CW.regenerate(state, 'proposal', () => api('/api/proposal', {
         route: f.route, conceptInputs:f.conceptInputs||{}, customFramework: f.customFramework, guideText: f.guideText,
-        actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: state.profile,
+        actions: state.selectedActions, actionSet: state.actionSet, plan: state.plan, profile: UtilityIdentity.resolve(state,idOf(sc)),
         assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex, inputStatus: state.inputStatus?.[idOf(sc)] || null, lang,
         pathways: f.pathways || [], estimates: estimatesList(sc).length, rejectedActions: state.rejectedActions,
       }));
@@ -418,17 +434,22 @@
     document.querySelectorAll('[data-tab]').forEach(b => { b.classList.toggle('stale', !!staleTab[b.dataset.tab]); b.title = staleTab[b.dataset.tab] ? t('tab_outdated') : ''; });
     $('#ai-chip').textContent = t(META.ai ? 'ai_chip_on' : 'ai_chip_off');
     $('#ai-chip').classList.toggle('off', !META.ai);
-    const chipText = state.profile?.name ? `${state.profile.name}${state.profile.location ? ' · ' + state.profile.location : ''}` : (sourceAssessment()?.General?.Name || '');
+    const chipText = `${t('details_title')} — ${t('utility_identity')}: ${state.profile?.name || t('not_specified')} · ${t('a_name')}: ${identityAssessment()?.General?.Name || '–'}`;
     $('#profile-chip').textContent = chipText;
-    $('#profile-chip').hidden = !chipText;
+    $('#profile-chip').hidden = false;
+    let demoNote=$('#demo-instructions');if(!demoNote){demoNote=document.createElement('p');demoNote.id='demo-instructions';demoNote.className='notice';$('#view').insertAdjacentElement('beforebegin',demoNote);}demoNote.hidden=!state.demoAssessments?.[idOf(identityAssessment()||Global)];demoNote.textContent=t('demo_steps');
+    $('#profile-chip').onclick=openDetails;$('#profile-chip').setAttribute('role','button');$('#profile-chip').tabIndex=0;$('#profile-chip').onkeydown=e=>{if(e.key==='Enter'||e.key===' ')openDetails();};$('#profile-chip').title=t('details_title');
+    // A visible button for the same form, on every stage (participant review: utility data needed for stages 2–4)
+    const ub=$('#utility-btn');if(ub){ub.textContent='✎ '+t('utility_data_btn');ub.onclick=openDetails;}
     $('#chat-input').placeholder = t('chat_placeholder');
     $('#chat').classList.toggle('collapsed', !state.ui.chatOpen);
     $('#chat-toggle').textContent = state.ui.chatOpen ? '–' : '+';
+    let help=$('#participant-help');if(!help){help=document.createElement('details');help.id='participant-help';$('#view').insertAdjacentElement('beforebegin',help);}help.innerHTML=`<summary>${esc(t('operation_help_title'))}</summary><p>${esc(t('operation_help'))}</p><p>${esc(t('ai_operations'))}</p><p>${esc(t('required_legend'))}</p>`;
     $('#chat-toggle').setAttribute('aria-label', t(state.ui.chatOpen ? 'aria_hide_chat' : 'aria_show_chat'));
   }
 
   let readinessTimer,latestReadiness;
-  const readinessState=()=>({...state,assessments:Scenarios,assessmentMeta:Scenarios.map(metaOf)});
+  const readinessState=()=>({...state,profile:UtilityIdentity.resolve(state,state.actionSet?.assessmentId || state.plan?.deps?.assessmentId)||state.profile,assessments:Scenarios,assessmentMeta:Scenarios.map(metaOf)});
   function readinessReport(){
     const InputCodes=Object.fromEntries(Structure.filter(s=>s.sublevel).map(s=>[s.prefix,Object.keys(new s.class()).filter(c=>typeof new s.class()[c]==='number')]));
     const assessments=Scenarios.map(assessment=>{const result=reviewedResults(assessment);return {assessment,meta:metaOf(assessment),result,validity:result.validity};});
@@ -444,13 +465,13 @@
       const matches=report.issues.filter(i=>i.target.kind==='field'&&i.assessmentId===aid&&i.target.scope===scope&&i.target.code===code);
       let note=document.getElementById(id);if(!note){note=document.createElement('div');note.id=id;note.className='small readiness-field';el.insertAdjacentElement('afterend',note);}
       const label=t('gc_'+(f?.kind==='required'?'required':f?.kind==='calculation'?'calculation':'optional_field'));
-      note.textContent=label+(f?.explicitUnknown?' · '+t('gc_unknown_note'):f?.active===false?' · '+t('gc_inactive_note'):'')+(matches.length?' — '+[...new Set(matches.map(i=>ReadyUI.explanation(i,t,state.lang)))].join(' '):'');
+      note.innerHTML=`<details><summary><span aria-hidden="true">${f?.kind==='required'?'*':'ⓘ'}</span> ${esc(label)}</summary>${esc(f?.explicitUnknown?t('gc_unknown_note'):f?.active===false?t('gc_inactive_note'):t('required_legend'))}${matches.map(i=>`<p>${esc(ReadyUI.explanation(i,t,state.lang))}</p>`).join('')}</details>`;
       const described=new Set((el.getAttribute('aria-describedby')||'').split(' ').filter(Boolean));described.add(id);el.setAttribute('aria-describedby',[...described].join(' '));
       el.setAttribute('aria-invalid',String(matches.some(i=>['invalid','date','date_order','number','percent','hours','power_factor','option','nonnegative','relation','inactive_conflict'].includes(i.messageKey))));
       // Replace the older generic blank prompt with the adapter's explicit-unknown explanation.
-      document.querySelectorAll('[data-error]').forEach(error=>{if(error.dataset.error===code&&matches.length){error.textContent=[...new Set(matches.map(i=>ReadyUI.explanation(i,t,state.lang)))].join(' ');if(!error.id)error.id=key+'-error';}});
+      document.querySelectorAll('[data-error]').forEach(error=>{if(error.dataset.error===code){const invalid=matches.filter(i=>['invalid','date','date_order','number','percent','hours','power_factor','option','nonnegative','relation','inactive_conflict'].includes(i.messageKey));error.textContent=[...new Set(invalid.map(i=>ReadyUI.explanation(i,t,state.lang)))].join(' ');if(!error.id)error.id=key+'-error';}});
     });
-    document.querySelectorAll('[data-sec],[data-pc],#plan-summary,[data-owner],[data-weeks]').forEach(el=>{el.setAttribute('aria-required','true');const id=(el.id||el.dataset.owner||el.dataset.weeks||'section')+'-review-required';let note=el.nextElementSibling;if(!note?.matches('[data-review-required]')){note=document.createElement('span');note.dataset.reviewRequired='';note.className='small readiness-field';el.insertAdjacentElement('afterend',note);}note.textContent=t('gc_review_required');});
+    document.querySelectorAll('[data-sec],[data-pc],#plan-summary,[data-owner],[data-weeks]').forEach(el=>{el.setAttribute('aria-required','true');const id=(el.id||el.dataset.owner||el.dataset.weeks||'section')+'-review-required';let note=el.nextElementSibling;if(!note?.matches('[data-review-required]')){note=document.createElement('span');note.dataset.reviewRequired='';note.className='small readiness-field';el.insertAdjacentElement('afterend',note);}note.textContent='';});
     document.querySelectorAll('[data-q]').forEach(el=>{el.setAttribute('aria-label',String(tE(el.dataset.q)||el.dataset.q).replace(/<[^>]+>/g,'')+' — '+t(el.value==='1'?'yes':'no'));if(!el.id)el.id=Ready.targetId({kind:'question',assessmentId:aid,scope,code:el.dataset.q})+'-'+el.value;});
     document.querySelectorAll('[data-validity-issue]').forEach(b=>{const old=b.closest('[role=status]');if(old)old.hidden=true;});
     document.querySelectorAll('#dl-all,#dl-word,[data-reviewed-export],#gen-plan,#draft,#show-options,#save-actions,[data-act=finish]').forEach(b=>b.setAttribute('aria-describedby','readiness-title'));
@@ -587,9 +608,11 @@
    */
   function openDetails() {
     const p = state.profile || {};
+    const sc=identityAssessment(),aid=sc&&idOf(sc);
     const m = $('#modal');
     m.innerHTML = `<form class="box" id="details-form" aria-labelledby="details-title"><h2 id="details-title">${esc(t('details_title'))}</h2><p class="muted">${esc(t('details_sub'))}</p>
       <div class="grid2">${DETAIL_FIELDS.map(([k, lab]) => `<label class="field"><span>${esc(t(lab))}</span><input type="text" name="${k}" value="${esc(p[k] ?? '')}" placeholder="${esc(t('not_specified'))}"></label>`).join('')}</div>
+      <label class="field"><span>${esc(t('utility_association'))}</span><select name="utilityAssociation"><option value="">${esc(t('utility_new'))}</option>${Object.entries(state.utilities).map(([id,p])=>`<option value="${esc(id)}" ${state.assessmentUtilities[aid]===id?'selected':''}>${esc(p?.name||t('not_specified'))}</option>`).join('')}</select></label>
       ${responsibilityFields(p)}
       <div class="actions-row"><button type="button" class="btn" id="details-cancel">${esc(t('cancel'))}</button><button class="btn primary">${esc(t('details_apply'))}</button></div></form>`;
     m.hidden = false;
@@ -597,6 +620,9 @@
     $('#details-form').onsubmit = e => {
       e.preventDefault();
       const fd = new FormData(e.target);
+      const chosen=String(fd.get('utilityAssociation')||'');
+      const old=state.assessmentUtilities[aid];
+      if(chosen!==old){UtilityIdentity.create(state,aid,chosen,newId);if(chosen){m.hidden=true;save();render();return;}}
       const answers = Object.fromEntries([...DETAIL_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS].map(k => [k, String(fd.get(k) ?? '').trim()]));
       if (state.profile || Object.values(answers).some(Boolean)) state.profile = { ...(state.profile || {}), ...answers };
       m.hidden = true; save(); toast(t('details_saved')); render();
@@ -1005,7 +1031,7 @@
       busy(b, true, t('thinking'));
       try {
         const res = await api('/api/actions/explain', { option: { ...o, notes: state.actionNotes[o.key] }, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex,
-          profile: state.profile, inputStatus: state.inputStatus?.[r.assessmentId] || null, lang: state.lang });
+          profile: UtilityIdentity.resolve(state,idOf(sc)), inputStatus: state.inputStatus?.[r.assessmentId] || null, lang: state.lang });
         state.explanations[o.key] = res.text;
         state.explanationSources = { ...(state.explanationSources || {}), [o.key]: res.sources || [] };
         state.explanationEvidence = { ...(state.explanationEvidence || {}), [o.key]: res.evidence || null };
@@ -1042,7 +1068,7 @@
       busy(b, true, t('thinking'));
       try {
         const res = await api('/api/actions/alternatives', { option: { ...o, notes: state.actionNotes[o.key] || '' }, assessment: plain(sc), meta: metaOf(sc), gwpIndex: state.gwpIndex,
-          profile: state.profile, mode, request, lang: state.lang });
+          profile: UtilityIdentity.resolve(state,idOf(sc)), mode, request, lang: state.lang });
         altResults.set(o.key, res); render();
       } catch (err) { busy(b, false); toast(err.status === 503 ? t('ai_off_note') : t('error') + ': ' + err.message); }
     };
@@ -1066,6 +1092,12 @@
         .map(o => ({ ...o, notes: state.actionNotes[o.key] || '' }));
       if (!chosen.length) return toast(t('no_actions'));
       // plan and proposal are kept; freshness marks them outdated if this selection differs
+      const financingAid=state.financingAssessmentId||state.proposal?.deps?.assessmentId||state.actionSet?.assessmentId;
+      if(financingAid!==r.assessmentId && Object.keys(state.financing?.conceptInputs||{}).length){
+        state.financingHistory=[...(state.financingHistory||[]),{assessmentId:financingAid||null,financing:plain(state.financing)}];
+        state.financing={route:PC.ROUTE,pathways:['gcf'],conceptInputs:{}};
+      }
+      state.financingAssessmentId=r.assessmentId;
       state.selectedActions = chosen;
       state.actionSet = { ...r.basis, savedAt: new Date().toISOString() };
       state.actionReview = [];
@@ -1092,28 +1124,34 @@
     const tr=k=>DR.t(k,state.lang),issues=kind==='proposal'?report.issues:d.issues.map(i=>({...i,document:kind}));
     return `<section class="card" id="review-${kind}" tabindex="-1" aria-label="${esc(tr('review'))}"><h2>${esc(tr('status'))}: <span data-document-status="${kind}">${esc(tr(d.status))}</span></h2><p class="small">${esc(tr('meaning'))}</p>
       <div id="review-action-caveats" tabindex="-1"><h3>${esc(t('gc_shared_warnings'))}</h3>${state.selectedActions.filter(a=>a.provisional_warning||CW.isCustom(a)).map(a=>`<p class="notice warn small"><b>${esc(L(a.title)||a.id)}</b>: ${esc(a.provisional_warning?L(a.provisional_warning):t('gc_unquantified'))}</p>`).join('')}</div><h3>${esc(tr('unresolved'))}</h3><div role="status" aria-live="polite">${issues.length?`<p>${issues.length} · <a href="#readiness-panel">${esc(t('gc_title'))}</a></p>`:`<p>${esc(tr('none'))}</p>`}</div>
-      ${d.sections.map(r=>`<fieldset><legend>${esc(r.title)} — ${esc(tr(r.status))}</legend>${r.warnings.length?`<ul class="small">${r.warnings.map(w=>`<li>${w==='calculation'?`<a href="#review-action-caveats">${esc(t('gc_shared_warnings'))}</a>`:esc(tr(w))}</li>`).join('')}</ul>`:''}
-        <label class="field"><span>${esc(t(r.warnings.length?'gc_required':'gc_optional_field'))} · ${esc(tr('note'))}</span><textarea data-review-note="${kind}|${r.id}" aria-required="${r.warnings.length>0}" aria-label="${esc(r.title+' — '+tr('note'))}">${esc(state[kind]?.reviewNotes?.[r.id]??r.note)}</textarea></label>
+      ${d.sections.map(r=>`<fieldset data-local-review="${kind}|${r.id}"><legend>${esc(r.title)} — ${esc(tr(r.status))}</legend>${r.warnings.length?`<ul class="small">${r.warnings.map(w=>`<li>${w==='calculation'?`<a href="#review-action-caveats">${esc(t('gc_shared_warnings'))}</a>`:esc(tr(w))}</li>`).join('')}</ul>`:''}
+        <details ${r.warnings.length?'open':''}><summary>${esc(tr('note'))}${r.warnings.length?' *':''}</summary><label class="field"><span>${esc(t(r.warnings.length?'gc_required':'gc_optional_field'))} · ${esc(tr('note'))}</span><textarea data-review-note="${kind}|${r.id}" aria-required="${r.warnings.length>0}" aria-label="${esc(r.title+' — '+tr('note'))}">${esc(state[kind]?.reviewNotes?.[r.id]??r.note)}</textarea></label></details>
         <label><input type="checkbox" data-review-confirm="${kind}|${r.id}" data-review-association="${esc(r.association)}" ${r.status==='reviewed'?'checked':''} ${!r.canReview||state.ui.reviewGenerating?'disabled':''}> ${esc(tr('confirm').replace('{section}',r.title))}</label>
-        <p class="small muted">${esc(tr('association'))}: ${esc(r.association)}</p><p data-review-error="${r.id}" role="alert"></p></fieldset>`).join('')}</section>`;
+        <details class="small muted"><summary>${esc(t('diagnostics'))}</summary>${esc(tr('association'))}: ${esc(r.association)}</details><p data-review-error="${r.id}" role="alert"></p></fieldset>`).join('')}</section>`;
   }
   function refreshDocumentReview(root,kind) {
+    root.querySelectorAll(`[data-local-review^="${kind}|"]`).forEach(el=>el.remove());
     const panel=root.querySelector('#review-'+kind);if(panel)panel.outerHTML=reviewPanel(kind);
     bindDocumentReview(root,kind);
     const report=documentReview();root.querySelectorAll('[data-reviewed-export]').forEach(b=>b.disabled=!!exportBlockedReason()||report.status!=='reviewed'||!!state.ui.reviewGenerating);
   }
   function bindDocumentReview(root,kind) {
+    root.querySelectorAll(`#review-${kind} [data-local-review]`).forEach(field=>{
+      const id=field.dataset.localReview.split('|')[1];
+      const target=kind==='proposal'?root.querySelector('#review-proposal-'+id):id==='summary'?root.querySelector('#plan-summary'):id.startsWith('concept-')?root.querySelector(`[data-pc="${id.slice(8)}"]`):root.querySelector('[data-weeks]')?.closest('table');
+      if(target)target.insertAdjacentElement('afterend',field);
+    });
     root.querySelectorAll('[data-review-note]').forEach(tx=>tx.oninput=()=>{
       const [what,id]=tx.dataset.reviewNote.split('|'),doc=state[what];doc.reviewNotes={...doc.reviewNotes,[id]:tx.value};DR.clear(doc,id);save();
       const panel=root.querySelector('#review-'+what),report=documentReview();
       panel.querySelector('[data-document-status]').textContent=DR.t(report.documents[what].status,state.lang);
       panel.querySelector('[role=status]').textContent=DR.t('unreviewed',state.lang);
-      const cb=panel.querySelector(`[data-review-confirm="${what}|${id}"]`);cb.checked=false;
+      const cb=root.querySelector(`[data-review-confirm="${what}|${id}"]`);cb.checked=false;
       root.querySelectorAll('[data-reviewed-export]').forEach(b=>b.disabled=true);
     });
     root.querySelectorAll('[data-review-confirm]').forEach(cb=>cb.onchange=()=>{
       const [what,id]=cb.dataset.reviewConfirm.split('|'),note=root.querySelector(`[data-review-note="${what}|${id}"]`).value;
-      try{DR.confirm(state,what,id,cb.dataset.reviewAssociation,{note,checked:cb.checked},reviewContext());save();refreshDocumentReview(root,kind);}
+      try{DR.confirm(state,what,id,cb.dataset.reviewAssociation,{note,checked:cb.checked},reviewContext());save();refreshDocumentReview(root,kind);root.querySelector(`[data-review-confirm="${what}|${id}"]`)?.focus();}
       catch(e){cb.checked=false;const error=root.querySelector(`[data-review-error="${id}"]`);error.textContent=DR.t(e.message,state.lang);error.tabIndex=-1;error.focus();}
     });
   }
@@ -1174,8 +1212,8 @@
       ${outputLangNotice(p, 'plan')}
       ${evidenceNotice()}
       <div class="card"><ul style="margin:0;padding-left:18px">${acts}</ul></div>
-      ${p ? reviewPanel('plan') : ''}
       ${body}
+      ${p ? reviewPanel('plan') : ''}
       <div class="actions-row">
         <button class="btn" data-go="actions:compare">${esc(t('back'))}</button>
         ${previousControl('plan')}
@@ -1260,7 +1298,8 @@
         ${state.proposal ? `<button class="btn" data-go="finance:draft">${esc(t('open_draft'))}</button>` : ''}
         ${previousControl('proposal')}
         ${exportScopeNotice()}<button class="btn" id="dl-all" ${exportBlocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button>
-        <button class="btn primary" id="draft" ${upstreamStale||!supported ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>`;
+        <button class="btn primary" id="draft" ${upstreamStale||!supported ? 'disabled' : ''}>${esc(state.proposal ? t('regenerate_draft') : t('review_draft'))}</button></div>
+      <div id="inactive-options">${FU.inactiveOptions(pathwayCache.match, fuCtx())}</div>`;
     root.querySelector('#start-gcf')?.addEventListener('click',startGcfConcept);
     root.querySelector('#recover-gcf-transition')?.addEventListener('click',recoverGcfTransition);
     bindPreliminaryInputs(root);
@@ -1281,9 +1320,13 @@
   }
   async function loadPathways(root) {
     const el = root.querySelector('#pathways');
-    if (!el || !state.selectedActions.length) return;
+    if (!el) return;
+    if (!state.selectedActions.length) { // nothing to match yet; still list the planned (inactive) options
+      try { const m = await api('/api/pathways', { actions: [], profile: state.profile, lang: state.lang }); const io = root.querySelector('#inactive-options'); if (io) io.innerHTML = FU.inactiveOptions(m, fuCtx()); } catch (err) { /* keep the static list */ }
+      return;
+    }
     const key = CW.fp({ a: state.selectedActions.map(a => a.key || a.id), p: state.profile, l: state.lang });
-    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); if(!PC.demoSupported(state.financing)||state.proposal&&state.proposal.route!==PC.ROUTE)el.querySelectorAll('[data-fp]').forEach(cb=>cb.disabled=true); };
+    const paint = () => { pathwayCache.html = FU.pathways(pathwayCache.match, new Set(state.financing.pathways || []), fuCtx()); el.innerHTML = pathwayCache.html; bindPathways(root); const io = root.querySelector('#inactive-options'); if (io) io.innerHTML = FU.inactiveOptions(pathwayCache.match, fuCtx()); if(!PC.demoSupported(state.financing)||state.proposal&&state.proposal.route!==PC.ROUTE)el.querySelectorAll('[data-fp]').forEach(cb=>cb.disabled=true); };
     if (pathwayCache.key === key && pathwayCache.match) return paint();
     try {
       pathwayCache.match = await api('/api/pathways', { actions: state.selectedActions, profile: state.profile, lang: state.lang });
@@ -1293,7 +1336,8 @@
 
   function exportScopeNotice() {const ids=[state.proposal?.deps?.assessmentId,state.plan?.deps?.assessmentId,state.actionSet?.assessmentId].filter(Boolean),sc=new Set(ids).size===1?byId(ids[0]):null;return `${state.proposal?.preliminary?`<p class="notice">${esc(L(state.proposal.preliminary.preparation_status))} · ${esc(L(state.proposal.preliminary.status_notice))}</p>`:''}<p class="notice" data-selected-project-scope>${esc(t('selected_package_scope').replace('{name}',sc?.General.Name || '—'))}</p>`;}
   function exportState(exportMode='working_draft') {
-    return { ...plain(state), exportMode, assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...plain(state),assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
+    const selected={...plain(state),profile:UtilityIdentity.resolve(state,state.actionSet?.assessmentId||state.plan?.deps?.assessmentId||state.proposal?.deps?.assessmentId)};
+    return { ...selected, exportMode, assessments: plain(Scenarios), assessmentMeta: Scenarios.map(metaOf), projectTransfer:CWProject.pack({...selected,assessments:plain(Scenarios),assessmentMeta:Scenarios.map(metaOf)}), chat: undefined, chatThreads: undefined, checkpoints: undefined, legacy: undefined, previous: undefined };
   }
   // mirrors the server check so the user sees why before a request is made
   function exportBlockedReason() {
@@ -1333,8 +1377,8 @@
       ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}</li>`).join('')}</ul></div>`
         : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
       ${evidenceNotice()}
-      ${reviewPanel('proposal')}
       ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div>${s.quotes_plan_summary === 'ai' ? `<div class="small dc-flag">${esc(t('sec_quotes_ai_summary'))}</div>` : ''}${(s.ai === true && CW.mayBeIncomplete(s.text)) || (s.quotes_plan_summary === 'ai' && CW.mayBeIncomplete(s.text, { anyParagraph: true })) ? `<div class="small dc-flag" data-incomplete="${i}">${esc(t('may_be_incomplete'))}</div>` : ''}<textarea id="review-proposal-section-${i}" aria-label="${esc(s.title)}" data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
+      ${reviewPanel('proposal')}
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
         ${exportScopeNotice()}<button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · Word</button>
@@ -1353,7 +1397,7 @@
     if (reviewed) reviewed.onclick = () => {
       const sc = sourceAssessment();
       if (!sc) return toast(t('stale_assessment_missing'));
-      p.deps = CW.proposalDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, plan: state.plan, profile: state.profile, supportRevision:reviewedResults(sc).supportRevision, financing: state.financing });
+      p.deps = CW.proposalDeps({ assessmentId: idOf(sc), assessment: sc, gwpIndex: state.gwpIndex, actions: state.selectedActions, plan: state.plan, profile: UtilityIdentity.resolve(state,idOf(sc)), supportRevision:reviewedResults(sc).supportRevision, financing: state.financing });
       save(); render();
     };
     const downloadWord=async (btn,exportMode='working_draft') => {
@@ -1435,7 +1479,7 @@
         customActions: custom, actionNotes: Object.fromEntries(custom.map(c => [c.key, state.actionNotes[c.key] || ''])),
         plan: state.plan?.deps?.assessmentId === aid ? state.plan : null,
         proposal: state.proposal?.deps?.assessmentId === aid ? state.proposal : null,
-        profile: state.profile, financing: state.financing,
+        profile: UtilityIdentity.resolve(state,aid), financing: state.financing,
         rejectedActions: Object.fromEntries(Object.entries(state.rejectedActions || {}).filter(([k]) => k.startsWith(aid + '|'))),
         estimateUse: state.estimateUse?.[aid] || null,
         otherAssessments: Scenarios.filter(s => s !== sc).map(s => ({ id: idOf(s), name: s.General.Name })),
@@ -1491,11 +1535,11 @@
     if (g) { e.preventDefault(); return go(g.dataset.go); }
     const tab = e.target.closest('[data-tab]');
     if (tab) {
-      const map = { assess: 'assess:choose', actions: state.actionResult && !state.actionResult.legacy ? 'actions:compare' : 'actions:select', plan: 'plan', finance: state.proposal ? 'finance:draft' : 'finance' };
+      const map = { assess: Scenarios.length?'assess:entry':'assess:choose', actions: state.actionResult && !state.actionResult.legacy ? 'actions:compare' : 'actions:select', plan: 'plan', finance: state.proposal ? 'finance:draft' : 'finance' };
       return go(map[tab.dataset.tab]);
     }
     const lang = e.target.closest('[data-lang]');
-    if (lang) { state.lang = lang.dataset.lang; save(); return render(); }
+    if (lang) { state.lang = lang.dataset.lang;for(const sc of Scenarios){const g=state.generatedNames?.[idOf(sc)];if(g&&sc.General.Name===g.value){g.value=(state.lang==='id'?'Penilaian':'Assessment')+' '+g.number;sc.General.Name=g.value;}}save(); return render(); }
     const loc = e.target.closest('[data-loc]');
     if (loc) { state.location = loc.dataset.loc; state.lang = loc.dataset.loc === 'indonesia' ? 'id' : 'en'; save(); return render(); }
   });

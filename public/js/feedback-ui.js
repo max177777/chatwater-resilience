@@ -152,5 +152,21 @@
       ${selected.size ? '' : `<p class="small" data-fp-none>${esc(t('fp_none_selected'))}</p>`}</div>`;
   }
 
-  return { tierChip, cardLine, responsibilityPanel, estimatesSummary, alternatives, hasFigures, screeningDetails, review, reviewChecklist, pathways, PLACEHOLDER };
+  /**
+   * Financing options kept for future development: shown greyed out, never selectable.
+   * match.inactive comes from /api/pathways; the two proposal formats are interface-only.
+   */
+  function inactiveOptions(match, ctx) {
+    const { t, L, esc } = ctx;
+    const items = [...((match && match.inactive) || []).map(p => ({ id: p.id, name: L(p.name), summary: L(p.summary) })),
+      { id: 'general-proposal', name: t('fo_general'), summary: t('fo_general_sum') },
+      { id: 'uploaded-guide', name: t('fo_guide'), summary: t('fo_guide_sum') }];
+    return `<div class="card fo-inactive" data-inactive-options aria-disabled="true"><h2>${esc(t('fo_inactive_title'))}</h2>
+      <p class="small muted">${esc(t('fo_inactive_sub'))}</p>
+      <ul class="fps">${items.map(o => `<li class="fp" data-inactive-option="${esc(o.id)}"><label class="row" style="gap:8px;flex-wrap:nowrap;align-items:flex-start">
+        <input type="checkbox" disabled aria-label="${esc(o.name)} — ${esc(t('fo_inactive_badge'))}">
+        <span><b>${esc(o.name)}</b> <span class="chip small">${esc(t('fo_inactive_badge'))}</span><div class="small muted">${esc(o.summary)}</div></span></label></li>`).join('')}</ul></div>`;
+  }
+
+  return { tierChip, cardLine, responsibilityPanel, estimatesSummary, alternatives, hasFigures, screeningDetails, review, reviewChecklist, pathways, inactiveOptions, PLACEHOLDER };
 });

@@ -142,7 +142,7 @@ const UI = {
     gc_source: "Assessment: {name}",
 
     brand: 'ChatWater Resilience',
-    tab_assess: '1 Assess', tab_actions: '2 Identify actions', tab_plan: '3 Project plan', tab_finance: '4 GCF concept',
+    tab_assess: '1 Assess', tab_actions: '2 Identify actions', tab_plan: '3 Project plan', tab_finance: '4 Financing Proposal',
     banner: 'Initial version · Sample utility values are hypothetical · Calculations use ECAM v3 formulas',
     location: 'Location', loc_indonesia: 'Indonesia', loc_global: 'Global',
     saved: 'All changes saved', saving: 'Saving…', save_checkpoint: 'Save checkpoint', checkpoint_saved: 'Checkpoint saved',
@@ -259,7 +259,7 @@ const UI = {
     review_details: 'Review details', total_duration: 'Total duration', weeks_unit: 'weeks',
     plan_saved: 'Project plan saved. Continue with Financing.', save_plan: 'Save project plan',
     // finance
-    finance_title: 'GCF preliminary project concept', finance_sub: 'Prepare the eight-section preliminary concept using guidance for the selected actions. GCF eligibility and approval are not established.',
+    finance_title: 'Financing proposal: GCF preliminary project concept', finance_sub: 'Prepare the eight-section preliminary concept using guidance for the selected actions. GCF eligibility and approval are not established.',
     general_proposal: 'General proposal · Recommended first',
     general_desc: 'We reuse the project plan for an initial utility, local government, lender, or donor discussion.',
     use_general: 'Use general proposal',
@@ -463,8 +463,8 @@ const UI = {
     tech_capacity: 'In-house engineering capacity', tech_capacity_strong: 'Strong', tech_capacity_some: 'Some', tech_capacity_limited: 'Limited',
     data_availability: 'Operational data', data_availability_metered: 'Mostly metered or measured', data_availability_partial: 'Partly measured, partly estimated', data_availability_limited: 'Mostly estimates',
     opt_unset: '—',
-    tier_direct: 'Directly actionable', tier_conditional: 'Needs coordination', tier_outside: 'Outside utility responsibility', tier_unspecified: 'Responsibility not specified', tier_rejected: 'Marked not relevant',
-    tier_desc_direct: 'Your utility runs this service and can act on it.',
+    tier_direct: 'Potentially directly actionable', tier_conditional: 'Needs coordination', tier_outside: 'Outside utility responsibility', tier_unspecified: 'Responsibility not specified', tier_rejected: 'Marked not relevant',
+    tier_desc_direct: 'Your utility runs this service and can potentially act on it.',
     tier_desc_conditional: 'Needs local government, another provider or their approval.',
     tier_desc_outside: 'Counted in the inventory, but your utility cannot act on it directly.',
     tier_desc_unspecified: 'Answer the responsibility questions under Optional details.',
@@ -721,7 +721,7 @@ const UI = {
     gc_source: "Penilaian: {name}",
 
     brand: 'ChatWater Resilience',
-    tab_assess: '1 Penilaian', tab_actions: '2 Identifikasi aksi', tab_plan: '3 Rencana proyek', tab_finance: '4 Konsep GCF',
+    tab_assess: '1 Penilaian', tab_actions: '2 Identifikasi aksi', tab_plan: '3 Rencana proyek', tab_finance: '4 Proposal Pendanaan',
     banner: 'Versi awal · Nilai utilitas contoh bersifat hipotetis · Perhitungan memakai rumus ECAM v3',
     location: 'Lokasi', loc_indonesia: 'Indonesia', loc_global: 'Global',
     saved: 'Semua perubahan tersimpan', saving: 'Menyimpan…', save_checkpoint: 'Simpan titik periksa', checkpoint_saved: 'Titik periksa tersimpan',
@@ -832,7 +832,7 @@ const UI = {
     tasks: 'Tugas', task: 'Tugas', owner: 'Penanggung jawab', start_week: 'Mulai (minggu)', weeks: 'Minggu', depends: 'Setelah',
     review_details: 'Tinjau rincian', total_duration: 'Durasi total', weeks_unit: 'minggu',
     plan_saved: 'Rencana proyek tersimpan. Lanjutkan ke Pembiayaan.', save_plan: 'Simpan rencana proyek',
-    finance_title: 'Konsep awal proyek GCF', finance_sub: 'Siapkan konsep awal delapan bagian dengan panduan sesuai aksi terpilih. Kelayakan dan persetujuan GCF belum ditetapkan.',
+    finance_title: 'Proposal pendanaan: konsep awal proyek GCF', finance_sub: 'Siapkan konsep awal delapan bagian dengan panduan sesuai aksi terpilih. Kelayakan dan persetujuan GCF belum ditetapkan.',
     general_proposal: 'Proposal umum · Disarankan pertama',
     general_desc: 'Kami memakai ulang rencana proyek untuk diskusi awal dengan utilitas, pemerintah daerah, pemberi pinjaman, atau donor.',
     use_general: 'Pakai proposal umum',
@@ -1031,8 +1031,8 @@ const UI = {
     tech_capacity: 'Kapasitas teknik internal', tech_capacity_strong: 'Kuat', tech_capacity_some: 'Sedang', tech_capacity_limited: 'Terbatas',
     data_availability: 'Data operasional', data_availability_metered: 'Sebagian besar terukur', data_availability_partial: 'Sebagian terukur, sebagian perkiraan', data_availability_limited: 'Sebagian besar perkiraan',
     opt_unset: '—',
-    tier_direct: 'Dapat ditindaklanjuti langsung', tier_conditional: 'Perlu koordinasi', tier_outside: 'Di luar tanggung jawab utilitas', tier_unspecified: 'Tanggung jawab belum ditentukan', tier_rejected: 'Ditandai tidak relevan',
-    tier_desc_direct: 'Utilitas Anda mengelola layanan ini dan dapat menindaklanjutinya.',
+    tier_direct: 'Berpotensi dapat ditindaklanjuti langsung', tier_conditional: 'Perlu koordinasi', tier_outside: 'Di luar tanggung jawab utilitas', tier_unspecified: 'Tanggung jawab belum ditentukan', tier_rejected: 'Ditandai tidak relevan',
+    tier_desc_direct: 'Utilitas Anda mengelola layanan ini dan berpotensi dapat menindaklanjutinya.',
     tier_desc_conditional: 'Memerlukan pemerintah daerah, penyedia lain, atau persetujuan mereka.',
     tier_desc_outside: 'Dihitung dalam inventaris, tetapi utilitas Anda tidak dapat menanganinya secara langsung.',
     tier_desc_unspecified: 'Jawab pertanyaan tanggung jawab di Rincian opsional.',
@@ -1156,3 +1156,38 @@ const STAGE_LABELS = {
   en: { wsa: 'Water abstraction', wst: 'Water treatment', wsd: 'Water distribution', wwc: 'Wastewater collection', wwt: 'Wastewater treatment', wwo: 'Onsite sanitation', Water: 'Water supply', Waste: 'Sanitation' },
   id: { wsa: 'Pengambilan air baku', wst: 'Pengolahan air minum', wsd: 'Distribusi air minum', wwc: 'Pengumpulan air limbah', wwt: 'Pengolahan air limbah', wwo: 'Sanitasi setempat', Water: 'Air minum', Waste: 'Sanitasi' },
 };
+
+// Participant terminology awaiting Silvia's confirmation: PDAM/PAM for drinking water only.
+Object.assign(UI.en,{utility_identity:'Utility',utility_association:'Utility associated with this assessment',utility_new:'Create another utility',details_title:'Utility details',details_sub:'Identity, responsibility and capacity support action planning and GCF concept drafting. Saved for the associated utility in this browser; edits can make generated outputs outdated. Choose a saved utility explicitly when assigning legacy data.',load_sample:'Load complete example',input_legend:'Confirm factor acknowledges that the displayed factor applies to this assessment; a default remains a default, not a measurement. Mark unknown keeps the number but excludes dependent calculations until resolved.',confirm_factor:'Confirm factor',mark_unknown:'Mark unknown (keep value)',period_help:'End date is exclusive: for the last completed calendar year use 1 January to 1 January of the following year. Calculations use the actual number of days.',last_year:'Use last completed calendar year',advanced_factors:'Advanced sanitation assumptions',notes_placeholder:'Optional: add local conditions, constraints or explanations. Saved with this action in this browser and used when the selection is saved for later drafting; saving does not apply an AI revision.'});
+Object.assign(UI.id,{utility_identity:'Utilitas',utility_association:'Utilitas yang terkait dengan penilaian ini',utility_new:'Buat utilitas lain',details_title:'Rincian utilitas (PDAM/PAM untuk air minum)',details_sub:'Identitas, tanggung jawab, dan kapasitas mendukung perencanaan kegiatan dan penyusunan konsep GCF. Disimpan untuk utilitas terkait di peramban ini; perubahan dapat membuat keluaran tidak mutakhir. Pilih utilitas tersimpan secara eksplisit untuk mengaitkan data lama.',load_sample:'Muat contoh lengkap',input_legend:'Konfirmasi faktor menyatakan bahwa faktor yang ditampilkan berlaku untuk penilaian ini; nilai bawaan tetap nilai bawaan, bukan pengukuran. Tandai tidak diketahui mempertahankan angka tetapi mengecualikan perhitungan terkait sampai diselesaikan.',confirm_factor:'Konfirmasi faktor',mark_unknown:'Tandai tidak diketahui (pertahankan nilai)',period_help:'Tanggal akhir tidak termasuk: untuk tahun kalender terakhir yang selesai gunakan 1 Januari hingga 1 Januari tahun berikutnya. Perhitungan memakai jumlah hari sebenarnya.',last_year:'Gunakan tahun kalender terakhir yang selesai',advanced_factors:'Asumsi sanitasi lanjutan',notes_placeholder:'Opsional: tambahkan kondisi setempat, kendala, atau penjelasan. Disimpan bersama kegiatan di peramban ini dan dipakai setelah pilihan disimpan untuk penyusunan draf. Menyimpan tidak menerapkan revisi AI.'});
+
+// Silvia participant review guidance; terminology remains subject to her review.
+Object.assign(UI.en,{"diagnostics": "Technical diagnostics", "operation_help_title": "Saving, exports and AI help", "operation_help": "Save progress keeps this workspace in this browser on this device. Export assessment inputs downloads the active assessment ECAM JSON. Export selected project downloads only the source assessment, selected actions, documents and evidence. Back up workspace downloads all assessments, utility associations and recovery history. Keep the downloaded backup separately for recovery on another device.", "ai_operations": "Help explains the current project without editing it. Revise with AI proposes an alternative action for preview and explicit addition; it does not overwrite the original. Generate draft creates editable document content. AI is off here: available generation uses templates. Saving notes does not apply an AI revision.", "required_legend": "* Required for the indicated operation; ⓘ calculation or optional information. Expand the indicator for details. Field errors remain beside the value. Confirming a factor acknowledges applicability, not measurement or scientific verification.", "cannot_calculate": "Cannot calculate", "not_applicable": "Not applicable", "incomplete_total": "Incomplete total for selected processes", "known_subtotal": "Known subtotal (incomplete)", "population_missing": "Served population is missing or unknown; correct the population inputs.", "correct_inputs": "Correct inputs", "selected_total": "Inventory for selected processes", "demo_accept": "Load fictional example inputs and accept their stated hypothetical assumptions for demonstration? These are not measurements or verified science. No document is marked human-reviewed. Existing work is preserved.", "demo_steps": "Fictional complete example: finish the assessment, show actions, select pump improvement and save the selection, generate and save the plan, then create the GCF preliminary concept. Hypothetical financing inputs are supplied. Review design, sources and funding eligibility; reviewed export requires explicit human review of each section.", "legacy_zero": "Imported value: zero-entry intent was not recorded", "status_available": "Available", "status_unknown": "Unknown", "status_unconfirmed": "Unconfirmed", "status_missing": "Missing", "status_invalid": "Invalid", "status_untracked": "Not tracked", "status_unavailable": "Unavailable", "status_entered": "Entered", "status_confirmed": "Confirmed"});
+Object.assign(UI.id,{"diagnostics": "Diagnostik teknis", "operation_help_title": "Penyimpanan, ekspor, dan bantuan AI", "operation_help": "Simpan kemajuan menyimpan ruang kerja di peramban pada perangkat ini. Ekspor masukan penilaian mengunduh JSON ECAM penilaian aktif. Ekspor proyek terpilih hanya mengunduh penilaian sumber, kegiatan terpilih, dokumen, dan bukti terkait. Cadangkan ruang kerja mengunduh semua penilaian, kaitan utilitas, dan riwayat pemulihan. Simpan berkas cadangan secara terpisah untuk pemulihan pada perangkat lain.", "ai_operations": "Bantuan menjelaskan proyek saat ini tanpa mengubahnya. Revisi dengan AI mengusulkan kegiatan alternatif untuk dipratinjau dan ditambahkan secara eksplisit; kegiatan asli tidak ditimpa. Buat draf menghasilkan isi dokumen yang dapat diedit. AI nonaktif di sini: pembuatan draf yang tersedia memakai templat. Menyimpan catatan tidak menerapkan revisi AI.", "required_legend": "* Diperlukan untuk operasi terkait; ⓘ informasi perhitungan atau opsional. Buka indikator untuk rinciannya. Kesalahan isian tetap di samping nilai. Konfirmasi faktor mengakui keberlakuannya, bukan pengukuran atau verifikasi ilmiah.", "cannot_calculate": "Belum dapat dihitung", "not_applicable": "Tidak berlaku", "incomplete_total": "Total belum lengkap untuk proses terpilih", "known_subtotal": "Subtotal diketahui (belum lengkap)", "population_missing": "Jumlah penduduk terlayani belum diisi atau tidak diketahui; perbaiki isian penduduk.", "correct_inputs": "Perbaiki masukan", "selected_total": "Inventaris proses terpilih", "demo_accept": "Muat masukan contoh fiktif dan terima asumsi hipotetisnya untuk demonstrasi? Ini bukan pengukuran atau sains terverifikasi. Tidak ada dokumen yang ditandai telah ditinjau manusia. Pekerjaan yang ada tetap disimpan.", "demo_steps": "Contoh lengkap fiktif: selesaikan penilaian, tampilkan kegiatan, pilih peningkatan pompa dan simpan pilihan, buat dan simpan rencana, lalu buat konsep awal GCF. Masukan pembiayaan hipotetis tersedia. Tinjau desain, sumber, dan kelayakan pendanaan; ekspor ditinjau memerlukan tinjauan manusia eksplisit untuk setiap bagian.", "legacy_zero": "Nilai impor: maksud pengisian nol belum tercatat", "status_available": "Tersedia", "status_unknown": "Tidak diketahui", "status_unconfirmed": "Belum dikonfirmasi", "status_missing": "Belum diisi", "status_invalid": "Tidak valid", "status_untracked": "Belum dilacak", "status_unavailable": "Tidak tersedia", "status_entered": "Diisi", "status_confirmed": "Dikonfirmasi"});
+
+Object.assign(UI.en,{status_not_applicable:'Not applicable',status_incomplete:'Incomplete',in_imported:'Imported value',in_entered:'Entered value'});
+Object.assign(UI.id,{status_not_applicable:'Tidak berlaku',status_incomplete:'Belum lengkap',in_imported:'Nilai impor',in_entered:'Nilai yang diisi'});
+
+// Participant review follow-up (Oct 29): visible utility data button, comment guidance, inactive financing options
+Object.assign(UI.en, {
+  utility_data_btn: 'Edit utility data',
+  comments_hint: 'Please add details that support the data entered above, e.g. data sources, year, measurement method, and any assumptions or gaps.',
+  fo_inactive_title: 'Other financing options (planned)',
+  fo_inactive_sub: 'Not active in this version. Kept here for future development; they cannot be selected yet.',
+  fo_inactive_badge: 'Not active yet',
+  fo_general: 'General proposal (any funder)',
+  fo_general_sum: 'A general project proposal format that is not tied to one fund.',
+  fo_guide: 'Proposal from an uploaded funding guide',
+  fo_guide_sum: 'Draft a proposal following the structure of a funding guide you upload.',
+});
+Object.assign(UI.id, {
+  utility_data_btn: 'Ubah data PDAM/PAM',
+  comments_hint: 'Tambahkan rincian yang mendukung data di atas, misalnya sumber data, tahun, metode pengukuran, serta asumsi atau kekurangan data.',
+  fo_inactive_title: 'Pilihan pendanaan lain (direncanakan)',
+  fo_inactive_sub: 'Belum aktif pada versi ini. Disimpan untuk pengembangan berikutnya; belum dapat dipilih.',
+  fo_inactive_badge: 'Belum aktif',
+  fo_general: 'Proposal umum (penyandang dana mana pun)',
+  fo_general_sum: 'Format proposal proyek umum yang tidak terikat pada satu dana.',
+  fo_guide: 'Proposal dari panduan pendanaan yang diunggah',
+  fo_guide_sum: 'Menyusun proposal mengikuti struktur panduan pendanaan yang Anda unggah.',
+});

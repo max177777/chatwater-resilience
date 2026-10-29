@@ -293,3 +293,9 @@ details.grp > summary.grp-h { cursor: pointer; }
 .readiness-group { margin: .6rem 0; }
 .readiness-group summary { cursor: pointer; font-weight: 600; }
 .readiness blockquote { margin: .5rem 0; padding-left: .75rem; border-left: 3px solid currentColor; white-space: pre-wrap; }
+
+/* Participant review follow-up: header utility data button; planned (inactive) financing options */
+.utility-btn { white-space: nowrap; }
+.fo-inactive { opacity: .62; background: var(--bg); margin-top: 16px; }
+.fo-inactive input[disabled] { cursor: not-allowed; }
+@media (max-width: 640px) { .utility-btn { font-size: 12px; padding: 4px 8px; } }

@@ -65,7 +65,7 @@ function inputRecord(record,meta){
  if(!record)return undefined;
  const scopes=['General','Water','Waste',...Object.values(meta.substages).flat()];
  const rec=r=>{const v=fields(r,['o','c','v','st','availability','note','source','source_note','source_year','year','period']);if(Array.isArray(r?.history))v.history=r.history.map(rec);return v;};
- return {...fields(record,['origin']),s:Object.fromEntries(scopes.filter(s=>record.s?.[s]).map(s=>[s,Object.fromEntries(Object.entries(record.s[s]).filter(([code])=>Object.hasOwn(E._ecam.Info,code)).map(([code,r])=>[code,rec(r)]))]))};
+ return {...fields(record,['origin','provenance']),s:Object.fromEntries(scopes.filter(s=>record.s?.[s]).map(s=>[s,Object.fromEntries(Object.entries(record.s[s]).filter(([code])=>Object.hasOwn(E._ecam.Info,code)).map(([code,r])=>[code,rec(r)]))]))};
 }
 function select(body,{requireProposal=false}={}){
  const {assessment,meta}=I.exportContext(body,{requireProposal});
@@ -108,8 +108,15 @@ function select(body,{requireProposal=false}={}){
  const status=inputRecord(body.inputStatus?.[aid],m);out.inputStatus=status?{[aid]:status}:{};
  const profile=body.profile?C.parseProfileJson(JSON.stringify(body.profile)).profile:null;
  out.profile=profile || null;
- // Profiles are workspace-global today. Require the same scoped profile the outputs used.
+ // Preserve only this assessment's utility association in selected-project recovery.
+ const utilityId=body.assessmentUtilities?.[aid];
+ if(utilityId){
+   if(C.fp(body.utilities?.[utilityId])!==C.fp(out.profile))blocked('Utility identity does not match the selected assessment.');
+   out.utilities={[utilityId]:out.profile};out.assessmentUtilities={[aid]:utilityId};
+ }
+ // Require the same scoped profile the outputs used.
  if((out.profile&&Object.values(out.profile).some(v=>!scalar(v)))||C.fp(out.profile)!==C.fp(body.profile))blocked('The profile contains unscoped fields. Remove them or use the full workspace recovery backup.');
+ out.financingAssessmentId=aid;
  out.financing={...fields(body.financing,['route']),...(body.financing?.pathways?{pathways:strings(body.financing.pathways)}:{})};
  if(body.financing?.route==='gcf-preliminary-v1')out.financing.conceptInputs=require('../public/js/preliminary-concept').clean(body.financing.conceptInputs||{},body.selectedActions||[]);
  if(body.financing?.customFramework)out.financing.customFramework={...fields(body.financing.customFramework,['id','name','note']),sections:list(body.financing.customFramework.sections).map(s=>fields(s,['key','title','en','id','guidance']))};
