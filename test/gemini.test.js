@@ -54,6 +54,22 @@ const assert = require('assert');
     await assert.rejects(ai.callLLM({ messages: [{ role: 'user', content: 'Q' }] }), e => e.status === 502 && /API key not valid/.test(e.message));
     console.log('  ok - blocked, truncated and rejected requests become clear provider errors');
 
+    // Claude: requested max_tokens gets headroom so cited answers are not cut off; a real cut-off still fails
+    process.env.LLM_PROVIDER = 'anthropic'; process.env.ANTHROPIC_API_KEY = 'test-anthropic';
+    let sent = null;
+    globalThis.fetch = async (url, init) => { sent = { url, body: JSON.parse(init.body) };
+      return { ok: true, status: 200, json: async () => ({ stop_reason: 'end_turn', content: [{ type: 'text', text: 'Answer [S1].' }] }) }; };
+    assert.strictEqual(await ai.callLLM({ system: 'S', messages: [{ role: 'user', content: 'Q' }], max_tokens: 1200 }), 'Answer [S1].');
+    assert.ok(sent.url.endsWith('/v1/messages'));
+    assert.ok(sent.body.max_tokens >= 1200 + 2048, 'headroom above the requested answer size');
+    process.env.LLM_MAX_OUTPUT_TOKENS = '5000';
+    await ai.callLLM({ messages: [{ role: 'user', content: 'Q' }], max_tokens: 700 });
+    assert.strictEqual(sent.body.max_tokens, 5000, 'LLM_MAX_OUTPUT_TOKENS overrides');
+    delete process.env.LLM_MAX_OUTPUT_TOKENS;
+    globalThis.fetch = async () => ({ ok: true, status: 200, json: async () => ({ stop_reason: 'max_tokens', content: [{ type: 'text', text: 'partial' }] }) });
+    await assert.rejects(ai.callLLM({ messages: [{ role: 'user', content: 'Q' }] }), e => /cut off/.test(e.message));
+    console.log('  ok - Claude output limit has headroom; truncated answers are still rejected');
+
     assert.deepStrictEqual(ai.parseJson('```json\n{"a":1}\n```'), { a: 1 });
     console.log('  ok - JSON answers are read even inside code fences');
     console.log('\nGemini tests passed');
