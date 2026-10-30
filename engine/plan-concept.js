@@ -104,7 +104,8 @@ function template({ facts: f, actions = [], plan, profile, breakdown, estimates 
   const x = T[lang] || T.en;
   const sel = (f.selected_actions || []).filter(a => a.id !== 'A00');
   const raw = new Map(actions.map(a => [a.id, a]));
-  const utility = (profile && profile.name) || (f.ecam_results && f.ecam_results.assessment) || '';
+  // utility name with its location from the Home page details (workflow, Oct 29)
+  const utility = ((profile && profile.name) || (f.ecam_results && f.ecam_results.assessment) || '') + (profile && profile.name && profile.location ? ` (${profile.location})` : '');
   const tier = a => (RS.forOption(raw.get(a.id), profile) || {}).tier;
   const lines = (...l) => l.filter(Boolean).join('\n');
   const list = items => items.filter(Boolean).map(s => `- ${s}`).join('\n');
