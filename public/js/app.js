@@ -596,7 +596,7 @@
 
   // ---------------------------------------------------------------- Home (Stage 0): what the tool does, how to prepare, utility details
   // Participant review (Oct 29): first-time users need a light landing page before the working stages.
-  const VIDEO_URL = ''; // set to the tutorial link once it is recorded
+  const VIDEO_SRC = '/media/chatwater-guide.mp4', VIDEO_POSTER = '/media/chatwater-guide-poster.jpg'; // pitch / guide video (720p, ~2 MB)
   function viewHome(root) {
     const p = homeUtility();
     const steps = [['assess', 'home_s1'], ['actions', 'home_s2'], ['plan', 'home_s3'], ['finance', 'home_s4']];
@@ -611,7 +611,7 @@
       <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
       <div class="home-grid home-grid-2">
         <div class="card"><h2>${esc(t('home_prepare_t'))}</h2><ul class="small">${['home_prep1', 'home_prep2', 'home_prep3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul></div>
-        <div class="card"><h2>${esc(t('home_video_t'))}</h2>${VIDEO_URL ? `<p><a class="btn" href="${esc(VIDEO_URL)}" target="_blank" rel="noopener">▶ ${esc(t('home_video_open'))}</a></p>` : `<div class="home-video" aria-label="${esc(t('home_video_soon'))}">▶</div><p class="small muted">${esc(t('home_video_soon'))}</p>`}</div>
+        <div class="card"><h2>${esc(t('home_video_t'))}</h2><video class="home-video-player" controls preload="metadata" playsinline poster="${VIDEO_POSTER}" aria-label="${esc(t('home_video_t'))}"><source src="${VIDEO_SRC}" type="video/mp4"><source src="/media/chatwater-guide.webm" type="video/webm"></video></div>
       </div>
       <details class="card small"><summary><b>${esc(t('home_help_t'))}</b></summary><p>${esc(t('home_save'))}</p><p>${esc(t('ai_operations'))}</p></details>
     </section>`;

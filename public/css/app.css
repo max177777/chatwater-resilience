@@ -353,3 +353,4 @@ details.grp > summary.grp-h { cursor: pointer; }
 .action-note { display: block; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
 .action-note > span { font-weight: 600; color: var(--ink); }
 .action-note + p.small { margin: 4px 0 8px; }
+.home-video-player { width: 100%; aspect-ratio: 16/9; border-radius: 8px; background: #000; display: block; }
