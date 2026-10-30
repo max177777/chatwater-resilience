@@ -354,3 +354,4 @@ details.grp > summary.grp-h { cursor: pointer; }
 .action-note > span { font-weight: 600; color: var(--ink); }
 .action-note + p.small { margin: 4px 0 8px; }
 .home-video-player { width: 100%; aspect-ratio: 16/9; border-radius: 8px; background: #000; display: block; }
+#profile-chip[hidden] { display: none !important; }

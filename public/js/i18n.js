@@ -1293,3 +1293,7 @@ Object.assign(UI.id, {
   notes_help: 'Disimpan bersama aksi ini dan dipakai saat rencana dan proposal pendanaan disusun.',
   basis_ecam: 'Dihitung oleh ECAM dari masukan penilaian Anda.',
 });
+
+// Oct 30: header and review simplification
+Object.assign(UI.en, { demo_steps: 'Fictional complete example: finish the assessment, choose actions (e.g. pump improvement) and save, generate the plan, then create the GCF preliminary concept. All example values are hypothetical.' });
+Object.assign(UI.id, { demo_steps: 'Contoh lengkap fiktif: selesaikan penilaian, pilih aksi (misalnya perbaikan pompa) lalu simpan, buat rencana, kemudian susun konsep awal GCF. Semua nilai contoh bersifat hipotetis.' });

@@ -455,7 +455,7 @@
     gs.hidden=!state.ui.reviewGenerating;gs.innerHTML=state.ui.reviewGenerating?`<span class="spin"></span> ${esc(t('gen_wait'))}`:'';
     const chipText = `${t('details_title')} — ${t('utility_identity')}: ${state.profile?.name || t('not_specified')} · ${t('a_name')}: ${identityAssessment()?.General?.Name || '–'}`;
     $('#profile-chip').textContent = chipText;
-    $('#profile-chip').hidden = false;
+    $('#profile-chip').hidden = true; // header shows only the 'Edit utility data' button (utility and assessment names repeat elsewhere)
     let demoNote=$('#demo-instructions');if(!demoNote){demoNote=document.createElement('p');demoNote.id='demo-instructions';demoNote.className='notice';$('#view').insertAdjacentElement('beforebegin',demoNote);}demoNote.hidden=!state.demoAssessments?.[idOf(identityAssessment()||Global)];demoNote.textContent=t('demo_steps');
     $('#profile-chip').onclick=openDetails;$('#profile-chip').setAttribute('role','button');$('#profile-chip').tabIndex=0;$('#profile-chip').onkeydown=e=>{if(e.key==='Enter'||e.key===' ')openDetails();};$('#profile-chip').title=t('details_title');
     // A visible button for the same form, on every stage (participant review: utility data needed for stages 2–4)
@@ -1172,6 +1172,7 @@
   }
   function documentReview() {return DR.evaluate(state,reviewContext());}
   function reviewPanel(kind) {
+    return ''; // Oct 30: section check boxes and review notes removed (no effect for users; sections are edited directly)
     const report=documentReview(),d=report.documents[kind];if(!d)return '';
     const tr=k=>DR.t(k,state.lang),issues=kind==='proposal'?report.issues:d.issues.map(i=>({...i,document:kind}));
     // Participant review (Oct 29): short status line; each section gets an optional notes box and one check box.
@@ -1436,7 +1437,7 @@
       <div class="actions-row"><button class="btn" data-go="finance">${esc(t('back'))}</button>
         ${previousControl('proposal')}
         ${exportScopeNotice()}<button class="btn" id="dl-word" ${blocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · Word</button>
-        <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button><button class="btn" data-reviewed-export="word" ${blocked||state.ui.reviewGenerating||documentReview().status!=='reviewed'?'disabled':''}>${esc(DR.t('reviewed_download',state.lang))} · Word</button><button class="btn" data-reviewed-export="package" ${blocked||state.ui.reviewGenerating||documentReview().status!=='reviewed'?'disabled':''}>${esc(DR.t('reviewed_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button></div>`;
+        <button class="btn primary" id="dl-all" ${blocked ? 'disabled' : ''}>${esc(DR.t('draft_download',state.lang))} · ${esc(DR.t('package',state.lang))}</button></div>`;
     const refreshDraftReview=()=>refreshDocumentReview(root,'proposal');
     bindDocumentReview(root,'proposal');
     root.querySelectorAll('[data-sec]').forEach(tx => tx.oninput = () => {
