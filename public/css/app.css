@@ -381,3 +381,24 @@ details.grp > summary.grp-h { cursor: pointer; }
 .planned-route { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ecam-link { font-size: 13px; }
 .support-docs { margin: 0 0 2px; padding-left: 0; list-style: none; } .support-docs li { margin: 2px 0; }
+
+/* Compact Home (Oct 30 mockup): short cards, folded extras, chat as a folded row at the bottom */
+.home-step b { font-size: 17px; font-weight: 600; }
+.home-prepare p { margin: 8px 0 0 24px; color: var(--ink-2); font-size: 14.5px; }
+.home-grid-2 h2 { font-weight: 500; }
+.video-toggle { width: 100%; padding: 22px 16px; border: 0; border-radius: 10px; background: var(--teal-faint); color: var(--teal); font: inherit; font-size: 17px; cursor: pointer; }
+.video-toggle:hover { background: var(--teal-soft); } .vt-icon { margin-right: 6px; }
+.home-fold > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 17px; }
+.home-fold > summary::-webkit-details-marker { display: none; }
+.home-fold > summary::after, .home-mode .chat-head::after { content: ''; width: 9px; height: 9px; border-right: 2px solid var(--ink-2); border-bottom: 2px solid var(--ink-2); transform: rotate(45deg); margin: -4px 6px 0 0; transition: transform .15s; }
+.home-fold[open] > summary::after, .home-mode.home-chat-open .chat-head::after { transform: rotate(-135deg); margin-top: 4px; }
+.home-mode .layout { grid-template-columns: minmax(0, 1fr); }
+.home-mode .layout > .chat { grid-column: 1; grid-row: auto; position: static; max-height: none; }
+.home-mode .chat-head { cursor: pointer; border-bottom: 0; padding: 16px 20px; }
+.home-mode .chat-head b { font-weight: 500; font-size: 17px; } .home-mode .chat-head b::before { content: '💬'; margin-right: 10px; }
+.home-mode:not(.home-chat-open) .chat .chat-scope, .home-mode:not(.home-chat-open) .chat .chat-body, .home-mode:not(.home-chat-open) .chat .chat-form,
+.home-mode .chat-head .row { display: none; }
+.home-mode.home-chat-open .chat .chat-body { max-height: 360px; }
+.home-mode.home-chat-open .chat-head { border-bottom: 1px solid var(--line); }
+.home-mode.home-chat-open .chat.collapsed .chat-body, .home-mode.home-chat-open .chat.collapsed .chat-scope { display: block; }
+.home-mode.home-chat-open .chat.collapsed .chat-form { display: flex; }

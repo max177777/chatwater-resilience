@@ -603,6 +603,7 @@
   };
 
   function render() {
+    document.body.classList.toggle('home-mode', state.ui.view === 'home');
     attachToHomeUtility();
     if (clearOrphanOutputs()) save(); // older sessions may hold outputs of an assessment that no longer exists
     applyShell();
@@ -637,10 +638,10 @@
         <div class="actions-row"><button type="button" class="btn" data-home-close>${esc(t('cancel'))}</button><button class="btn primary">${esc(t('home_save_start'))}</button></div></form></div>
       <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
       <div class="home-grid home-grid-2">
-        <div class="card"><h2>${esc(t('home_prepare_t'))}</h2><ul class="small">${['home_prep1', 'home_prep2', 'home_prep3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul></div>
-        <div class="card"><h2>${esc(t('home_video_t'))}</h2><video class="home-video-player" controls preload="metadata" playsinline poster="${VIDEO_POSTER}" aria-label="${esc(t('home_video_t'))}"><source src="${VIDEO_SRC}" type="video/mp4"><source src="/media/chatwater-guide.webm" type="video/webm"></video></div>
+        <div class="card home-prepare"><h2>${esc(t('home_prepare_t'))}</h2>${['home_prep1', 'home_prep2'].map(k => `<p>${esc(t(k))}</p>`).join('')}</div>
+        <div class="card"><h2>${esc(t('home_video_t'))}</h2><div data-video-slot><button type="button" class="video-toggle" data-video-open><span class="vt-icon" aria-hidden="true">▷</span> ${esc(t('home_video_btn'))} · 0:59</button></div></div>
       </div>
-      <details class="card small"><summary><b>${esc(t('home_help_t'))}</b></summary><p>${esc(t('home_save'))}</p><p>${esc(t('ai_operations'))}</p></details>
+      <details class="card home-fold"><summary>${esc(t('home_help_t'))}</summary><p class="small">${esc(t('home_save'))}</p><p class="small">${esc(t('ai_operations'))}</p></details>
     </section>`;
     root.querySelector('#home-profile').onsubmit = e => {
       e.preventDefault();
@@ -651,6 +652,9 @@
       go(Scenarios.length ? 'assess:entry' : 'assess:choose');
     };
     root.querySelector('[data-home-example]').onclick = async () => { go('assess:entry'); await loadSample(); };
+    root.querySelector('[data-video-open]').onclick = () => {
+      root.querySelector('[data-video-slot]').innerHTML = `<video class="home-video-player" controls autoplay playsinline poster="${VIDEO_POSTER}" aria-label="${esc(t('home_video_t'))}"><source src="${VIDEO_SRC}" type="video/mp4"><source src="/media/chatwater-guide.webm" type="video/webm"></video>`;
+    };
     // Utility details stay folded until the user asks for them (keeps the landing page light)
     const form = root.querySelector('#home-profile'), toggle = root.querySelector('[data-home-toggle]');
     const openForm = (on, focus) => { form.hidden = !on; toggle.setAttribute('aria-expanded', String(on)); toggle.hidden = on;
@@ -1641,6 +1645,11 @@
     state.chat = []; state.ui.chatFocus = null; save(); renderChat(); toast(t('chat_cleared'));
   };
   $('#chat-toggle').onclick = () => { state.ui.chatOpen = !state.ui.chatOpen; save(); applyShell(); };
+  // On Home the help chat is a folded row at the bottom; clicking its header opens it (participant review, Oct 30)
+  $('#chat').querySelector('.chat-head').addEventListener('click', e => {
+    if (!document.body.classList.contains('home-mode') || e.target.closest('button')) return;
+    document.body.classList.toggle('home-chat-open');
+  });
   $('#chat-form').onsubmit = e => { e.preventDefault(); const v = $('#chat-input').value; $('#chat-input').value = ''; askChat(v); };
   $('#chat-input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#chat-form').requestSubmit(); } });
   $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') e.target.hidden = true; });
