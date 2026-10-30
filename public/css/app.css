@@ -376,3 +376,7 @@ details.grp > summary.grp-h { cursor: pointer; }
 .home-profile-head p { margin: 0; }
 .home-profile { border: 0; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
 .home-profile[hidden] { display: none; }
+.planned-card { margin-top: 16px; opacity: .8; background: var(--bg); } .planned-card h2 { font-size: 17px; margin-top: 0; }
+.planned-card .btn[disabled], .planned-route .btn[disabled] { cursor: not-allowed; opacity: .7; }
+.planned-route { margin: 0 0 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ecam-link { font-size: 13px; }

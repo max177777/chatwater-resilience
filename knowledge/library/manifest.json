@@ -1,0 +1,486 @@
+{
+ "schema": 1,
+ "release": "open-sources-v1",
+ "generated_by": "scripts/library/build-open.js",
+ "distribution": "All sources confirmed open source by the team on 2026-10-30.",
+ "sources": [
+  {
+   "id": "ecam-methodology-guide",
+   "title": "Methodology Guide – ECAM",
+   "publisher": "WaCCliM – Water and Wastewater Companies for Climate Mitigation (authors: Rotária do Brasil)",
+   "date": "2022 (PDF created 2022-10-07)",
+   "language": "en",
+   "scope": "global",
+   "stages": [
+    2
+   ],
+   "topic": "ecam",
+   "role": "methodology",
+   "review_status": "Published methodology document. Not reviewed by the ChatWater team for this library.",
+   "public_url": "/sources/ecam-methodology-guide.pdf",
+   "relationships": [],
+   "family": "ecam-methodology-guide",
+   "urls": [
+    {
+     "url": "/sources/ecam-methodology-guide.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "a3a3345e7a42727c2256234e1362aeaea5739a0654e4b21b8153971e2d6c7a6f",
+   "file": "Sources/Stage 2_ Methodology Guide_ECAM.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 184,
+    "passages": 514
+   }
+  },
+  {
+   "id": "gcf-sanitation-part3-2024-consultation",
+   "title": "GCF Water Project Design Guidelines Part 3: Practical guidelines for designing climate-resilient sanitation projects",
+   "publisher": "Green Climate Fund Secretariat with the Climate Resilient Sanitation Coalition",
+   "date": "November 2024",
+   "language": "en",
+   "sector": "sanitation",
+   "stages": [
+    3,
+    4
+   ],
+   "topic": "financing",
+   "role": "guidance",
+   "review_status": "Final report for consultation, described as a draft. Not scientific or funder approval.",
+   "caveats": [
+    "Informational design guidance; no guarantee of Board consideration or approval. The previous files labelled Water/Sanitation were near-duplicates of Part 3; they are not this Part 1 water reference."
+   ],
+   "public_url": "/sources/gcf-sanitation-part3-2024-consultation.pdf",
+   "relationships": [],
+   "family": "gcf-sanitation-part3-2024-consultation",
+   "urls": [
+    {
+     "url": "/sources/gcf-sanitation-part3-2024-consultation.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "c45494840069b8376e6ba74ed56c69191f6feeab3884814eca6b2ad77d84a80e",
+   "file": "Sources/Stage 4_ GCF - 2024 GCF-Water-Project-Design-Guide-Sanitation.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 86,
+    "passages": 314
+   }
+  },
+  {
+   "id": "gcf-water-part1-2023-consultation",
+   "title": "GCF Water Project Design Guidelines Part 1: Practical guidelines for designing water-climate resilient projects",
+   "publisher": "Green Climate Fund",
+   "date": "21 February 2023",
+   "language": "en",
+   "sector": "water supply",
+   "stages": [
+    3,
+    4
+   ],
+   "topic": "financing",
+   "role": "guidance",
+   "review_status": "First draft report for consultation. Not reviewed by the ChatWater scientific team.",
+   "caveats": [
+    "Informational design guidance; no guarantee of Board consideration or approval. Current requirements require separate confirmation."
+   ],
+   "public_url": "/sources/gcf-water-part1-2023-consultation.pdf",
+   "relationships": [],
+   "family": "gcf-water-part1-2023-consultation",
+   "urls": [
+    {
+     "url": "/sources/gcf-water-part1-2023-consultation.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "41505586730e5e1fe02c2f3e0c691ef2b478b50051059c8e2abc4401bd2af41f",
+   "file": "Sources/Stage 4_ GCF - 2024 GCF-Water-Project-Design-Guide-Water.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 57,
+    "passages": 197
+   }
+  },
+  {
+   "id": "id-climate-finance-sectoral-guidelines-en",
+   "sector": "multi-sector",
+   "title": "Indonesia Climate Finance Sectoral Guidelines (English)",
+   "publisher": "Not stated on the extracted pages (cover is an image)",
+   "date": "2025 (PDF created 2025-09-25; refers to 2024 allocations)",
+   "language": "en",
+   "scope": "Indonesia",
+   "stages": [
+    4
+   ],
+   "topic": "financing",
+   "role": "guidance",
+   "review_status": "Not reviewed by the ChatWater team.",
+   "translation_of": "id-climate-finance-sectoral-guidelines-id",
+   "caveats": [
+    "Funding programmes, windows and criteria change; do not infer current eligibility from this document.",
+    "English and Indonesian versions are translations of each other and do not corroborate each other."
+   ],
+   "public_url": "/sources/id-climate-finance-sectoral-guidelines-en.pdf",
+   "relationships": [],
+   "family": "id-climate-finance-sectoral-guidelines-en",
+   "urls": [
+    {
+     "url": "/sources/id-climate-finance-sectoral-guidelines-en.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "a018623ae1159aec5c7e66731eda88862ae41a756c3ad73e2e5ce392dd6eb704",
+   "file": "Sources/Indonesia/Stage 4_ Indonesia-Climate-Finance-Sectoral-Guidelines-_English.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 81,
+    "passages": 240
+   }
+  },
+  {
+   "id": "id-climate-finance-sectoral-guidelines-id",
+   "sector": "multi-sector",
+   "title": "Panduan Sektoral Guna Mengakses Pendanaan Iklim di Indonesia",
+   "publisher": "Not stated on the extracted pages (cover is an image)",
+   "date": "2025 (PDF created 2025-10-10)",
+   "language": "id",
+   "scope": "Indonesia",
+   "stages": [
+    4
+   ],
+   "topic": "financing",
+   "role": "guidance",
+   "review_status": "Not reviewed by the ChatWater team.",
+   "translation_of": "id-climate-finance-sectoral-guidelines-en",
+   "caveats": [
+    "Program, jendela pendanaan dan kriteria dapat berubah; jangan menyimpulkan kelayakan saat ini dari dokumen ini.",
+    "English and Indonesian versions are translations of each other and do not corroborate each other."
+   ],
+   "public_url": "/sources/id-climate-finance-sectoral-guidelines-id.pdf",
+   "relationships": [],
+   "family": "id-climate-finance-sectoral-guidelines-id",
+   "urls": [
+    {
+     "url": "/sources/id-climate-finance-sectoral-guidelines-id.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "083307588d6e9ed2bf2261cb5bb521d9295473308bb3806685e2be93aafc2390",
+   "file": "Sources/Indonesia/Stage 4_ Panduan-Sektoral-Guna-Mengakses-Pendanaan-Iklim-Di-Indonesia.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 102,
+    "passages": 296
+   }
+  },
+  {
+   "id": "id-dak-air-minum-excerpt",
+   "title": "7. Bidang Air Minum (excerpt: DAK Fisik drinking-water technical guidance, printed pages 694–706)",
+   "publisher": "Not identified. Pages are headed 'PRESIDEN REPUBLIK INDONESIA'; the parent document is unidentified.",
+   "date": "Not stated in the excerpt (scan created 2025-06-23)",
+   "language": "id",
+   "scope": "Indonesia",
+   "stages": [
+    3
+   ],
+   "topic": "indonesia",
+   "role": "regulation",
+   "review_status": "Scanned excerpt of an unidentified parent document. Text obtained by local OCR and not proofread.",
+   "parent": "unidentified",
+   "ocr": {
+    "languages": "ind+eng",
+    "dpi": 300
+   },
+   "caveats": [
+    "Parent document, year and legal status unknown; do not cite as current rules.",
+    "OCR text: list numbering and table layout are partly lost; check the original page before quoting."
+   ],
+   "public_url": "/sources/id-dak-air-minum-excerpt.pdf",
+   "relationships": [],
+   "family": "id-dak-air-minum-excerpt",
+   "urls": [
+    {
+     "url": "/sources/id-dak-air-minum-excerpt.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "76547e458c3a93725a5bce1f8d14b027444315983b3687854b4103e33b5b9c75",
+   "file": "Sources/Indonesia/Stage 3_ 07-Air-Minum.pdf",
+   "status": "unavailable",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "unavailable",
+    "unit_type": "page",
+    "units": 13,
+    "passages": 0,
+    "notes": [
+     "No text layer: scanned PDF."
+    ]
+   }
+  },
+  {
+   "id": "id-gcf-country-programme-v2",
+   "sector": "multi-sector",
+   "title": "Indonesia's GCF Country Programme Document, Version 02",
+   "publisher": "Fiscal Policy Agency, Ministry of Finance of the Republic of Indonesia (NDA for the GCF)",
+   "date": "2021 (© 2021; file printed 2023-04-03)",
+   "language": "en",
+   "scope": "Indonesia",
+   "stages": [
+    4
+   ],
+   "topic": "financing",
+   "role": "guidance",
+   "review_status": "Published country programme. Not reviewed by the ChatWater team.",
+   "caveats": [
+    "Country priorities and pipelines date from 2021; they do not show current eligibility or funding availability."
+   ],
+   "public_url": "/sources/id-gcf-country-programme-v2.pdf",
+   "relationships": [],
+   "family": "id-gcf-country-programme-v2",
+   "urls": [
+    {
+     "url": "/sources/id-gcf-country-programme-v2.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "9a865eee18f9a309c321e7890bb4e9066d7e85e2a06c7132eeaa369cf785ef01",
+   "file": "Sources/Indonesia/Stage 4_ kucb-cpd-full-document-inggris-print-20230403.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 74,
+    "passages": 193
+   }
+  },
+  {
+   "id": "id-nda-gcf-technology-investment-flyer",
+   "sector": "multi-sector",
+   "title": "Technology and Investment for Energy, FOLU, Food and Water Sectors in Indonesia (two-page summary)",
+   "publisher": "Sekretariat NDA-GCF Indonesia, Kementerian Keuangan (as stated in the document)",
+   "date": "Not stated (PDF created 2025-12-16)",
+   "language": "en",
+   "scope": "Indonesia",
+   "stages": [
+    3
+   ],
+   "topic": "indonesia",
+   "role": "guidance",
+   "review_status": "Two-page summary document. Not reviewed by the ChatWater team.",
+   "caveats": [
+    "A summary flyer; it does not establish technology suitability or funding eligibility."
+   ],
+   "public_url": "/sources/id-nda-gcf-technology-investment-flyer.pdf",
+   "relationships": [],
+   "family": "id-nda-gcf-technology-investment-flyer",
+   "urls": [
+    {
+     "url": "/sources/id-nda-gcf-technology-investment-flyer.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "826d7a8dc4fc0fe34321d97ebbabb2cbf8a8493ee4fa1b09bb8e0baa53d91713",
+   "file": "Sources/Indonesia/Stage 3_ Technology-and-Investment-for-Energy-FOLU-Food-and-Water-Sectors-in-Indonesia.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 2,
+    "passages": 6
+   }
+  },
+  {
+   "id": "id-permen-pupr-27-2016",
+   "title": "Peraturan Menteri Pekerjaan Umum dan Perumahan Rakyat Nomor 27/PRT/M/2016 tentang Penyelenggaraan Sistem Penyediaan Air Minum",
+   "publisher": "Kementerian Pekerjaan Umum dan Perumahan Rakyat (PUPR)",
+   "date": "2016",
+   "language": "id",
+   "scope": "Indonesia",
+   "stages": [
+    3
+   ],
+   "topic": "indonesia",
+   "role": "regulation",
+   "review_status": "Regulation text as supplied. Its current legal status (amended, replaced or in force) has not been verified.",
+   "caveats": [
+    "Do not infer that this regulation is currently in force; check the official legal database (JDIH PUPR / BPK)."
+   ],
+   "public_url": "/sources/id-permen-pupr-27-2016.pdf",
+   "relationships": [],
+   "family": "id-permen-pupr-27-2016",
+   "urls": [
+    {
+     "url": "/sources/id-permen-pupr-27-2016.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "5d52fa3098f3e6459f49d2470b8ee7f41ad2119f659d1967bc6e5a2e1be7845c",
+   "file": "Sources/Indonesia/Stage 3_ Permen PUPR Nomor 27 Tahun 2016.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 41,
+    "passages": 79
+   }
+  },
+  {
+   "id": "ipcc-2019-wastewater-ch6",
+   "title": "2019 Refinement to the 2006 IPCC Guidelines for National Greenhouse Gas Inventories, Volume 5, Chapter 6: Wastewater Treatment and Discharge",
+   "publisher": "Intergovernmental Panel on Climate Change (IPCC)",
+   "date": "2019",
+   "language": "en",
+   "scope": "global",
+   "stages": [
+    2
+   ],
+   "topic": "ecam",
+   "role": "methodology",
+   "review_status": "Published IPCC guideline. Not reviewed by the ChatWater team for this library.",
+   "caveats": [
+    "Written for national greenhouse gas inventories, not for a single utility's project accounting."
+   ],
+   "public_url": "/sources/ipcc-2019-wastewater-ch6.pdf",
+   "relationships": [],
+   "family": "ipcc-2019-wastewater-ch6",
+   "urls": [
+    {
+     "url": "/sources/ipcc-2019-wastewater-ch6.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "9e825b33d5719cb0a166b430936a0344620043c2c75af460713a81b046753814",
+   "file": "Sources/Stage 2_ IPCC Wastewater treatment and discharge.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 72,
+    "passages": 236
+   }
+  },
+  {
+   "id": "wb-2020-waste-to-resource-lac",
+   "title": "From Waste to Resource: Shifting paradigms for smarter wastewater interventions in Latin America and the Caribbean",
+   "publisher": "World Bank (Rodriguez, Serrano, Delgado, Nolasco, Saltiel)",
+   "date": "2020",
+   "language": "en",
+   "scope": "Latin America and the Caribbean",
+   "stages": [
+    3
+   ],
+   "topic": "plan",
+   "role": "guidance",
+   "review_status": "Published World Bank report. Not reviewed by the ChatWater team for this library.",
+   "caveats": [
+    "Regional focus is Latin America and the Caribbean; examples are not Indonesian evidence."
+   ],
+   "public_url": "/sources/wb-2020-waste-to-resource-lac.pdf",
+   "relationships": [],
+   "family": "wb-2020-waste-to-resource-lac",
+   "urls": [
+    {
+     "url": "/sources/wb-2020-waste-to-resource-lac.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "cc0d35be53c85c4f51db80373b62aa9e28478735bab742a48a1ec9fa0c6fb441",
+   "file": "Sources/Stage 3_ World Bank From Waste to Resource.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 62,
+    "passages": 215
+   }
+  },
+  {
+   "id": "wb-2021-indonesia-utility-resilience",
+   "title": "Planning for an Uncertain Future: Strengthening the Resilience of Indonesian Water Utilities — Technical Report",
+   "publisher": "World Bank Group",
+   "date": "February 2021",
+   "language": "en",
+   "scope": "Indonesia",
+   "stages": [
+    3
+   ],
+   "topic": "indonesia",
+   "role": "guidance",
+   "review_status": "Published World Bank report. Not reviewed by the ChatWater team for this library.",
+   "public_url": "/sources/wb-2021-indonesia-utility-resilience.pdf",
+   "relationships": [],
+   "family": "wb-2021-indonesia-utility-resilience",
+   "urls": [
+    {
+     "url": "/sources/wb-2021-indonesia-utility-resilience.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "813080d3c3df66edc3b3adb182ddb623dfe04a69c1e86ce2ca711e8e62050c4b",
+   "file": "Sources/Indonesia/Stage 3_ Planning-for-an-Uncertain-Future-Strengthening-the-Resilience-of-Indonesian-Water-Utilities-Technical-Report.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 136,
+    "passages": 400
+   }
+  },
+  {
+   "id": "who-2017-climate-resilient-wsp",
+   "title": "Climate-resilient water safety plans: managing health risks associated with climate variability and change",
+   "publisher": "World Health Organization (WHO)",
+   "date": "2017",
+   "language": "en",
+   "scope": "global",
+   "stages": [
+    3
+   ],
+   "topic": "plan",
+   "role": "guidance",
+   "review_status": "Published WHO guidance. Not reviewed by the ChatWater team for this library.",
+   "public_url": "/sources/who-2017-climate-resilient-wsp.pdf",
+   "relationships": [],
+   "family": "who-2017-climate-resilient-wsp",
+   "urls": [
+    {
+     "url": "/sources/who-2017-climate-resilient-wsp.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "2eb125d87c390b8a798f49f4cb8248666fcd49d15bf4fb0961bf525bea9d8537",
+   "file": "Sources/Stage 3_ WHO Climate resilient water safety plans managing health risks associated with climate variability.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 92,
+    "passages": 282
+   }
+  }
+ ]
+}

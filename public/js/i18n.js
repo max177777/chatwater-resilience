@@ -1317,3 +1317,17 @@ Object.assign(UI.id, {
 // Home: utility details folded behind a button (Silvia, Oct 30)
 Object.assign(UI.en, { home_profile_t: 'Your utility details', home_profile_empty: 'Not filled in yet. Used for your actions, plan and financing proposal.', home_profile_enter: 'Enter utility details', home_profile_edit: 'Edit utility details' });
 Object.assign(UI.id, { home_profile_t: 'Data PDAM/PAM Anda', home_profile_empty: 'Belum diisi. Dipakai untuk aksi, rencana, dan proposal pendanaan Anda.', home_profile_enter: 'Isi data PDAM/PAM', home_profile_edit: 'Ubah data PDAM/PAM' });
+
+// Silvia's comments (Oct 30): planned adaptation assessments, General Proposal placeholder, "Home" without 0, source links
+Object.assign(UI.en, {
+  tab_home: 'Home',
+  adapt_title: 'Adaptation assessments (planned)', adapt_sub: 'Not active yet. Future versions will add climate-risk screening alongside ECAM.',
+  adapt_creat: 'Climate-risk screening (CREAT)', adapt_wsp: 'WHO Climate-resilient Water Safety Plans',
+  fo_general_btn: 'General Proposal', fo_general_note: 'Future development: a proposal format not tied to one fund.',
+});
+Object.assign(UI.id, {
+  tab_home: 'Beranda',
+  adapt_title: 'Penilaian adaptasi (direncanakan)', adapt_sub: 'Belum aktif. Versi berikutnya akan menambahkan penapisan risiko iklim di samping ECAM.',
+  adapt_creat: 'Penapisan risiko iklim (CREAT)', adapt_wsp: 'Rencana Pengamanan Air Minum tangguh iklim (WHO)',
+  fo_general_btn: 'Proposal Umum', fo_general_note: 'Pengembangan berikutnya: format proposal yang tidak terikat pada satu dana.',
+});

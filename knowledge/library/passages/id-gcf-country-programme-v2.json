@@ -1,0 +1,1932 @@
+[
+ {
+  "id": "id-gcf-country-programme-v2#p1-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 1
+  },
+  "heading": "",
+  "text": "Green Climate Fund Version.02 Indonesia’s GCF Country Programme Document",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p2-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 2
+  },
+  "heading": "",
+  "text": "© 2021 The Fiscal Policy Agency Ministry of Finance Director: Febrio Kacaribu, Head of Fiscal Policy Agency, Ministry of Finance, Republic of Indonesia Coordinator: Dian Lestari, Director of Center for Climate Finance and Multilateral Policy, Fiscal Policy Agency, Ministry of Finance, Republic of Indonesia Authors: Dudi Rulliadi, Dewa Ekayana, Dessi Yuliana, Vidya Fauzianty, Faradina Salsabil, Merryn Esther Augina, Liana Lim Acknowledgement: Global Green Growth Institute, Green Climate Fund, Yayasan Penelitian Inovasi Bumi Published by: Fiscal Policy Agency, Ministry of Finance, Republic of Indonesia This Document Should be Referenced as: Center for Climate Finance and Multilateral Policy (2021). Indonesia’s GCF Country Programme Document. The Fiscal Policy Agency R.M. Notohamiprodjo Building Jl. DR. Wahidin Raya No. 1 Jakarta 10710 Phone: (+62)21 3483 1678 Email: [email removed] Website: https://fiskal.kemenkeu.go.id/nda_gcf/en All rights reserved.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p2-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 2
+  },
+  "heading": "",
+  "text": "No part of this publication may be reproduced, stored in a retrieval system, or transmitted in any form of by any means, electronic, mechanical, photocopying, recording, or otherwise without permissions of the copyright holder.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p3-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "04 03 Indonesia’s GCF Country Programme Document Table of Contents Table of Contents .......................................................................................................................................................................... List of Tables ................................................................................................................................................................................... List of Figures ................................................................................................................................................................................. Abbreviations .................................................................................................................................................................................. 1.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p3-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "Introduction ................................................................................................................................................................................ 1.1 Country Profile ............................................................................................................................................................. 1.2 Climate Change Profile ............................................................................................................................................. 1.3 Indonesia’s Development Goals ............................................................................................................................ 1.4 About This Country Program Document ............................................................................................................. 2. Indonesia’s Climate Change Strategies and Priorities ..................................................................................................",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p3-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "2.1 National Roadmap for Climate Change Mitigation ........................................................................................... 2.2 National Action Plan for Climate Change Adaptation ..................................................................................... 2.3 National Climate Change Institutions ................................................................................................................... 2.4 Sectoral Strategic Plans ........................................................................................................................................... 3. Financing Climate Change Priorities in Indonesia ........................................................................................................... 3.1 Financing Needs for Climate Mitigation ...............................................................................................................",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p3-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "3.2 Financing Needs for Climate Adaptation ............................................................................................................. 3.3 Government Budget .................................................................................................................................................. 3.4 Private Sector .............................................................................................................................................................. 3.5 International Support in Climate Finance ........................................................................................................... 3.6 Indonesia Climate Change Trust Fund .................................................................................................................. 3.7 Indonesian Environment Fund ................................................................................................................................ 4.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p3-5",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "The Green Climate Fund Priorities in Indonesia .............................................................................................................. 4.1 GCF Priorities ............................................................................................................................................................... 4.2 GCF Investment Criteria in Indonesia's Context ................................................................................................ 4.3 National Direct Access Entities ............................................................................................................................... 5. Policy, Strategy, Planning, and Institutional Needs ....................................................................................................... Annex 1: GCF Country Program Pipeline ...............................................................................................................................",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p3-6",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "Annex 2: GCF Readiness Request ............................................................................................................................................ Annex 3: Indonesia “No-Objection Letters/NOL” Project/Program List ...................................................................... Annex 4: Consultation Process ................................................................................................................................................. Annex 5: Ministerial Strategic Plans ....................................................................................................................................... 03 04 04 05 07 08 09 11 13 15 17 19 21 24 27 28 29 29 32 33 37 37 39 43 48 52 55 59 64 64 68 68",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p4-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "List of Tables Indonesia’s GCF Country Programme Document 04 Table 1. Indonesia’s country profile ......................................................................................................................................... Table 2. Potential economic losses from climate change impacts in priority sectors ............................................. Table 3. Potential climate hazards under extreme climate conditions ......................................................................... Table 4. NDC emissions reduction targets ............................................................................................................................ Table 5. NDC Mitigation Roadmap emissions reduction targets .................................................................................... Table 6. Efforts to adapt to climate change and climate variability ............................................................................... Table 7.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p4-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "Climate adaptation strategies and actions in priority sectors ........................................................................ Table 8. Indonesia’s sectoral strategic plans ........................................................................................................................ Table 9. Financing Needs for 29% Emissions Reduction ................................................................................................... Table 10. Budget Tagging Result .............................................................................................................................................. Table 11. International climate funds total portfolio 2016–2019 (USD) ..................................................................... Table 12. Design of the IEF according to Presidential Decree 77/2018 ...................................................................... Table 13.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p4-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "GCF Projects/Programs in Indonesia (by October 2021) ............................................................................... Table 14. Financial gap in priority sector ............................................................................................................................... Table 15. Proposed thematic priority for climate mitigation ........................................................................................... Table 16. Proposed thematic priority and project ideas for climate adaptation ........................................................ Table 17. Indonesia’s Criteria for Prioritizing Climate Actions Proposed to the GCF ............................................... Table 18. List of Direct Accredited Entity and prospective entities seeking accreditation with the GCF ........... Table 19.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p4-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "Priorities for Indonesia ............................................................................................................................................. Figure 1. Indonesia planning documents pathway ............................................................................................................ Figure 2. The 2020-2024 RPJMN climate goals ................................................................................................................. Figure 3. CPD target audiences ................................................................................................................................................. Figure 4. NDC total emissions reduction targets and by sector in 2030 ...................................................................... Figure 5. Indonesia's Climate Governance Framework ..................................................................................................... Figure 6.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p4-5",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "Allocation and disbursement of climate change budget between 2018-2020 (IDR trillion) ............... Figure 7. Bilateral financial support 2016-2019 by donors (in USD million) .............................................................. Figure 8. Multilateral financial support 2016-2019 by donors (in USD million) ........................................................ Figure 9. 2016-2019 Multilateral climate financing allocation by sector (in USD million) ..................................... Figure 10. International climate funds portfolio 2016-2019 .......................................................................................... Figure 11. International climate funds by project type 2016-2019 .............................................................................. Figure 12. Strategic Impact of GCF .......................................................................................................................................... Figure 13.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p4-6",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "Indonesia's National Direct Access Entities ..................................................................................................... 08 10 10 16 18 19 20 24 28 31 36 38 41 44 44 47 51 53 57 12 12 14 17 23 30 34 35 35 36 36 40 52 List of Figures",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p5-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 5
+  },
+  "heading": "",
+  "text": "05 Indonesia’s GCF Country Programme Document ADB AE AFOLU APBN Bappenas BAU BIG BKF BMKG BPPT BPS BUR CCR CCT COP CPD CSO DNPI ERPA ESCO FGD FOLU FPA GCF GDP GHG HDI ICCTF INDC IPPU IRBI ISPO KEMENHUB KEMENKEU KEMENPERIN Asian Development Bank Accredited Entity Agriculture, Forestry, and Other Land Use Anggaran Pendapatan dan Belanja Negara (State Budget) Badan Perencanaan Pembangunan Nasional (National Development Planning Agency) Business as Usual Badan Informasi Geospasial (Geospatial Information Agency) Badan Kebijakan Fiskal (Fiscal Policy Agency) Badan Meteorologi, Klimatologi, dan Geofisika (Meteorology, Climatology, and Geophysical Agency) Badan Pengkajian dan Penerapan Teknologi (Agency for the Assessment and Application of Technology) Badan Pusat Statistik (Statistics Indonesia) Biennial Update Report Clinker-to-Cement Ratio Clean Coal Technology Conference of Parties Country Program Document Civil Society Organizations Dewan Nasional Perubahan Iklim (National Council on Cli",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p5-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 5
+  },
+  "heading": "",
+  "text": "mate Change) Emissions Reductions Payment Agreement Energy Service Company Focus Group Discussion Forest and Land Use Fiscal Policy Agency Green Climate Fund Gross Domestic Product Greenhouse Gasses Human Development Index Indonesia Climate Change Trust Fund Intended Nationally Determined Contributions Industrial Processes and Product Use Indonesian Disaster Risk Index Indonesian Sustainable Palm Oil System Kementerian Perhubungan (Ministry of Transportation) Ministry of Finance Kementerian Perindustrian (Ministry of Industry) Abbreviations",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p6-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 6
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 06 Abbreviations KEMENTAN Kementerian PUPR Kementerian ESDM KKP KLHK KLHS LFG NAMA NDC NOL PFCs P LT G PLTGU PLTSa RAD-GRK RAN-API RAN-GRK RBP REDD+ Renja K/L Renstra K/L RHL RKP RPJMN RPJP SDGs SIDIK SOEs UNDP UNFCCC Kementerian Pertanian (Ministry of Agriculture) Kementerian Pekerjaan Umum dan Perumahan Rakyat (Ministry of Public Works and Housing) Kementerian Energi dan Sumber Daya Mineral (Ministry of Energy and Mineral Resources) Kementerian Kelautan dan Perikanan (Ministry of Maritime Affairs and Fisheries) Kementerian Lingkungan Hidup dan Kehutanan (Ministry of Environment and Forestry) Kajian Lingkungan Hidup Strategis (Strategic Environmental Assessment) Landfill Gas Nationally Appropriate Mitigation Actions Nationally Determined Contribution No Objection Letter Perfluorocarbons Pembangkit Listrik Tenaga Gas (Gas Fired Power Plant) Pembangkit Listrik Tenaga Gas dan Uap (Combined Cycle Power Plant) Pembangkit Listrik Tenaga Sampah (Was",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p6-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 6
+  },
+  "heading": "",
+  "text": "te-to-energy plant) Rencana Aksi Daerah Penurunan Emisi Gas Rumah Kaca (Regional Action Plan to Reduce GHG Emissions) Rencana Aksi Nasional Adaptasi Perubahan Iklim (National Action Plan for Climate Change Adaptation) Rencana Aksi Nasional Penurunan Emisi Gas Rumah Kaca (National Action Plan to Reduce GHG Emissions) Result-Based Payments Reducing Emissions from Deforestation and Forest Degradation Plus Rencana Kerja Kementerian/Lembaga (Work Plan for Ministries and Institutions) Rencana Strategis Kementerian/Lembaga (Strategic Plan for Ministries and Institutions) Rehabilitatsi Hutan dan Lahan (Forest and Land Rehabilitation) Rencana Kerja Pemerintah (Government Work Plan) Rencana Pembangunan Jangka Menengah Nasiona l (National Medium-Term Development Plan) Rencana Pembangunan Jangka Panjang (Long-Term Development Plan) Sustainable Development Goals Vulnerability Index Data Inventory System State-owned Enterprises United Nations Development Programme United Nations Framework Convention  on Climate Change",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p8-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 8
+  },
+  "heading": "",
+  "text": "Indonesia is the world’s largest archipelago with more than 17,500 islands and a tropical climate. It is also the fourth most populous nation, the world’s 10 th largest economy, a member of the G-20, and a lower-middle-income country. Indonesia’s GDP growth has averaged 5.3% in the past two decades. Impressive growth has brought down poverty level to around 10%. 1 Like other countries, Indonesia has been severely affected by the COVID-19 pandemic. The economy contracted by 2.1% in 2020, marking its first recession in more than two decades. 2 However, real GDP growth is projected to recover in 2021 (between 4.5 to 5.0%). 3 The Indonesian government is fully committed to accelerating economic recovery, strengthening key structural reforms, and delivering on its development priorities, despite many uncertainties surrounding the development of the COVID-19 pandemic. 1.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p8-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 8
+  },
+  "heading": "",
+  "text": "Introduction World Bank, The World Bank in Indonesia, https://www.worldbank.org/en/country/indonesia/overview BPS, Press Release, 2021, https://www.bps.go.id/pressrelease/2021/02/05/1811/ekonomi-indonesia-2020-turun-sebesar-2-07-persen--c-to-c-.html Kemenkeu, 2021 Budget, http://www.anggaran.kemenkeu.go.id/assets/FTPPortal/Peraturan/NK%20UU%20APBN%20Lapsem/ 03c.%20ENG_ADVERTORIALRAPBN2021.pdf , p. 4. 1 2 3 Indonesia’s GCF Country Programme Document 08 1.1 Country Profile Table 1.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p8-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 8
+  },
+  "heading": "",
+  "text": "Indonesia’s Country Profile $1.102 trillion GDP at current price (2020) 270.2 million Population (2020) 2.3 Mton CO2 Emissions per capita (2018) -2.1% GDP Growth (2020) 1.25% Annual Popula- tion Growth (2010-2020) 66.1% Fossil Fuel Energy Consumption (of total energy con- sumption, 2013-2015) $11,970 GNI per capita, PPP (2019) $4,050 GNI per capita, Atlas Method (2019) 56% Urban Population (2019) 21% Degraded Land (of total land area, 2015) 37.8 % Domestic credit to the private sector (of GDP) (2019) 107th/189 HDI Ranking (2019) 0.718 HDI Score (2019) -23.8% Forest Area, Change (1990-2016) Source: BPS, UNDP, World Bank Economy Demography Environment",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p9-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 9
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 09 Indonesia is one of the top ten global GHG emitters, contributing 2.03% of global emissions, 4 primarily due to the conversion of its forests and carbon-rich peatlands. According to Indonesia’s Second Biennial Update Report (BUR) submitted to the UNFCCC in 2018, the total GHG emissions in 2016 were estimated at 1,457,774 Gg CO 2 e. The main contribu- ting sectors were agriculture, forestry and other land use/AFOLU including peat fires (51.59%) followed by energy (36.91%), waste (7.71%), and industrial processes and product use/IPPU (3.79%). This figure was higher than the emissions in 2000 and signifi- cantly lower than 2015 due to the increased emis- sions of peat fires in the 2015 El Nino year. 5 Its extensive coastline, high population density in coastal areas, strong dependence on agricultural production and natural resources, and relatively low adaptive capacity make Indonesia highly susceptible to climate change impacts.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p9-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 9
+  },
+  "heading": "",
+  "text": "With over 81,000 km of coastline, it is among the most vulnerable countries to sea-level rise. The sea-level rise, projected to occur at about 5 mm/year, will severely affect its low-lying and densely populated coastal areas. 6 At least 42 million people are living in low-lying areas. 7 According to the World Bank, Indonesia ranks 12 th out of 35 countries facing high mortality risks due to multiple hazards (including earthquakes, tsunamis, volcanic eruptions, floods, landslides, droughts, and forest fires), putting 40% of its population at risk from such hazards. 8 Climate change will further exacerbate extreme climate events (droughts and floods) with negative impacts on food security and water availability. The Indonesian government forecasted the potential economic losses from climate change impacts in the four priority sectors (marine and coastal, water, agriculture, and health) at around USD 38.92 billion cumulatively between 2020-2024, as shown in Table 2.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p9-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 9
+  },
+  "heading": "",
+  "text": "The losses are predicted to increase by 12.76% within five years. Meanwhile, it is estimated that climate adaptation efforts can minimize potential losses by around 15% (if conducted in an ad-hoc manner) or by almost 50% in 2023 (if the planned Climate Resilience Development Policy is imple- mented). 9 https://www.wri.org/blog/2020/12/interactive-chart-top-emitters Indonesia's Second Biennial Update Report, 2018 I-4. The Netherland Ministry of Foreign Affairs, Climate Change Profile: Indonesia, 2018. USAID, Climate Risk in Indonesia: Country Profile, 2017 The Netherland Ministry of Foreign Affairs, Climate Change Profile: Indonesia, 2018. Executive Summary (Climate Resilience Development Policy) 2020–2045, 2021, p. 12. https://lcdi-indonesia.id/wp-content/uploads/2021/04/Buku-0_Ringkasan-Eksekutif-Dokumen-Kebijakan-Pembangunan- Berketahanan-Iklim.pdf 4 5 6 7 8 9 1.2 Climate Change Profile",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p10-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 10
+  },
+  "heading": "",
+  "text": "Table 2. Potential Economic Losses from Climate Change Impacts in Priority Sectors Year 81.30 3.83 11.20 6.03 7.31 2020 81.43 4.74 13.40 6.15 7.55 2021 81.57 5.61 15.59 6.26 7.79 2022 81.69 6.45 17.77 6.37 8.02 2023 81.82 7.29 19.94 6.48 8.25 2024 Marine & Coastal Water Agriculture Health USD (billion) Sector Source: National Adaptation Plan Executive Summary, 2019 Note: 1 USD = IDR 14,000 Table 3. Potential climate hazards under extreme climate conditions MARINE Wave height projection until 2045 shows that 5.8 million km2 or approximately 90% of the total area of Indonesia waters is dangerous for <10 GT vessel. COASTAL Approximately 102,000 km of Indonesian coastline has various vulnerability levels, and 1,800 km of the coastline is considered highly vulnerable. South Sulawesi Province has the longest coastline (573 km) with a very high coastal vulnerability index (CVI 5).",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p10-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 10
+  },
+  "heading": "",
+  "text": "Marine and Coastal Decreasing water availability has been projected to occur evenly in Java and Nusa Tenggara Island until 2045. In 2024, the average of decreasing water availability in Java Island will reach 439.21 m3/capita/year and 1,654.82 m3/capita/year in East Nusa Tenggara Province. Water In addition to economic losses, Table 3 below illustrates various risks in the priority sectors under extreme climate conditions. Indonesia’s GCF Country Programme Document 10",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p11-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 11
+  },
+  "heading": "",
+  "text": "Rice production is projected to decline by more than 25% in Gorontalo Province, Maluku Province, and North Maluku Province until 2045. Rice production is projected to decline from 10% to 17.5% in islands designated as rice production centers, including Java and Sumatra. Agriculture Health Vector diseases and heat stress in urban areas will develop. Incidence of dengue fever is projected to be very high until 2045 in the following cities: Pekanbaru, Palembang, Banjarbaru, Banjarmasin, Samarinda, Tarakan, Kolaka, Ambon, Semarang, Bali, and Kupang. Malaria and pneumonia are also projected to increase. Source: Climate Resilience Development Policy 2020-2024, Ministry of National Development Planning Indonesia’s GCF Country Programme Document 11 Indonesia’s development goals and national priorities are outlined in several planning documents. The country’s overall planning process is highly structured. The government devises a 20-year national plan (National Long-Term Development Plan;",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p11-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 11
+  },
+  "heading": "",
+  "text": "RPJPN), from which it derives national five-year plans (National Medium-Term Development Plan; RPJMN). The 2020-2024 RPJMN is the fourth install- ment of the 2005-2025 RPJPN. It is a reference for each ministry/agency in compiling their strategic plans (Renstra K/L) and for local governments in preparing the Regional Medium-Term Development Plan (RPJMD). Relevant strategic plans that shape climate change policies or are directly related to climate change are detailed in Annex 4. Indonesia is also fully committed to achieving the Sustainable Development Goals (SDGs) 2030. According to Presidential Regulation No. 59/2017 on the Implementation of SDGs in Indonesia, the Ministry of National Development Planning was mandated to develop a national SDGs Roadmap to identify the challenges, policy strategies, and indicators of progress related to each goal.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p11-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 11
+  },
+  "heading": "",
+  "text": "In addition, the SDGs, including climate change goals, have been fully mainstreamed into the 2020-2024 RPJMN and are an inseparable part of the country’s development agenda. The following is a brief highlight of Indone- sia’s achievement of selected SDGs in 2019: 10 • • • • • • P overty rate has decreased from 14.15% in 2009 to 9.22% in 2019; P revalence of undernourishment has decreased from 10.73% in 2015 to 7.66% in 2019; In 2019, electrification ratio has reached 98.89%; Emissions reduction in 2019 was 23.46% from baseline (accumulative); 23.14 million hectares of marine area have been conserved between 2015 and 2019; The rate of internet users has increased from 17.6% in 2010 to 65% of the population in 2019. 1.3 Indonesia’s Development Goals Kompas, 30 November 2020, http://sdgs.bappenas.go.id/wp-content/uploads/2020/12/Prime-Kompas_30112020.pdf 10",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p12-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 12
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 12 Figure 1. Indonesia Planning Documents Pathway RPJP NATIONAL RPJM NATIONAL RKP Guidance Guidance Renstra K/L Renja K/L Guidance Guidance Refer to The 2020-2024 RPJMN is the very first low carbon development plan, which aims to sustain economic growth through low GHG emissions activities and minimal natural resources exploitation. Climate change is identified as one of the national priorities and has been fully mainstreamed into the document. The RPJMN was developed based on the Strategic Environmental Assessment (KLHS), a series of systematic, comprehensive, and participatory analy- ses to ensure that sustainability principles form the basis of and are integrated into the development of policies, plans, and programs. The overall goal is to bring Indonesia closer to the Low Carbon Develop- ment pathway and achieve the SDGs. Figure 2.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p12-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 12
+  },
+  "heading": "",
+  "text": "The 2020–2024 RPJMN Climate Goals Enhancing Disaster and Climate Resilience GOAL: Reduced potential GDP loss due to climate and disaster impacts by 1.25% in 2024 Implementing Low Carbon Approach toward Development GOAL: Reduction in GHG emissions by 27.3% in 2024 Reduction in GHG emissions intensity by 31.6% in 2024 • • The policy direction for national priorities related to the environment and climate change is elaborated in Chapter 7 of the RPJMN. The strategies for each of the national climate priorities are as follows: Enhancing Disaster and Climate Resilience.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p12-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 12
+  },
+  "heading": "",
+  "text": "The national strategies for enhancing disaster and climate resilience include: • Enhanced disaster management by (1) improving data, information, and disaster literacy, (2) strengthening the system, regulatory frame- work, and governance of disaster management, (3) strengthening disaster risk reduction plans, (4) improving infrastructure related to disaster prevention and management, (5) ensuring alignment of policies and spatial planning related to disasters, (6) strengthening emergency",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p13-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 13
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 13 • Implementing Low Carbon Approach toward Development. The national strategies for low carbon development include: • • • • • The purpose of Indonesia’s Country Program Document is threefold. 11 First, it aims to outline Indo- nesia’s climate change strategies and priorities on climate mitigation and adaptation. Second, it docu- ments the financing needs to achieve the NDC targets, sources of climate financing in Indonesia, and how the Green Climate Fund (GCF) can contribute to their achievements. Third, it highlights GCF priori- ties and criteria. The target audiences of this docu- ment are shown in Figure 3. The CPD was developed based on reviews of existing policy documents and consultations with relevant stakeholders. The NDA carried out a series of consul- tation processes (including focused group discussions, one-on-one interviews, workshops, and meetings). The consultation process is summarized in Annex 4.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p13-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 13
+  },
+  "heading": "",
+  "text": "6) strengthening emergency response and recovery, (7) implementing rehabilitation and reconstruction in areas hit by disasters, and (8) strengthening mitigation of disaster risks in an integrated manner. Improved climate resilience through the imple- mentation of climate change adaptation plans in priority sectors, such as (1) marine and coastal areas, (2) water, (3) agriculture, and (4) health. Sustainable energy development through (1) the management of new and renewable energy and (2) energy efficiency and conserva- tion. Sustainable land restoration through (1) resto- ration and management of peatlands, (2) rehabili- tation of forests and land, (3) reduction of deforestation rate, and (4) improvement of agricultural productivity and efficiency. Waste management of (1) household waste and (2) liquid waste.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p13-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 13
+  },
+  "heading": "",
+  "text": "Development of green industry by (1) conserving and auditing the use of energy in the industry sector, (2) modifying industrial processes and technology, and (3) managing industrial waste. Restoration of coastal and marine ecosystems through stocktaking (inventory) and rehabilitation of marine and coastal ecosystems. 1.4 About This Country Program Document Countries are suggested to develop a Country Program Document to drive their project and program pipelines with the GCF. A country needs to develop a program to foster ownership from key stakeholders across all levels of government, local and community- based institutions, the private sector, and civil society to put forward clear and country-owned priorities that the GCF can support. A Country Program Document will also encourage existing and prospective accredited entities to identify practical steps that can enable the implementation of such priorities supported by the Fund. 11",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p14-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 14
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 14 Figure 3. CPD target audiences Project proponents and/or accredited entities. GCF funds can be accessed by institutions who have under- gone accreditation process (accredited entities or AEs). Private, public, non-govern- mental, subnational, national regional, international bodies can act as project proponents/ implementors (once they are accredited); and/or join the project consortiums and become executing entities for the GCF projects. An accredited entity (or an entity with intention to engage with GCF) is expected to develop and implement projects that are aligned with the country programme and national priorities on climate change. Hence, they can benefit from consulting this document when designing GCF project proposals in their capacity to implement climate actions. Line ministries. This document can serve as a placeholder for line ministries and crosscutting ministries to list climate priorities in respective sector.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p14-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 14
+  },
+  "heading": "",
+  "text": "The list can inform the AEs who wish to develop a proposal to access the GCF together with the line ministries as the project owners. GCF Secretariat and bilateral or multilateral donors. This document can provide a description for the GCF Secretariat and donors regarding Indonesia’s climate change priorities. As not all project ideas or concepts can be financed by the GCF, this document can also provide a list of project concepts or ideas for other donors or investors who would like to invest in climate actions in Indonesia. Civil society organizations (CSOs). Together with the public in general, CSOs should monitor the imple- mentation of climate actions not only to meet the climate targets but to ensure climate actions being implemen- ted do not have any negative social, environ- mental and eco- nomic impacts. The CSOs include organizations that concern about gender, indigenous community, and people with disabilities.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p14-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 14
+  },
+  "heading": "",
+  "text": "• Project proponents can understand the priorities to achieve Indonesia’s climate targets that could potentially be proposed to the GCF. Project pro- ponents that have the capacity and skills to submit a proposal aligned with the priorities can communicate with the line ministry to obtain their support to submit a project concept to the GCF. • • Civil society and general public can use the document as the basis to monitor whether GCF funded projects have been aligned with the country’s priorities and monitor the impact of the GCF funded projects. Feedback can be provided to the NDA. The GCF Secretariat can use the document to check whether the proposals received already aligned with the national priorities. How can stakeholders use this document?",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p15-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 15
+  },
+  "heading": "",
+  "text": "Indonesia’s Climate Change Strategies and Priorities Chapter 2",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p16-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 16
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 16 2. Indonesia’s Climate Change Strategies and Priorities Indonesia has made several commitments to mitigate and adapt to climate change. In the Nationally Determined Contribution (NDC), Indonesia has committed to reducing GHG emissions by 29% from the business as usual (BAU) scenario in 2030 using its own resources (unconditional reduction target). With international support, the target would be increased to a 41% reduction in GHG emissions from the BAU scenario in 2030, also known as the conditional reduction target. In July 2021, lndonesia has submitted the Updated Nationally Determined Contribution to the UNFCCC.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p16-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 16
+  },
+  "heading": "",
+  "text": "The Updated NDC reflects the progression beyond the existing NDC as well as new elements, including 1) Enhanced ambition on adaptation, with oceans as a new elaborated element within adaptation 2) Enhanced clarity on mitigation by adopting the Paris Agreement Rules Book (Katowice Package) on information to be provided in NDC, as well as updated policies which potentially contribute to additional achievement of NDC target, and 3) national context that relates the existing condition, milestones, along with national development, for the period of 2020-2024, and indicative pathways towards long-term vision. The Long-term strategy on Low carbon and Climate Resilience 2050 (LTS-LCCR 2050) pave the way beyond NDC 2030 in achieving a peak of year 2030 with forestry and other land uses as a leading sector as well as net-sink towards net- zero emission by taking into account the economy growth, climate resilience and impartiality. 12 Table 4.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p16-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 16
+  },
+  "heading": "",
+  "text": "NDC Emissions Reduction Targets Forestry** Energy* IPPU Waste Agriculture Total 647 453.2 36 88 110.5 1.334 714 1.669 69.6 296 119.66 2.869 217 1.355 66.85 285 110.39 2.034 64 1.271 66.35 270 115.86 1.787 497 314 2.75 11 9 834 650 398 3.25 26 4 1.081 17.2% 11% 0.10% 0.38% 0.32% 29% 23% 14% 0.11% 1% 0.13% 38% 0.5% 6.7% 3.4% 6.3% 0.4% 3.9% 2.70% 4.50% 0.10% 4.00% 1.30% 3.20% 1 2 3 4 5 Sector GHG Emissions Level 2010* Mton Co2e BAU CM1 CM2 CM1 CM2 CM1 CM2 Annual Average Growth BAU (2010- 2030) Average Growth 2000- 2012* No GHG Emissions Reduction (Mton CO2e) % of Total BAU GHG Emissions Level 2030 (Mton C02e) Source: Indonesia Updated NDC, 2021 *Including fugitive; **Including peat fire Notes: CM 1 = Counter Measure (unconditional mitigation scenario); CM2 = Counter Measure (conditional mitigation scenario) Indonesia Updated NDC, 2021 12",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p17-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 17
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 17 Emissions Reduced (MTON C02e) 834 1.081 Total Reduction Target Counter Measure 1 Counter Measure 2 Unconditional Reduction Target 29% using its own resources Conditional Reduction Target 41% with international support 497 650 Forestry** 314 398 Energy* 11 26 Waste 9 4 Agriculture 3 3 IPPU 700 600 500 400 300 200 100 0 Emissions Reduced (MTON C02e) Counter Measure 1 Counter Measure 2 Reduction Target per Sector % Contribution to Total Emissons Reduction Targets Waste,1% IPPU, 0,3% Agriculture, 1% Counter Measure 2 41% Counter Measure 1 29% Forestry**, 59% Energy*, 38% Waste, 3% IPPU, 0,3% Agriculture, 0,3% Forestry**, 60% Energy*, 37% Source: First NDC Indonesia, 2016 *Including fugitive; **Including peat fire Notes: CM 1 = Counter Measure (unconditional mitigation scenario); CM2 = Counter Measure (conditional mitigation scenario) Figure 4.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p17-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 17
+  },
+  "heading": "",
+  "text": "NDC total emissions reduction targets and by sector in 2030 Indonesia focuses on five sectors to achieve the GHG emissions reduction target by 2030: forest and other land use (FOLU), energy and transportation, industrial processes and product use (IPPU), waste, and agricul- ture. The first two sectors are responsible for 97% of the total emissions reduction target. Without any mitigation, Indonesia’s GHG emission level will increase from 1,334 MtCO 2 e in 2010 to 2,869 MtCO 2 e by 2030. 2.1 National Roadmap for Climate Change Mitigation",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p18-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 18
+  },
+  "heading": "",
+  "text": "To achieve the NDC targets, the government has initiated various policies and programs. The NDC Mitigation Roadmap issued by the Ministry of Environment and Forestry (2019) is a guideline for the national and local government, the private sector, and community stakeholders. It includes a breakdown of the NDC targets in each sub-sector, detailed mitigation actions, timeline, and the government institution in charge of implementation, monitoring, and reporting. Indonesia’s GCF Country Programme Document 18 Table 5.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p18-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 18
+  },
+  "heading": "",
+  "text": "NDC Mitigation Roadmap Emissions Reduction Targets Energy efficiency Renewable energy Application of clean energy power generation techno- logy Fuel switching Household, commercial, industry, transportation Industry (biomass), electricity generations (hydro, geothermal, solar and wind, biomass, biofuel), transportation (biofuel) Clean coal technology (CCT super critical, CCT ultra super critical), power gas (PLTG, PLTGU) Replacement of kerosene with gas for households usage Energy Cement Fertilizer Steel Nitric Acid Aluminum 75% Clinker-to-cement ratio/CCR Technology improvements in ammonia plants and urea recovery Utilization of more efficient smelter technology (energy source and raw materials),utilization of scrap as a raw material substi- tute N2O emission reduction PFCs emission reduction by reducing the Anode Effect at smelter facilities Industrial Processes and Product Use (IPPU) Waste management and treatment Domestic solid waste treatment Domestic liquid waste treatment Indust",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p18-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 18
+  },
+  "heading": "",
+  "text": "rial solid waste treatment from pulp and paper industry Industrial liquid waste treatment Waste Agriculture Forestry and other land use Application of low emission technology in agriculture, efficient water management, manure management for biogas, feed supplement for cattle Reduction of deforestation rate to prevent the conversion of natural forests to non-forests Prevention of forest degradation Sustainable forest management Carbon stock increased through a forest and land rehabilita- tion/RHL Peatland management Agricultural, Forestry and Other Land Use (AFOLU) Sector Sub-Sector Target Area Source: NDC Mitigation Roadmap, 2019 (processed)",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p19-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 19
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 19 Indonesia’s commitment to climate adaptation has also been integrated into the NDC. The 2014-2020 National Action Plan for Climate Change Adaptation (RAN-API), followed by gender-responsive guidelines for adaptation action in 2015 (Gender-Responsive RAN-API), further elaborates the NDC adaptation plan. 13 The RAN-API provides guidance and direction for mainstreaming adaptation issues in the national development planning process up to 2020. Meanwhile, the Gender-responsive RAN-API offers guidelines on how to mainstream gender aspects into climate change adaptation.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p19-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 19
+  },
+  "heading": "",
+  "text": "2.2 National Action Plan for Climate Change Adaptation Action Contribution toward the overall goal of reducing potential loss of 2.87% GDP in 2030 Supporting economic resilience through transformation into a low-carbon economy and ensuring resilience in food, water, energy, and a healthy environment through: • • • • • • Sustainable plantation and agriculture Integrated watershed management; reduction of deforestation and forest degradation Reduction of deforestation and forest degradation Land conservation Efficiency in land management for renewable energy Improved efficiency in energy and consumption pattern 1.72% Economic resilience Realizing social and livelihoods resilience by improving capacity in managing various systems by: • • • • • 0.32% Improving adaptation capacity through early warning systems Raising awareness Increasing capacity in local planning Increasing disaster preparedness Increasing resilience in residential areas Social and livelihoods resilience Resilience Table 6.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p19-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 19
+  },
+  "heading": "",
+  "text": "Efforts to Adapt to Climate Change and Climate Variability The Gender Responsive RAN-API was issued by the Ministry of Women Empowerment and Child Protection a year after the RAN-API publication. 13",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p20-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 20
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 20 Following the 2014-2020 RAN-API implementation, the Government of Indonesia issued the 2020-2024 Climate Resilience Development Policy, which is a reference for climate resilience planning programs and activities for various ministries and subnational governments. Based on the 2020-2024 RPJMN, the Climate Resilience Development Policy outlines adaptation strategies and actions to implement climate risk management in four priority sectors between 2020-2045. The strategy includes action plans that are divided into core activities and supporting activities. The overall goal is to ensure climate-resilient development within the sustainable development framework and reduce the potential loss of GDP in sectors affected by climate hazards by 1.15% in 2024.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p20-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 20
+  },
+  "heading": "",
+  "text": "Provision of water storage structures, rehabilitation of water catchments including peatlands and swamps, application of addi- tional water debit technology, application of water recycling and reclamation technology, prevention of water loss, flood management Management of water resources to meet the clean water demand and to prevent climate disaster caused by water damage Water Provision of irrigation water storage struc- tures, provision of irrigation networks, applica- tion of technology to increase irrigation water discharge, provision of flood protection structures, provision of adaptive agricultural facilities, expansion of agricultural land Climate-Smart Agriculture to maintain food production Agriculture Priority Sector Strategy Actions (Core Activities) Table 7.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p20-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 20
+  },
+  "heading": "",
+  "text": "Climate Adaptation Strategies and Actions in Priority Sectors Increasing ecosystem and landscape resilience using an integrated landscape-based approach to managing terrestrial, marine, and coastal ecosystems through: • • • • • 0.83% Ecosystem conservation and restoration Social forestry Coastal protection Integrated watershed management Climate resilience in urban areas Ecosystem and landscape resilience Source: Implementation Strategy of NDC (2017), NDC Roadmap on Climate Adaptation Extended Summary (2020) Action Contribution toward the overall goal of reducing potential loss of 2.87% GDP in 2030 Resilience",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p21-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 21
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 21 The document also specified priority locations for climate resilience. These locations were determined based on the Information System on Vulnerability Index (SIDIK) report that rates villages’ vulnerability in all provinces, the Indonesian Disaster Risk Index (IRBI), potential economic losses, and recommenda- tions from various ministries and agencies. There are three classifications of priority locations: • • • Based on the mapping results for the priority sectors, 377 districts and 12 cities are classified as “super priority locations”. Indonesia has established the necessary institutions for leading, executing, and coordinating the imple- mentation of climate priorities. The Ministry of National Development Planning (Bappenas) plays a leading role as the planning agency in climate policy formulation, climate budgeting, climate financing, and monitoring and evaluation.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p21-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 21
+  },
+  "heading": "",
+  "text": "Bappenas also hosts the Secretariat of RAN-GRK and RAN-API and is Super Priority Locations (High Potential Hazard with High Vulnerability and High IRBI); T op Priority Locations (High Potential Hazard with High Vulnerability or High IRBI); Priority Locations (Locations with High Priority Hazard). 2.3 National Climate Change Institutions MARINE Wave height projection until 2045 shows that 5.8 million km2 or approximately 90% of the total area of Indonesia waters is dangerous for <10 GT vessel. COASTAL Approximately 102,000 km of Indonesian coastline has various vulnerability levels, and 1,800 km of the coastline is considered highly vulnerable. South Sulawesi Province has the longest coastline (573 km) with a very high coastal vulnerability index (CVI 5).",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p21-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 21
+  },
+  "heading": "",
+  "text": "Protect coastal areas and ensure maritime safety Marine and Coastal Additional provision of health facilities, improving environmental health in residential areas Protect the community and environmental health Health Source: The 2020-2024 Climate Resilience Development Policy, Ministry of National Development Planning Priority Sector Strategy Actions (Core Activities)",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p22-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 22
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 22 therefore responsible for climate mitigation and adaptation efforts. Bappenas has a strategic role as a clearinghouse that carries out national priorities and national development targets/indicators, as stated in the 2020-2024 RPJMN. In addition to these functions, Bappenas also hosts the Indonesia Climate Change Trust Fund (ICCTF), a government-led financial trust fund. The Ministry of Finance (MoF) plays a leading role in climate budgeting and financing. In 2011, MoF established the Center for Climate Change Financing and Multilateral Policy at the Fiscal Policy Agency (FPA). FPA performs functions such as formulating policy recommendations and monitoring climate change financing-related issues. FPA also deals with economic and financial cooperation within the G-20 and other multilateral forums. The agency has been appointed as the Nationally Designated Authority (NDA) for GCF since 2017.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p22-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 22
+  },
+  "heading": "",
+  "text": "It serves as the focal point between Indonesia and the GCF and plays a critical role in ensuring country ownership, the core principle of GCF's business model. MoF is also currently hosting the Indonesia Environment Fund (IEF) known as Badan Pengelola Dana Lingkungan Hidup (BPDLH). IEF was designed to become the “funding hub” for various funding mechanisms focusing on environmental protection and management in Indonesia, including climate change mitigation and adaptation efforts. It is the first public agency that can receive funds from international donors. In 2015, the Ministry of Environment and Forestry (MoEF) was appointed by the President of the Republic of Indonesia as the national focal point to coordinate climate change efforts, including the climate change negotiation process.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p22-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 22
+  },
+  "heading": "",
+  "text": "The President also established a specific Directorate General on Climate Change within the MoEF, merging all organi- zations dealing with climate change, including the National Council on Climate Change ( Dewan Nasional Perubahan Iklim /DNPI) and the REDD+ Agency. 14 The Directorate General on Climate Change has further issued the national GHG inventory system and the national registry system, a web-based data management system to register all climate actions. The system can be used for registering programs and projects, including those initiated by subnational governments or the private sector. Meanwhile, the implementation of climate policies, strategies, and priorities involves the following line ministries: Ministry of Public Works and Housing, Ministry of Agriculture, Ministry of Energy and Mineral Resour- ces, Ministry of Transportation, and Ministry of Industry. These ministries typically have specific mandates that deal with climate change in their respective sectors.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p22-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 22
+  },
+  "heading": "",
+  "text": "Other non-structural institutions are also established outside the ministerial purview for specific sectors and report directly to the President’s Office. The Peatland Restoration Agency (Badan Restorasi Gambut; BRG) was established in 2016 to restore high-priority degraded peat areas. In 2020, its role was expanded into a Peatland and Mangrove Resto- ration Agency ( Badan Restorasi Gambut dan Mangrove ; BRGM) to rehabilitate degraded peatland and mangrove areas and improve community welfare. DNPI was established by Presidential Decree No. 48/2008. It is the primary body for policy coordination on climate change. The DNPI is chaired by the President with the Coordinating Ministers for Economic Affairs and for People’s Welfare serving as vice-chairs. Council members include 17 cabinet ministers and the Head of Meteorology, Climatology and Geophysics. 14",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p23-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 23
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 23 Figure 5 below illustrates the overall framework of climate change governance, including policy coordination mechanisms, as well as monitoring and evaluation systems for climate change funding according to the national climate change fiscal framework.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p23-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 23
+  },
+  "heading": "",
+  "text": "15 Climate Negotiation Climate Policy & Planning Develop- ment Planning & Climate/- Sustainable Carbon Pricing Mechanism Climate Program Climate Communica- tion & Monitoring & Evaluation CMoMI CMoEA NDPA MoF MoEF MoFA Line Ministries National Trust Fund (BPDLH & ICCTF) SNGs NGOs & Business & Project Developer FSIs OJK BI Development Parners/Donors CMoMI CMoEA NDPA MoF MoEF MoFA BPLDH ICCTF SNGs Coordinating Ministry of Maritme & Invesment Coordinating Ministry of Economic Affairs National Development Planning Agency Ministry of Finance Ministry of Environment & Forestry Ministry of Foreign Affairs Environmental Fund Agency Indonesia Climate Change Trust Fund Sub National Governments Government Institutions BI OJK FSIs Bank of Indonesia Otoritas Jasa Keuangan/Financial Service Authority Financial Service Institutions Financial Institutions Source: Climate Change Fiscal Framework Streering Committee Implementing Regulating & Coordinating Partners Figure 5.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p23-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 23
+  },
+  "heading": "",
+  "text": "Indonesia’s Climate Governance Framework A Climate Change Fiscal Framework is being developed by MoF as a strategic policy document to provide a clear overview of the climate finance landscape, opportunities and direction for Indonesia. The document is expected to be published by the end of 2021. 15",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p24-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 24
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 24 For the country’s priority sector areas, the govern- ment has developed master plans to be implemented by the line ministries with specific mandates for that sector. Many of these sectoral master plans include climate-related priorities and goals. 2.4 Sectoral Strategic Plans However, not every sector directly references climate change. Below are the climate-related national sectoral plans issued by the Ministry of Environment and Forestry, the Ministry of Energy and Mineral Resources, the Ministry of Industry, and the Ministry of Agriculture. Table 8. Indonesia’s Sectoral Strategic Plans Forestry (According to Indonesia's National Forestry Plan – RKTN 2011 - 2030) Promote sustainable forest development: • • • Ensure that the implementation of the National Forestry Plan’s activities at every level will support the achievement of the NDC targets.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p24-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 24
+  },
+  "heading": "",
+  "text": "A governance framework and supporting institutions for forest management will be formed for priority areas for emissions reduction 26.42 million hectares will be targeted for forest conservation areas and an additional 1 million hectares as a priority for rehabilitation 41 million hectares will be targeted for natural forest and peat ecosystems 3.96 million hectares of critical forest land will be prioritized for rehabilitation by 2030 (around 50% of the total critical forest land) Energy (According to Indonesia’s Master Plan for National Energy 2050 – RUEN) Renewable energy will account for at least 23% of the primary energy mix in 2025 and at least 31% in 2050 Decrease primary energy intensity by 1% per year until 2025 Promote energy conservation, conservation of energy resources, and energy diversification: 1. 2. 3. 4. Reduce emissions from the energy sector: 1. 2. 3.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p24-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 24
+  },
+  "heading": "",
+  "text": "Develop policies related to Energy Service Company to help implement energy efficiency projects Carry out energy audit and management program Restructure industrial machinery and provide fiscal and non-fiscal incentives to promote renewable energy development and energy efficiency (EE) across sectors Conduct socialization and education to raise awareness on EE Implement energy conservation on the supply side Land reclamation of coal mines Utilization of clean coal technology",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p25-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 25
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 23 Waste (According to Indonesia’s National Policy & Strategy on Management of Household and Household-like Waste 2025 – JAKSTRANAS • • 30% waste reduction by 2025 through reduce, reuse, and recycle program at source or upstream 70% waste management/handling by 2025 through waste segregation, collection, transportation, treatment, and final processing Industry (According to Indonesia’s Master Strategy for Agri- cultural Development 2015 - 2045 – SIPP) The realization of bioenergy-based energy independence through the implementation of Integrated Agriculture-Energy System (SPET) in 25% of villages in Java by 2020 and all villages in Indonesia by 2035 Development of agroforestry and silvopasture as a component in climate change mitigation and adaptation Promote the use of superior/high-yield seeds that are adaptive to climate change and environmentally friendly Industry (According to Indonesia’s Master Plan for National Industry Development 2015 - 2035 – RIPIN) Green industry development strategies, which aims to transform existing industries into green industries and develop new industries by applying green industry principles: 1.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p25-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 25
+  },
+  "heading": "",
+  "text": "2. 3. Develop standards on green industries Develop green industry certification bodies and build the capacity of auditors to carry out audits according to green industry standards Provide fiscal and non-fiscal facilities for green industries",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p28-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 28
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 28 In Indonesia’s Second Biennial Update Report or BUR (2018), the government stated that around USD 247.2 billion is needed to meet the conditional emissions reduction target between 2018-2030. This estimation is based on current government expenditure and the estimated financial needs for specific interventions in the waste and IPPU sectors which the private sector would implement. The agriculture, forestry and other land use sectors (AFOLU) are responsible for 38% of the unconditional emissions reduction target and 37% of the conditional emissions reduction target by 2030. However, AFOLU sectors have the lowest abatement cost and require a mere USD 5.6 billion to meet the conditional target. Meanwhile, the energy and transportation sector accounts for 95% of the total cost.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p28-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 28
+  },
+  "heading": "",
+  "text": "According to BUR, approximately USD 236.2 billion is needed for deve- loping renewable energy power plants and invest- ments in clean technologies with an expected emissions reduction of 398 MtCO 2 e. The NDC Mitigation Roadmap (2019) estimates the sectoral investment required to achieve NDC targets, as detailed in Table 9. The Roadmap estimates that Indonesia will need USD 294.97 billion to achieve the unconditional target of emissions reduction. Except for agriculture and forestry, the financing needs for energy (including transporta- tion), industry, and waste sectors are applicable for the 2020-2030 timeline. 3. Financing Climate Change Priorities in Indonesia 3.1 Financing Needs for Climate Mitigation Table 9.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p28-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 28
+  },
+  "heading": "",
+  "text": "Financing Needs for 29% Emissions Reduction Total 294.97 Sector Criteria Timeline Total Financial Needs (USD billion) Energy efficiency, Renewable energy, Application of clean energy power generation technology, Fuel switching 2020 - 2030 Energy 250 Cement, Fertilizer, Steel, Nitric Acid, Aluminum 2020 - 2030 IPPU 0.065 Waste management and treatment (PLTSa, RDF) 2020 - 2030 Waste 13.23 Agriculture Forestry and other land use 2011 - 2030 2013 - 2030 AFOLU 0.52 31.16 Source: NDC Mitigation Roadmap, 2020 Note: 1 USD = IDR 14,000",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p29-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 29
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 29 Referring to the Roadmap, the Ministry of Finance under the Climate Change Fiscal Framework 16 calcu- lated the total financing needs for 2020-2030 timeline in each of the sectors by also incorporating non-Ministries including State-Owned Enterprises, Public Service Agencies (BLUs), and private sector supplies. Under the Climate Change Fiscal Frame- work, MoF estimates that between 2020-2030, Indonesia will need USD 285.62 billion or around USD 25.96 billion annually to achieve the unconditional targets. 17 However, since the value of mitigation cost has not yet included sub-national governments, this figure is likely undervalued. Financing needs for climate adaptation refers to the amount required to compensate for the economic losses from climate change. It is the sum of mone- tary impact, ecosystem loss valuation, and disaster prevention cost due to climate change.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p29-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 29
+  },
+  "heading": "",
+  "text": "The NDC Roadmap on Climate Adaptation mentioned that the adaptation efforts aim to reduce the risk of a potential GDP loss of 2.87%. 18 The overall financing needs for adaptation in the 2021-2030 timeline is USD 77.81 billion, and USD 309.17 billion for the 2050 timeline. 19 However, the calculation of eco- nomic losses has not yet included all of the loss variables caused by climate change—in other words, it is still undervalued. Therefore, the real economic losses from the impacts of climate change are much more significant. In 2014, the Fiscal Policy Agency (FPA) under the Ministry of Finance developed a system to track the national government budget allocated for climate change. The system, known as the Climate Budget Tagging, enables government institutions to identify and assess their climate change-related expenditures. Between 2016 and 2020, the government allocated IDR 475.88 trillion (USD 33.9 billion) for climate change.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p29-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 29
+  },
+  "heading": "",
+  "text": "Of the total budget allocation, approximately 91% was disbursed. The majority of the climate change budget was used for mitigation activities, both in 2018 (66.2%) and in 2019 (55.6%). 20 In 2020, most of the budget for climate priorities was reallocated to manage the COVID-19 pandemic. As a result, the 2020 climate budget allocation only covered 13% of the financing needs outlined in the NDC Mitigation Roadmap. 21 A Climate Change Fiscal Framework is being developed by MoF as a strategic policy document to provide a clear overview of the climate finance landscape, opportunities and direction for Indonesia. The document is expected to be published in 2022. The projection is derived based on the historical public financing supply from the 2016-2020 climate budget tagging data, which serves as the basis for the estimation of future projection through trendline extrapolation method. This means public actors are assumed to expect their financing to grow as what usually has been.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p29-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 29
+  },
+  "heading": "",
+  "text": "Based on 2030 GDP. This estimation is based on the NDC Adaptation Roadmap, which stated that the cumulative need for 2021-2050 is USD 309 billion, based on climate impact valuation. This number is then distributed every year within the 2021-2050 period, using future GDP forecasts. National Climate Budget Tagging Report, 2020. Ibid. 16 17 18 19 20 21 3.2 Financing Needs for Climate Adaptation 3.3 Government Budget",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p30-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 30
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 30 Rp 140,00 Rp 120,00 Rp 100,00 Rp 80,00 Rp 60,00 Rp 40,00 Rp 20,00 Rp - 7,0% 6,0% 5,0% 4,0% 3,0% 2,0% 1,0% 0,0% 2018 2019 APBN Perpres 72/2020 Rp 132,47 Rp 126,04 Rp 97,66 Rp 83,54 Rp 77,81 6,0% 4,0% 2,8% Portion in National Budget Climate Change Budget Allocation Climate Change Budget Disbursement Portion in National Budget Figure 6. Allocation and Disbursement of Climate Change Budget between 2018 - 2020 (IDR Trillion) The Ministry of Finance under Climate Change Fiscal Framework also calculated the total public expendi- ture between 2016 and 2019 by incorporating spending by non Ministries including State-Owned Enterprises and Public Service Agencies (BLUs). It is estimated that the public sector contributed to USD 28.9 billion of climate financing in 2016-2019. It is projected to cover around 45% of the 29% target needs (without COVID-19).",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p30-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 30
+  },
+  "heading": "",
+  "text": "In Bappenas’ Vision 2040, the government projected an annual economic growth of 5.7% to 6%, leading to a per capita income of USD 23,199 by 2045. For the next five years, Indonesia plans to maintain the fiscal deficit-to-GDP ratio at 1.7% and the debt-to-GDP ratio at 28-29% to stimulate the economy while reducing regional disparity and keeping economic growth and emissions reduction in balance. 22 The COVID-19 pandemic has posed an unprecedented challenge. Indonesia entered a recession when the GDP contracted by 2.1% in 2020. 23 Growth is expected to rebound in 2021 (between 4.5 to 5.0%). 24 For FY 2021, the government projected a total spending of IDR 2,750 trillion. However, 13% of the total budget (IDR 356.5 trillion) will be allocated for economic recovery measures (e.g., healthcare and social protection). 25 Pre-COVID 19, there was a consistent budget alloca- tion for climate change mitigation (~4% of total budget) depending on the annual fiscal capacity.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p30-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 30
+  },
+  "heading": "",
+  "text": "Even if this consistency persists, the government spending on climate change is well below the amount needed to meet NDC targets. With the end of the pandemic nowhere in sight, the pace of economic recovery is highly uncertain. In the foreseeable future, the government will continue to focus its spending on COVID-related expenditures, thereby leaving a very significant budget gap to achieve the targets set in the NDC. https://www.bappenas.go.id/files/rpjmn/Narasi%20RPJMN%20IV%202020-2024_Revisi%2014%20Agustus%202019.pdf BPS Kemenkeu http://www.anggaran.kemenkeu.go.id/assets/FTPPortal/Peraturan/NK%20UU%20APBN%20Lapsem/ 03c.%20ENG_ADVERTORIALRAPBN2021.pdf , 4. https://setkab.go.id/en/2021-state-budget-bill-allocates-rp356-5-t-for-national-economic-recovery/ 22 23 24 25",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p31-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 31
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 31 Kementerian Pertanian Kementerian Lingkungan Hidup dan Kehutanan Kementerian Pekerjaan Umum dan Perumahan Rakyat Kementerian ESDM Kementerian Perhubungan Kementerian Industri Kementerial Sosial Kementerian Kelautan dan Perikanan Kementerian Agraria dan Tata Ruang Kementerian Dalam Negeri Badan Pengkajian dan Penerapan Teknologi Kementerian Keseha- tan Badan Nasional Penanggulangan Bencana Badan Meteorologi, Klimatologi, dan Geofisika Badan Pusat Statistik Badan Informasi Geospasial Lembaga Ilmu Pengetahuan Indonesia Lembaga Penerbangan dan Antariksa Nasional 1. 2. 3. 4. 5. 6. 7. 8. 9. 10. 11. 12. 13. 14. 15. 16. 17. 18. 4.265. 519,00 1.619. 702,00 43.234. 865,00 2.173. 783,00 21.004. 368,00 53. 796,00 72.315. 988,00 5.381. 320,00 1.132. 136,00 51.950. 662,00 2.844. 122,00 34.233. 514,00 42. 926,00 95.584. 680,00 416. 459,23 2.114. 240,88 50.404. 767,90 2.772. 836,23 28.095. 721,40 26. 556,31 0,00 0,00 0,00 0,00 83.830. 581,95 231.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p31-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 31
+  },
+  "heading": "",
+  "text": "377,71 451. 777,67 47.372. 609,94 370. 269,77 0,00 0,00 88. 067,50 37. 077,79 86. 459,97 7.300,00 48.644. 940,36 1.825. 372,40 3.709. 603,16 35.727. 386,59 1.825. 727,85 15.366. 598,70 6.479,02 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 58.461. 167,71 324. 273,86 433. 649,01 37.850. 645,37 0,00 0,00 0,00 127. 946,02 27. 971,49 7.161,03 6.145,74 3.000,00 99. 672,01 12. 340,00 183.438 2.640,00 117. 803,47 5.394,12 39.202. 080,13 60. 509,45 2.554. 214,13 29.597. 835,31 2.054. 115,31 10.230. 532,24 7.853,39 0,00 7.696,26 0,00 0,00 0,00 0,00 0,00 0,00 0,00 0,00 44.512. 756,10 564. 257,31 314. 870,48 31.784. 921,85 0,00 0,00 0,00 90. 059,36 4.862,97 13. 036,00 52. 468,56 117. 691,59 15. 192,96 177. 825,96 3.704,62 112. 012,05 48. 685,26 33.299. 588,96 13.069. 088,96 12.330. 193,33 327.923. 693,96 12.040. 809,16 108.930. 734,34 137. 610,71 218. 005,38 128. 598,22 20. 197,03 6.145,74 40. 077,79 52. 468,56 217. 363,60 113. 992,93 361. 263,97 13. 644,62 229. 815,52 54.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p31-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 31
+  },
+  "heading": "",
+  "text": "079,38 475.887. 783,20 2,75% 2,59% 68,91% 2,53% 22,89% 0,03% 0,05% 0,03% 0,00% 0,00% 0,01% 0,01% 0,05% 0,02% 0,08% 0,00% 0,05% 0,01% 100% 2016 (Miti- gation) 2017 (Miti- gation) 2018 (Miti- gation) 2018 (Adap- tation) 2019 (Mitiga- tion and Co- Benefit) 2019 (Adap- tation) 2020 (Mitiga- tion and Co- Benefit) 2020 (Adap- tation) Total 2016- 2020 (Percen- tage of Total) TOTAL Total Funding Allocation (Million IDR) No Line Ministries Table 10. Budget Tagging Result",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p32-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 32
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 32 According to findings under the Climate Change Fiscal Framework, 26 it is estimated that the private sector contributed to USD 21.3 billion of climate financing from 2015 to 2019. To achieve the 29% emissions reduction target, the private sector may cover 35.2% of the required climate financing needs in the BAU scenario. The private sector includes commercial financial institutions (FIs), public FIs, institutional investors, corporate actors, households, project developers, and others. Most of the private climate financing was dedicated to mitigation, contributing up to 86% for the past 5 years, dominated by renew- able energy (53.3% of total private financing is driven by hydro and geothermal expansion projects) and sustainable transport. Low carbon technologies and energy efficiency have also brought a high number of private financing.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p32-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 32
+  },
+  "heading": "",
+  "text": "Fifty five point eight percent of the total private financing between 2015 and 2019 was provided by commercial financial institu- tions. The preferred mode of private climate financing is mostly disbursed in the form of debt and equity. Private sector investment for climate finance 27 face common issues that are centered around the risk level and familiarity with the green sectors. Below are some findings from the private sector situation analysis in Indonesia, including findings from CCFF: • 3.4 Private Sector • • • A Climate Change Fiscal Framework is being developed by MoF as a strategic policy document to provide a clear overview of the climate finance landscape, opportunities, and direction for Indonesia. The document is expected to be published in 2022. Indonesia’s climate-related activities are generally geared toward developing resilience in the face of climate-related impacts (adaptation) and reducing or avoiding greenhouse gas emissions (mitigation) efforts.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p32-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 32
+  },
+  "heading": "",
+  "text": "Therefore ‘Climate finance’ in this context refers to the flow of funds from internal sources (national public financing) and external sources (private, international, and other) toward adaptation and mitigation measures. 26 27 Debt financing continues to be the preferred mode of lending, accounting for more than 70% of total financing, although the amount of debt financing on climate investment has seemed to stagnate over the last two years due to some policy amendments such as on renewable energy use. The appetite of the private sector in the re- newable energy market is mostly for small hydro and geothermal power plants, which are per- ceived to be less risky. Despite its tremendous potential economic value, private finance flows for adaptation projects remain very limited.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p32-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 32
+  },
+  "heading": "",
+  "text": "The adaptation sector is still being considered as a “government responsibi- lity.” For instance, improvement in coral reef state by 2030 could unlock an additional value of USD 37 billion (or USD 2.6 billion per annum) in Indo- nesia (Coral Reef Economy, UNEP, November 2018) but investments in agriculture, forestry, land use and natural resource management were reported at less than a billion between 2015 and 2018. The current private philanthropy fund in Indone- sia, which is disbursed almost exclusively in the form of grants, has been playing a large role in climate activities currently uncovered by private finance. This includes technical assistance and grassroots community engagement in forestry, land-use, natural resource management, coastal protection, and disaster management. The private, philanthropic climate fund has stagnated for the last three years, most likely due to its increasing focus on education and health.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p32-5",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 32
+  },
+  "heading": "",
+  "text": "The financial and capital market has not been providing companies with sufficient financing for green projects or investments. The capital market in Indonesia is still underdeveloped, thereby lacking the mechanisms that allow firms to obtain green investment funding from the public.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p33-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 33
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 33 To further encourage private sector involvement, the Financial Services Authority ( Otoritas Jasa Keuangan or OJK) issued the Sustainable Finance Roadmap Phase 1: 2015-2019. The Roadmap sets forth a detailed work plan for the financial services industry, including the timeline for the development of sustainable finance regulation, sustainable financial products, incentives for financial institutions, and coordination among government agencies. In 2017, the Financial Services Authority issued OJK Regulation No. 51/POJK.03/2017, the first-ever umbrella regulation on sustainable finance in Indone- sia mandating all financial institutions to integrate sustainable principles into their business processes. It outlines sustainable finance principles, the timeline for implementation by financial institutions, and the requirement to submit a Sustainable Finance Action Plan and Sustainability Report. OJK also issued Regulation No.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p33-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 33
+  },
+  "heading": "",
+  "text": "60/POJK.04/2017 on the Issuance and Terms of Green Bond. In 2018 and 2019, OJK published several technical guidelines to help imple- ment sustainable finance regulation, which includes the classification of 12 sustainable business activities to help banks improve their sustainable portfolio. The equity market is mostly used to raise conventional (non-green) investment, and the bond market is still very shallow. Green bonds are not yet popular among Indonesian companies despite their great potential, partly due to their limited track record of repayment and investment returns. 28 Amanda, Putri (2019, February). Green Bonds in Indonesia: Prospects and Challenges . Retrieved from www.pefindo.com The cut-off date is November 15, 2019. MoF and OECD (processed). 28 29 30 Recently, OJK issued the Sustainable Finance Road- map Phase II: 2021-2025 to accelerate the imple- mentation of good environmental, social, and gover- nance practices in Indonesia.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p33-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 33
+  },
+  "heading": "",
+  "text": "The Phase II Roadmap focuses on creating a comprehensive sustainable finance ecosystem and promoting cooperation among various stakeholders. The sustainable finance regula- tions prompted other innovative financing schemes, such as the issuance of the first green bond and sukuk by the Indonesian government and financial institu- tions in 2018. In addition, seventeen Indonesian banks reported USD 81 billion in sustainable portfolio financing in 2019, showing a 139% increase from 2017. From 2016 to 2019, 29 Indonesia has received USD 3.10 billion from international sources (51% from bilateral and 49% from multilateral cooperations). 30 As much as 97% of the funding was received as loans; meanwhile, only 3% was in the form of grants. The energy and transportation sectors received 72% of the total amount. Forestry, waste, and agriculture for mitigation received a mere 2%.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p33-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 33
+  },
+  "heading": "",
+  "text": "Of the total inter- national funding received during 2016-2019, USD 2.28 billion was spent on mitigation, USD 427.96 million on adaptation, and USD 392.57 million on cross-sectoral programs. The adaptation sectors include water security, agriculture, water irrigation, marine, and agriculture. 3.5 International Support in Climate Finance",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p34-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 34
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 34 100,00 200,00 300,00 400,00 600,00 500,00 JICA AFD KfW USA EXIM BANK KOREA UK AUSTRALIA GIZ CHINA KOICA Research Council Norway - - - - - - - - - - - - 550,11 527,29 459,83 15,73 10,49 2,71 1,57 1,34 1,28 0,57 0,07 Figure 7. Bilateral Financial Support 2016 - 2019 by Donors (in USD Million) Source: BKF International Climate Finance, 2019 Note: KfW (Kreditanstalt für Wiederaufbau), GIZ (Gesellschaft für Internationale Zusammenarbeit), EXIM Korea (The Export-Import Bank of Korea), JICA (Japan International Cooperation Agency), AFD (France) million), water (USD 40.40 million), waste (USD 13.28 million), and agriculture water irrigation (USD 8.45 million). The rest of the funds (USD 76.06 million) were received as grants and were allocated for water (USD 30.24 million), forestry (USD 23.16 million), multi-sector (USD 14.41 million), transportation (USD 2.38 million), waste (USD 2.80 million), and agriculture (USD 0.07 million).",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p34-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 34
+  },
+  "heading": "",
+  "text": "Indonesia received USD 1.57 billion in financial support between 2016 and 2019 from bilateral agreements, with the highest contribution from JICA Japan, followed by AFD France and KfW Germany (Figure 7). Around USD 1.49 billion was in the form of a concessional loan for six sectors, including energy (USD 613.71 million), transportation (USD 445.95 million), multi-sectoral programs (USD 373.15 3.5.1 Bilateral million), water (USD 159.92 million), agriculture water irrigation (USD 97.79 million), agriculture (USD 58.52 million), and marine (USD 26.73 million). The grants were mainly allocated for forestry (USD 12.30 million), energy (USD 7.7 million), marine (USD 3.6 million), water (USD 2.37 million), multi-sector programs (USD 2.01 million), and transportation (USD 1.25 million).",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p34-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 34
+  },
+  "heading": "",
+  "text": "The total financial support provided based on the realization of multilateral agreements was USD 1.53 billion, with the highest contribution from the IBRD World Bank Group, followed by the Asian Development Bank (ADB). USD 1.50 billion was provided in the form of a concessional loan, while the rest in the form of grants. The loan was used to finance the energy sector (USD 1,159.67 3.5.2 Multilateral",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p35-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 35
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 35 Figure 8. Multilateral Financial Support 2016 - 2019 by Donors (in USD Million) 100,00 200,00 300,00 400,00 600,00 500,00 700,00 800,00 900,00 1.000,00 IBRD ADB IFAD AIIB THE EU UNION World Bank FAO UNDP - - - - - - - - - 887,42 628,79 6,48 5,81 2,00 1,25 0,05 0,01 Source: BKF International Climate Finance, 2019 Figure 9. 2016-2019 Multilateral Climate Financing Allocation by Sector (in USD million) Forestry; 35,46 Marine; 30,33 Transportation; 449,58 Waste; 16,08 Water; 233,93 Agriculture; 58,59 Agriculture water irrigation; 106,18 Cross sector; 392,57 Energy; 1.781,07 Climate financing support from multilateral sources was predominantly allocated for energy, transportation, and cross-sectors. Figure 9 depicts the composition of multilateral support for climate change programs by sector. sectors. As shown in Table 11, approximately USD 700 million has been invested in climate change projects between 2016 and 2019.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p35-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 35
+  },
+  "heading": "",
+  "text": "The majority (95%) of the funding is dedicated to mitigation projects, and only 2% is spent on adaptation projects. There are several international climate funds opera- ting in Indonesia, including the Global Environment Facility (GEF), Climate Investment Funds (CIF), and Adaptation Funds. GEF and CIF were allocated for energy and forestry, while the Adaptation Funds financed projects in the water, agriculture, and coastal 3.5.3 International Climate Funds in Indonesia",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p36-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 36
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 36 Adaptation Fund 7.933.150 GEF 25.463.781 CIF 667.160.000 Total 700.556.931 International Climate Fund Total Portfolio 2016-2019 (USD) Table 11. International Climate Funds Total Portfolio 2016 - 2019 (USD) Figure 10. International Climate Funds Portfolio 2016 - 2019 95% 1% 4% GCF CIF Adaptation Fund Figure 11. International Climate Funds by Project Type 2016 - 2019 95% 2% 3% Mitigation Adaptation Cross-cutting REDD+ is implemented in three phases: Phase 1: Readiness This phase refers to the development of national strategies or action plans, policies and measures, and other capacity-building activities. REDD+ is a framework created by the UNFCCC to support countries’ efforts to reduce emissions from deforestation and forest degradation, foster sustain- able management of forests, and the conservation and enhancement of forest carbon stocks in deve- loping countries. 3.5.4 REDD+",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p37-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 37
+  },
+  "heading": "",
+  "text": "Phase 2: Implementation This phase refers to the implementation of national strategies or action plans, policies and measures that could involve further capacity-building, tech- nology development and transfer, and results-based demonstration activities. Phase 3: Payment for results This phase refers to result-based payments (RBP) following emissions reduction actions that can be fully measured, reported, and verified. Beginning in 2017, GCF has started to pilot REDD+ RBP. Countries that have completed the first two phases of REDD+ for results generated between 2013 to 2018 are eligible to apply for phase 3 funding through this pilot program. In 2020, Indonesia received USD 103.8 million RBP from GCF for having avoided 20.3 MtCO 2 e. Indonesia is the only country outside Latin America that has received RBP from GCF.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p37-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 37
+  },
+  "heading": "",
+  "text": "In addition, on May 2020, Norway approved a payment of USD 56 million for Indonesia’s emis- sions reductions of 17 MtCO 2 e between 2016 and 2017 under the REDD+ scheme, which was negotia- ted separately through a bilateral agreement. 31 The bilateral REDD+ partnership between Indonesia and Norway is guided by the Letter of Intent signed in May 2010. Norway committed up to USD 1 billion to support Indonesia’s efforts to reduce emissions from deforestation and forest and peat degradation. RBP schemes are being implemented at the sub- national level.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p37-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 37
+  },
+  "heading": "",
+  "text": "In November 2020, the Ministry of Environment and Forestry and the World Bank’s Forest Carbon Partnership Facility signed https://forestsnews.cifor.org/70458/results-based-payments-in-indonesia-a-strategy-to-move-redd-forward?fnl=en https://www.worldbank.org/en/news/press-release/2020/12/08/indonesia-and-the-world-bank-sign-milestone- agreement-on-emission-reductions 31 32 an Emissions Reductions Payment Agreement (ERPA) that will unlock up to USD 110 million for Indonesia’s efforts in reducing 22 MtCO 2 e in East Kalimantan between now and 2025. 32 Jambi province receives up to USD 60 million from the BioCarbon Fund for its carbon reduction. Established in 2009, ICCTF is a funding entity that aims to develop innovative ways to link international financing sources with national climate investment strategies.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p37-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 37
+  },
+  "heading": "",
+  "text": "Created by the Indonesian Government, ICCTF acts as a catalyst to attract private sector investment, leverage public and development partner funds, and implement a range of alternative financing mechanisms to scale up climate change mitigation and adaptation programs. ICCTF focuses on four sectors: l and-based mitigation, energy, adaptation and resilience, and also marine-based. Among the development partner funds are from USAID, UKCCU, Danida, Worldbank, ADB, and GIZ. Since its inception, ICCTF has managed 88 projects in 114 areas, inclu- ding 46 land-based mitigation projects, 22 adaptation and resilience projects, 8 energy projects, and 12 marine-based (ongoing) projects. In 2020, ICCTF focuses on the marine-based Coral Reef Management Program. In 2017, Government Regulation No. 46/2017 was issued to stipulate the use of economic instruments for managing the environment.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p37-5",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 37
+  },
+  "heading": "",
+  "text": "This Regulation is also important for managing climate finance as it provides Indonesia’s GCF Country Programme Document 37 3.6 Indonesia Climate Change Trust Fund 3.7 Indonesia Environment Fund",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p38-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 38
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 38 a legal basis for the government to establish a management board to manage environmental funds, including for climate change. Several environ- mental funds that are stipulated under the Regulation include: i) environmental rehabilitation bond; ii) pollution control and environment rehabilitation fund; and iii) conservation fund. In 2018, the President issued Regulation No. 77/2018 on the Environmental Fund Management Board, or known as the Indonesia Environment Fund (IEF), as a service delivery unit ( Badan Layanan Umum ) under the Ministry of Finance. IEF has the mandate to manage environmental funds in 13 priority programs based on PMK No.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p38-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 38
+  },
+  "heading": "",
+  "text": "124/PMK.05/2020: climate change mitigation (including REDD+); sustainable forest management; forest fire control and peatland restoration; social forestry; forest and land rehabilitation; conservation and ecosystem; pollution prevention; industry (increasing industrial competitiveness based on natural resources); waste management (solid, liquid, hazardous); low-carbon technology; energy (renewable energy, energy efficiency); reducing disturbances, threats, and law violations in the environmental and forestry sector; and environmental protection. The Steering Committee of the Board is chaired by the Coordinating Ministry of Economic Affairs and co-chaired by the Ministry of Environment and Forestry with the following members: Ministries of Finance, Home Affairs, Energy and Mineral Resources, Transporta- tion, Bappenas, Industry, Marine and Fisheries. A custodian bank can be appointed as a trustee to manage the funds.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p38-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 38
+  },
+  "heading": "",
+  "text": "IEF can access various sources for its fundraising strategy, including national and local government budget from environmental taxes and retributions, grants, and donations (Table 12). The fund collected can be further invested in banks, capital markets, and other financial instruments stipulated by the regulations. Furthermore, IEF can distribute the fund using a different mechanism such as domes- tic carbon trades, loans, subsidies, grants, and other mechanisms. Resources Mobilization Pollution and/or environmental damage response and rehabilitation fund. The fund can be collected from the national and local government budget including from environmental taxes and retributions. Trust Fund or Conservation Donation. Fund can be obtained from grants or donations including for natural resources conservation, natural resource reserves, and atmospheric function protection.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p38-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 38
+  },
+  "heading": "",
+  "text": "Investment Instruments Banks Capital markets Other financial instruments as stipulated by regulations Distribution of Fund Domestic carbon trade Loans, Subsidies Grants; Other mechanisms as stipulated by regulations Source: Presidential Decree 77/2018 Table 12. Design of the IEF According to Presidential Decree 77/2018",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p40-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 40
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 40 To plug the financing gap, Indonesia is accessing the GCF, which stands as the largest climate change trust fund with a pledged endowment of USD 10.3 billion and a total committed amount of projects equalling USD 8.3 billion. The fund is allocated proportionally for both mitigation and adaptation projects, with the strategic focus detailed in Figure 12. The GCF can potentially contribute to financing climate actions to achieve NDC targets. Until October 2021, the current portfolio of the GCF funding in Indonesia is USD 287.3 million, ranging from 10-20 years. 33 Compared to the sheer amount needed to meet Indonesia’s NDC targets, there is a strong rationale for GCF to increase its portfolio in the country. On average, the financial instruments of the GCF projects consist of 75% loans and 25% grants.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p40-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 40
+  },
+  "heading": "",
+  "text": "At the global level, there is no agreement on how grants or loans from international climate finance sources will be recorded and accounted for. In-country discussions propose that the GCF funds will be counted as contributions to achieve the unconditional emissions reduction (29%) target only when they are received as loans. When the GCF fund is received as a grant, it could contribute to the achievement of the conditional emissions reduction (41%) target, although it is unclear how the result-based payment or REDD+ would be counted at the moment.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p40-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 40
+  },
+  "heading": "",
+  "text": "By October 2021, there are three Readiness Activities and seven approved projects/programs: Bus Rapid Transit Development in Semarang (preparation facility), Geothermal Resource Risk Mitigation, Climate Investor One, Indonesia’s RBP REDD+ results for 2014-2016, Global Subnational Climate Fund (SnCF Global)-Equity and Technical Assistance Facility, ASEAN Catalytic Green Finance Facility, and Global Fund for Coral Reefs Investment Window (Table 13). 34 In addition, there are also two approved multi- countries program approved under preparation facility https://www.greenclimate.fund/countries/indonesia https://fiskal.kemenkeu.go.id/nda_gcf/en/featured-projects 33 34 4. The Green Climate Fund in Indonesia Figure 12. Strategic Impact of GCF Health, food, and water security Infrastructure and built environment Livelihood of people and communities Ecosystems and ecosystem services Energy generation and access Buildings, cities, industries, and appliances Transport Forest and land use",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p41-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 41
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 41 which include Indonesia as one of the country target: Collaborative R&DB Programme for Promoting the Innovation of Climate Technopreneurship (with KDB as the AE), and Green Guarantee Company (with MUFG as the AE). If Indonesia could triple its GCF portfolio, for instance, the amount is still rela- tively small compared to the total climate financing needs. Therefore, the GCF should be used strate- gically to achieve Indonesia’s climate mitigation and adaptation targets. No. Project GCF Financing Total Financing Amount Accredited Entity GCF Financing Co-Financing 1. 2. 3. 4. 5. Integrated Sustainable Bus Rapid Transit Development in Semarang. A Project Preparation Facility to develop new routes and add green buses to the existing BRT system. Geothermal Resource Risk Mitigation. A facility for de-risking geothermal exploration in Indonesia. Climate Investor One. A blended facility for renewable energy in 11 countries, including Indonesia.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p41-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 41
+  },
+  "heading": "",
+  "text": "Indonesia's RBP REDD+ results for 2014 - 2016. This project recognizes Indonesia’s REDD+ results for 2014 - 2016, with a total volume of 27 MtCO2eq submitted to GCF for RBP. Global Subnational Climate Fund (SnCF Global) - Equity and Technical Assistance Facility. Impact equity fund and technical assistance facility to de-risk sub-national medium- scale infrastructure projects at scale in 42 countries, including Indonesia. USD 788,000 USD 100 million USD 100 million USD 103.8 million USD 168.5 million (USD 150 million for equity and USD 18.5 million for technical assistance) USD 1,258,000 USD 410 million USD 821.5 million USD 103.8 million USD 778 million (USD 750 million for equity and USD 28 million for technical assistance) PT. SMI World Bank FMO UNDP Pegasus Capital Advisors for equity and IUCN for technical assistance USD 43.9 million USD 5 million Allocation for Indonesia* Table 13. GCF Projects/Programs in Indonesia (by October 2021)",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p42-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 42
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 42 No. Project GCF Financing Total Financing Amount Accredited Entity GCF Financing Co-Financing 6. 7. ASEAN Catalytic Green Finance Facility (ACGF) “Green Recovery .Program” for post-COVID infrastructure Platform designed for 8 countries including Indonesia to scale up low-emissions’ invest- ments as part of COVID-19 economic stimulus. Global Fund for Coral Reefs Investment Window. Private equity fund to encourage investments in the blue economy, protecting coral reefs. Targeting 17 countries in Africa, the Asia- Pacific, Latin America and the Caribbean.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p42-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 42
+  },
+  "heading": "",
+  "text": "USD 350 million USD 125 million Financing will support total projects costs of USD 4,685 million USD 500 million (USD 375 million for equity) ADB Pegasus Capital Advisors LP USD 43.7 million To be determined Allocation for Indonesia* Source: NDA GCF Indonesia *for multi-countries projects/programs with indicative value based on equal allocation for the target countries There are eight result areas of the GCF, categorized into mitigation and adaptation clusters. In the mitiga- tion cluster, the four result areas are (i) agriculture, forestry, and other land use, (ii) buildings, cities, industries, and appliances, (iii) energy, and (iv) trans- port. In the adaptation cluster, the four result areas include (i) ecosystems and ecosystem services, (ii) health, food, and water security, (iii) infrastructure, and (iv) livelihoods of vulnerable communities. The GCF also recognizes the importance of gender in terms of impact and access to climate funding.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p42-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 42
+  },
+  "heading": "",
+  "text": "Through its gender policy, 35 GCF commits to enhan- cing gender equality within its governing structure and day-to-day operations and promoting the goals of gender equality and women’s empowerment through its decisions on the allocation of funds, operations, and overall impact.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p42-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 42
+  },
+  "heading": "",
+  "text": "The objectives of GCF’s gender policy are to (i) support climate change interventions and innovations through a comprehen- sive gender-responsive approach, applied both within the institution and by its network of partners, including accredited entities (AEs), national designa- ted authorities (NDAs) and focal points, and delivery partners for activities under the GCF Readiness and Preparatory Support Program, (ii) promote climate investments, and (iii) reduce the gender gap resulting from climate change exacerbated social, economic, and environmental vulnerabilities and exclusions through strategic climate investments that main- stream gender equality issues. https://www.greenclimate.fund/document/gender-policy 35",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p43-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 43
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 43 Based on a technical assessment of the documents and discussions with stakeholders, several consi- derations can be taken into account by the NDA when selecting climate projects or programs to be financed by the GCF, including: 4.1 GCF Priorities MITIGATION COST EFFECTIVENESS: Regardless of the sector, GCF should be prioritized for financing projects or programs involving cutting-edge and capital- intensive technologies. The emissions reduction actions in the forestry and land use sector are considered to have the lowest abatement cost compared to other sectors. This sector can also contribute to the achievement of the NDC target faster than other sectors. Therefore, the government can finance climate mitigation actions in the forestry and land use sector to achieve the unconditional targets using the government budget.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p43-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 43
+  },
+  "heading": "",
+  "text": "The GCF can contribute to promoting green investments that require soft-loans such as in agri- culture and downstream forest industries to reduce the pressure on standing forests. It is also essential to make sure that the interest rate coming from the soft-loan is ‘lower enough’ to make the return of the project more attractive, or at least equally attractive, than without the GCF. Given that the cost of green technology could vary by industries/sectors, it is crucial to consider varying soft-loan interest rates by industries/sectors. Stakeholders believe that the GCF can finance activities that involve cutting- edge and capital-intensive technologies through loans. When accessing grants under the GCF, priority should be given to innovative pro- jects, particularly those that can help achieve the conditional emissions reduction target. MITIGATION FINANCIAL GAP: GCF can be allocated to high priority sectors with significant (high) financing gap.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p43-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 43
+  },
+  "heading": "",
+  "text": "The energy sector is one of the sectors which requires the greatest financial allocation for achieving the NDC target. Therefore, the GCF fund can focus on financing activities in the energy sector to close the financial gap, as detailed in Table 13 below. Indonesia can promote the private sector to access soft loans from the GCF to achieve sustainable energy sufficiency. BENEFICIARIES: The private sector should be prioritized to access loans, which will be accounted for achieving the unconditional target (29%). GCF can encourage private firms to undertake green projects by subsidizing the market interest rate—thereby providing a soft-loan scheme for the firms. The extent of the funding from GCF varies by sector according to the green technological variation across industries. Financial support from the GCF in the form of loans will count toward the unconditional emissions reduction target, while grants will count toward achieving the conditional target.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p43-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 43
+  },
+  "heading": "",
+  "text": "Hence, Indonesia can focus on accessing loans for climate mitigation to prioritize the unconditional target by 2030. Private actors should be encouraged to access the GCF fund as they will have the capacity to generate revenues for loan repayment. In addition, potential grantees should consider gender and social inclusion aspects according to the GCF’s gender policy, GCF’s indigenous people policy, and GCF’s environmental and social policy.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p44-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 44
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 44 Table 14 illustrates the financial gap in each sector, which is calculated after subtracting the financial needs to achieve NDC targets and the private sector allocation under COVID-19 and business-as-usual scenarios. The “Under/Over” column identifies how much the sectoral needs are under-financed or over-financed by the private sector alone. A negative value indicates that a sector is under-funded, while a positive value indicates it as being over-funded. Both private and public sectors are responsible for closing the financing needs for the “under-funded” sectors, particularly for energy, adaptation, and waste sectors. Table 14.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p44-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 44
+  },
+  "heading": "",
+  "text": "Financial Gap in Priority Sector Use Sector Sectoral Needs* Government Budget Allocation 2020** BAU COVID-19 BAU COVID-19 Private Supply*** Under/Over 2020 - 2030 (in USD million) Mitigation Adapta- tion Energy & Transport Industry Waste AFOLU 250,000.00 64.86 13,233.86 22,208.50 82,623.54 2,880.71 0.56 3.88 154.60 113,724.62 6,830.32 784.3 14,943.95 22,577.81 76,570.20 4,598.82 528.07 10,061.68 15,201.52 -133, 394.67 6,766.02 -12,445.68 -7,109.95 -60,045.73 -170, 549.09 4,534.52 -12,701.91 -11,992.22 -67,422.02 Source: Interim Result Climate Change Fiscal Framework, MoF (processed) *Based on NDC Roadmap and initial calculation under Climate Change Fiscal Framework (processed) ** Based on 2020 Climate Budget Tagging from 18 Ministries/Institutions ***The private supply (both historical and future) maybe higher than what is indicated above, due to the exclusion of some non-categorizable cross-sectoral investments to the above table Table 15.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p44-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 44
+  },
+  "heading": "",
+  "text": "Proposed Thematic Priority for Climate Mitigation Sector Thematic Priority for the GCF GCF Result Areas Forest & Land Use • • Forest and land use Prevention of land and forest fires including reduction in the number of hotspots through peat fires controls Reduction of deforestation to prevent the conversion of natural forests to non-forests Table 15 outlines NDC priority sectors and the pro- posed thematic priorities for climate mitigation that can be financed by the GCF. The thematic priority was developed based on the list of actions identified in the NDC combined with the list of projects/programs proposed by relevant stakeholders. The proposed themes are general enough to cover many relevant activities, projects, or programs.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p45-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 45
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 45 Sector Thematic Priority for the GCF GCF Result Areas Forest & Land Use • • • • • Forest and land use Restoration of peatlands to return the function of the peat ecosystem to its previous state Rehabilitation of forest and land through planting, reforestation, or land reclamation activities Implementation of sustainable forest management in accordance with the principles of sustainable deve- lopment for social, economic, and environmental interests Restructuring of forestry sector industries including enhancing plantation development Rehabilitation of marine and coastal areas Waste • • • • • Energy access and power generation Buildings, cities, industries, and appliances Waste to energy Waste management by recycling and composting Liquid waste management Agriculture • • • • Forest and land use Implementation of sustainable commodity production Usage of low emission crops Application of climate smart cropping including water-efficient concept Utilization of manure for fertilizer and biogas Industrial Processes and Product Use (IPPU) • • • Green industry through modification of industrial processes and technology Green building Buildings, cities, industries, and appliances Energy & transportation • • • • • • Energy access and power generation Low emission transport Renewable energy Energy efficiency Biofuel in transportation Low carbon emission for public transportation",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p46-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 46
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 46 A concept note titled the Adaptation Finance Facility (AFF) has been prepared by Kemitraan. The AFF aims to increase access to adaptation financing for local civil society organizations and micro, small, and medium enterprises through four key components: (1) adaptation financing facility to access funding for local adaptation work in: (i) food and agriculture (ii) water sector (iii) ecosystems; (2) capacity building, awareness raising, and project preparation support; (3) project management and monitoring, reporting and evaluation; and (4) knowledge management and communications. The facility is expected to benefit 27,000 people directly and 110,000 indirectly. 36 CLIMATE VULNERABILITY: Vulnerable regions can be assessed based on the vulnerability index, and priority should be given to underdeveloped, remote, and frontier (3T) regions.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p46-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 46
+  },
+  "heading": "",
+  "text": "Geographically, localities in Indonesia have different capacities to adapt to climate variability and climate change. The vulnerability index, issued by KLHK (2015), is measured based on the exposure and sensitivity of villages to climate change and variability in Indonesia, as well as the capacity of villages to adapt to climate change. Additionally, the Climate Resilience Development Policy also specifies priority locations for climate resilience: Super Priority Loca- tions (High Potential Hazard with High Vulnerability and High IRBI), Top Priority Locations (High Potential Hazard with High Vulnerability or High IRBI), and Priority Locations (Locations with High Potential Hazard). Based on the mapping results for the priority sectors, 377 districts and 12 cities are considered super priority locations. It is also important to consi- der the fiscal capacity of the district and provincial governments as some provinces, such as Riau, have higher capacity than others.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p46-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 46
+  },
+  "heading": "",
+  "text": "Papua, West Papua, and Aceh have received special grants from the national government at the moment. Other regions that should also be prioritized are the under-developed, remote, and frontier regions, or known as daerah tertinggal, terdepan, dan terluar (3T). ADAPTATION The proportion of the GCF funds allocated for mitigation and adaptation activities should be equal, as suggested by the GCF. The NDA has also received project concepts for climate adaptation project. 36 The NDA is encouraging more project proposals on climate adaptation to be submitted to the GCF, particularly for priority sectors. Several considerations that can be used by the NDA to determine the priorities for climate adaptation projects are: BENEFICIARIES: The beneficiaries should include communities, local governments, and CSOs, as well as companies assisting local communities. The communities include women, indigenous people, and vulnerable groups.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p46-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 46
+  },
+  "heading": "",
+  "text": "In this respect, CSOs should be allowed to access grants for micro and/or small projects. For climate adaptation, most activities should occur at the local level to build resilient livelihoods and ecosystems, particularly for women, indigenous people, people with disabilities, and other vulnerable groups. The transformation should be manifested directly in the communities’ livelihoods (housing, infrastructure, food production). Hence, the GCF fund should also be accessible for local communities that include women groups and other vulnerable groups, local governments, and CSOs whose roles are to assist local communities and governments in making the transition to adapt to climate change and varia- bility. In particular, CSOs involved in community assistance for women farmers, women of Family Welfare Empowerment (PKK), activity-based women groups, and indigenous people. For climate adaptation projects, Indonesia should consider accessing grants from the GCF instead of loans. CSOs can also access grants under the GCF for climate mitigation actions that also have climate adaptation benefits.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p47-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 47
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 47 Four categories of institution are established based on institutional financial capacity: (1) Micro (< USD 10 million); (2) Small (USD 10-50 million); (3) Medium (USD 50-250 million); (4) Large (> USD250 million). Source: GCF Guideline document: Annex VI. Policy on fees for accreditation of the Fund. 37 BENEFICIARIES: Instead of accessing medium to large projects, 37 the CSOs can access micro and/or small projects. Small/medium enterprises and or state-owned enterprises can be encouraged to access the fund to implement projects at the subnational level, in cooperation with district governments. These entities are currently facing significant challenges in terms of resource mobilization for financing climate actions. SECTOR PRIORITIES: Indonesia can prioritize the GCF to finance climate adaptation for the four priority sectors of marine and coastal, water, health, and agriculture under the thematic priority sectors for the GCF.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p47-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 47
+  },
+  "heading": "",
+  "text": "Similar to climate mitigation, the thematic priority for climate adaptation was developed based on a technical review of government documents and a list of climate actions submitted by the stake- holders to the NDA, as shown in Table 16. Based on 2020-2024 RPJMN, Indonesia is placing Marine and Coastal, Water, Health, and Agriculture as priority sectors for adaptation.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p47-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 47
+  },
+  "heading": "",
+  "text": "ADAPTATION Sector Thematic Priority for the GCF GCF Result Areas Economic resilience Transformation the economy towards low carbon economy and builds security in food, water, and energy through: • • • • • Most vulnerable people and com- munities Health and well- being, and food and water security Climate resilience of small-scale farmers and fishers in vulnerable regions Energy security: a) utilization of organic waste for energy and gas production b) usage of Renewable energy resources in remote areas c) development of climate stress resistance crops for bioenergy d) utilization of degraded land for renewable energy Efficiency in energy and consumption pattern Sustainable plantation and agriculture Efficiency in land management • • Social and livelihoods resilience Increase the Social and livelihood resilience through: • • Public Health programs (including implementation of early warning system of infectious and non infectious diseases outbreak caused by climate change) Health and well- being, and food and water security Table 16. Proposed Thematic Priority and Project Ideas for Climate Adaptation",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p48-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 48
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 48 The GCF Secretariat provides a list of GCF investment criteria that will be used to assess the proposals submitted. The investment criteria can also help project proponents to understand the expected performance of projects and programs that will be financed by the GCF. There are six investment criteria: Impact Potential, Paradigm Shift Potential, Sustain- able Development Potential, Needs of Recipients, Country Ownership, and Efficiency and Effectiveness. In the context of Indonesia, the NDA, together with stakeholders, have agreed to use the same criteria to decide the priority projects that will later be proposed to the GCF by project proponents. Several adjustments were made to the investment criteria taking into account Indonesia’s specific situation. The adjusted criteria are only to prioritize projects by the NDA.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p48-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 48
+  },
+  "heading": "",
+  "text": "The AEs are still required to address the GCF criteria in Concept Note/Funding 4.2 GCF Investment Criteria in Indonesia’s Context 1. Impact potential The main indicators to measure the impact potential of a project or program are: a) b) Both indicators can be applied to Indonesia’s contexts with specific adjustments, including: • Climate mitigation actions: Total tons of CO 2 eq to be avoided or reduced per annum . Climate adaptation actions: Expected total number of direct and indirect beneficiaries and number of beneficiaries relative to the entire population (e.g., total lives to be saved from disruption due to climate-related disasters). Climate mitigation actions: The potential emissions reduction measured by ton CO 2 eq. Measuring the exact emissions reduction target and realization may be difficult, so the estimation or potential reduction should be sufficient for the project proponent.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p48-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 48
+  },
+  "heading": "",
+  "text": "Sector Thematic Priority for the GCF GCF Result Areas Social and livelihoods resilience • • • • • Technological innovation and community participation on health related climate change adaptation Disaster early warning system (including adaptive capacity development and broad-based public awareness campaigns) Disaster/climate resilience infrastructure Disaster preparedness program for disaster risk reduction Infrastructure and built environment Ecosystem and landscape resilience Build and protect the Ecosystem resilience through: • • • • • • Infrastructure and built environment Ecosystem and ecosystem services • • Ecosystem Restoration, conservation, including peatland management Social forestry Sustainable coastal management Fresh water management Integrated watershed management Climate resilience urban areas Proposal according to GCF standards. The agreed criteria are discussed below.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p49-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 49
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 49 • 2. Paradigm shift potential In terms of a paradigm shift, there are several indi- cators that should be considered, including: a) b) c) d) e) f) All indicators presented above are applicable in the context of Indonesia. The project proponent should meet at least one out of six indicators listed above. 3. Sustainable development potential The expected environmental, social and health, and economic co-benefits should also be highlighted in the project or program proposals, together with Climate adaptation actions: The number of households or population as beneficiaries of the project or program disaggregated by gender. Innovation: Fostering new market segments, creating new business models, and/or the development or adoption of new technologies. Potential for scaling up and replication: The multiples of initial impact size combined with supporting justification.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p49-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 49
+  },
+  "heading": "",
+  "text": "Potential for knowledge and learning: Valuable lessons learned that could be captured and shared with other individuals, projects, or institu- tions, including the knowledge and experience working with women and other vulnerable groups as elaborated in the GCF Gender Policy. Contribution to creating an enabling environment: The sustainability of outcomes and results beyond the project intervention and the arrange- ments that provide for the long-term and financially sustainable continuation of key outcomes and activities. Contribution to regulatory framework and policies. Overall contribution to climate-resilient develop- ment pathways consistent with a country’s climate change adaptation strategies and plans. the gender-responsive development impact. The indicators included in the GCF investment criteria are: a) b) c) d) All the criteria above are applicable in the context of Indonesia.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p49-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 49
+  },
+  "heading": "",
+  "text": "Specifically, for indicator (d) the coverage should also include vulnerable groups such as people with disabilities and indigenous people, instead of focusing on the gender aspect alone. Project propo- nents should meet at least one out of the four indicators listed. 4. Needs of recipients The recipients’ needs are measured based on the scale and intensity of vulnerability of the country and beneficiary groups. The GCF Secretariat proposes several indicators to measure the needs of recipients, including: a) Economic co-benefits: Total number of jobs created, foreign currency savings, and govern- ment budget deficits reduced. Social co-benefits: Improved access to education to project beneficiaries, including girls and vulnerable groups, improved regulation or cultural preservation and improved health and safety of project beneficiaries, particularly women and vulnerable groups.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p49-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 49
+  },
+  "heading": "",
+  "text": "Environmental co-benefits: Improved air and/or water quality, improved soil quality, and improved biodiversity and ecosystem services. Gender-responsive development impact: Propor- tion of men and women in jobs created including increasing women’s employment, access to economic resources, and opportunity in the decision-making process regarding socio-economic development and environmental management. Vulnerability of the country and beneficiary groups for climate adaptation actions: The scale",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p50-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 50
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 50 b) c) d) The implementation of the criteria in the context of Indonesia requires the following adjustments: • • 5. Country Ownership Country ownership is fundamental to all concept notes submitted to the GCF. Several indicators that should be considered are: a) b) c) In the context of Indonesia, the NDA and stakeholders agreed to omit Indicator (b) as the capacity to execute the project or program will be assessed directly by the GCF. On the other hand, the two other indicators are seen as very crucial for Indonesia. 6. Efficiency and Effectiveness The economic and financial analysis primarily drives the efficiency and effectiveness criteria and include two core indicators: a) b) In the case of Indonesia, stakeholders will focus on Indicator (a) when deciding on the efficiency and effectiveness of a project. Indicator (b) will be omitted, although it will later be required by the GCF in order to make the final decision on the proposals. 7.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p50-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 50
+  },
+  "heading": "",
+  "text": "Sustainability of Project or Program One specific indicator that is considered crucial for Indonesia’s context is related to the sustainability of the proposed project or program. Although this indicator seems to be implicitly included in Criteria 2 (d),stakeholders perceive this factor as very important that it deserves to stand alone. All of the above criteria and indicators are summa- rized in Table 17. Stakeholder engagement process and feedback received from CSOs and other relevant stake- holders. Estimated cost per tCO 2 eq (total investment cost/expected lifetime emissions reduction). Expected volume of finance to be leveraged as a result of the GCF’s financing, disaggregated by public and private sources and intensity of exposure to climate risks for the beneficiary country and groups. Exposure could be expressed in terms of size of population and/or social or economic assets or capital.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p50-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 50
+  },
+  "heading": "",
+  "text": "Economic and social development level of the country and affected population: The level of social and economic development (including income level) of the country and target popula- tion. Absence of alternative sources of financing: Describe the barriers that have created the lack of alternative funding sources for the project/ program. Needs for strengthening institutions and imple- mentation capacity: Describe the opportunities to strengthen institutional and implementation capacity in relevant institutions. Indicator (a) regarding vulnerability to climate change can be measured at the subnational level to show the variability of the risks and the capa- bility to adapt to the risks in each region. Indicators (d) can be omitted for the case of Indonesia as all proposals should by default lead to strengthening the institutional and implemen- tation capacity of relevant institutions for addressing climate change issues.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p50-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 50
+  },
+  "heading": "",
+  "text": "Alignment with the country’s national climate strategy and priorities as well as other existing policies. Capacity of accredited entities or executing entities to deliver the program or project.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p51-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 51
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 51 Table 17. Indonesia’s Criteria for Prioritizing Climate Actions Proposed to The GCF Criteria Value 1. Impact potential For climate mitigation For climate adaptation .... tonCO 2 Eq ....household or population as the beneficiaries of the project or program 2. Paradigm Shift a) Innovation: b) Potential for scaling-up and replication c) Potential for knowledge and learning d) Contribution to the creation of an enabling environment e) Contribution to the regulatory framework and policies f) Overall contribution to climate-resilient development pathways Scale 1 to 10 ( at least one indicator should be met ) 3. Sustainable Development Potential a) Economic co-benefits b) Social co-benefits c) Environmental co-benefits d) Gender-responsive development impact Yes or No ( at least one indicator should be met ) 4.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p51-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 51
+  },
+  "heading": "",
+  "text": "Needs of Recipients a) The vulnerability of the country and beneficiary groups for climate adaptation actions b) The economic and social development level of the country and affected population Yes or No ( at least one indicator should be met – refer to the vulnerability map of Indonesia ) 5. Country Ownership a) Coherence and alignment with the country’s national climate strategy and priorities as well as other existing policies b) Stakeholder engagement process and feedback received from civil society organizations and other relevant stakeholders Yes or No ( at least one indicator should be met ) 6. Efficiency and Effectiveness For climate mitigation For climate adaptation .... US$ per tCO 2 eq .... US$ per person beneficiary 7. Project/Program Sustainability Yes or No",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p52-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 52
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 52 Currently, there are two direct access entities in Indonesia: PT Sarana Multi Infrastruktur (PT SMI) and Kemitraan bagi Pembaruan Tata Pemerintahan (Kemitraan). PT SMI As a State-Owned Enterprise owned by the Ministry of Finance, PT SMI’s mandate is to act as a catalyst in accelerating infrastructure development in Indonesia to support SDGs achievements, respond to climate change, and maximize social and economic benefits. PT SMI implements its mandate by creating innova- tive financing products, implementing regional infra- structure acceleration programs, optimizing strategic cooperation and fundraising, and enabling accelerated infrastructure development and measurable risk management. PT SMI’s strategic areas include renewable energy, sustainable transport, waste management, energy efficiency, water, and drinking water.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p52-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 52
+  },
+  "heading": "",
+  "text": "Kemitraan Kemitraan bagi Pembaruan Tata Pemerintahan (Partnership for Governance Reform/Kemitraan) is an independent, non-profit organization with the mission to disseminate, advance, and institu- tionalize the principles of good governance in the government, civil society, and private sector to promote human rights, gender balance, and environ- mental sustainability. Kemitraan’s strategic areas include facilitating participatory social customary land mapping and aerial map (ecosystem analysis, disaster mitigation and management, land use planning and management). 4.3 National Direct Access Entities PT SMI Project Size Small Fiduciary Standards Basic, Project Management, and Loan Strategic Areas Renewable Energy, Sustainable Transport, Waste Management, Energy Efficiency, Water, and Drinking Water.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p52-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 52
+  },
+  "heading": "",
+  "text": "Environmental and Social Risk Category Category B, Intermediation 2 Project Size Micro Fiduciary Standards Basic, Project Management, and Grant Award Strategic Areas Facilitating participatory social customary land mapping and aerial map (Ecosystem Analysis, Disaster Mitigation and Management, Land Use Planning and Management) Environmental and Social Risk Category Category C, Intermediation 3 Kemitraan Figure 13. Indonesia’s National Direct Access Entities",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p53-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 53
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 53 No. Entity Name Private/Public Adaptation/Mitigation Status 1. 2. 3. 4. 5. 6. PT Sarana Multi Infrastruktur (PT SMI) Kemitraan PT Indonesia Infrastructure Financing (PT IIF) Kehati Bank Artha Graha Internasional Penabulu Public Private Public Private Private Private Adaptation; Mitigation Adaptation; Mitigation; Crosscutting Adaptation; Mitigation Mitigation; Adaptation; Crosscutting Mitigation; Crosscutting Mitigation; Adaptation; Crosscutting Accredited since 2016 Accredited since 2020 Stage I** Nominated Nominated Nominated Table 18. List of Direct Accredited Entity and Prospective Entities Seeking Accreditation with The GCF* * As of Jul 2021 **Stage 1 involves a review by the GCF Secretariat to ensure the mandate of the accreditation applicant aligns with GCF’s mandate and objectives in targeting climate finance and in a manner that can contribute to developing country programming priorities with GCF.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p53-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 53
+  },
+  "heading": "",
+  "text": "The GCF Secretariat also checks whether the accreditation applicant has provided sufficient information about the applicant’s systems, policies, procedures, and guidelines (as well as the applicant’s track record) related to safeguarding projects against financial, environmental, social, and gender risks and impacts. In addition to the two existing direct accredited entities, Indonesia is also nominating four other entities to be accredited, as shown in table 18. By 2020, four other institutions are currently being nominated as direct access entities. 1. 2. 3. 4. Bank Artha Graha Internasional is an established financial institution and one of the first movers on Sustainable Banking in Indonesia, a pilot project between WWF and OJK. Its core sectors include wastewater treatment, energy efficiency, and green infrastructure. Penabulu Foundation was founded in Jakarta in 2002 to empower Indonesia’s civil society organizations.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p53-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 53
+  },
+  "heading": "",
+  "text": "Penabulu aims to mobilize, manage, and distribute resources in any form to support the work of the civil society in Indone- sia and promote inclusive development and sustainability agenda (biodiversity conservation, sustainable agriculture, natural resources management). PT Indonesia Infrastructure Finance (PT IIF) provides infrastructure financing and advisory services to facilitate private sector investment in Indonesia’s infrastructure. The Indonesian government partly owns it along with several international shareholders (ADB, IFC, KFW, SMBC). Kehati , one of the most prominent non- governmental organizations in Indonesia, was established in 1994. It focuses on finding innova- tive ways to conserve, manage, and utilize Indonesia’s biodiversity in a sustainable way. Kehati has excellent grassroots networks across Indonesia.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p54-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 54
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 54 Considering the rapid advancement of ESG agendas in the banking sector (as shown by the issuance of Sustainable Finance regulations), it is time to align Indonesia’s climate priorities with broader financing mechanisms. Encouraging financial institutions and banks to develop long-term and innovative green products, particularly in green infrastructure and large-scale renewable energy projects, is critical to achieving Indonesia’s climate targets. Large-scale mitigation and adaptation projects require long-term financing and private sector involvement. As inter- mediaries, banks have more flexibility to offer finan- cing schemes for various green sectors than NGOs or private institutions with more specific mandates or expertise on certain sectors only. Typically, banks are also better equipped to price risks and estimate returns more accurately of those companies applying for green financial products.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p54-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 54
+  },
+  "heading": "",
+  "text": "Indonesian state-owned banks are particularly well- positioned for nomination as GCF’s direct access entities. The two largest state-owned banks are pioneers in financing sustainable business sectors. For example, in 2019, Bank Rakyat Indonesia (BRI) issued Indonesia’s first Sustainability Bond worth USD 500 million, which was oversubscribed more than eight times. Fifty seven point three percent of its total loans were disbursed for sustainable business sectors. Bank Mandiri, established in 1998, is active in the palm oil and crude palm oil sector. It has been encouraging debtors in this sector to achieve Indonesian Sustainable Palm Oil System (ISPO) certification. As of December 31, 2019, the total funding of Bank Mandiri in sustainable business sectors reached IDR 148 trillion, or 20 % of its total loans. Bank Tabungan Negara (BTN) is the leading financial provider for affordable housing in Indonesia.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p54-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 54
+  },
+  "heading": "",
+  "text": "Going forward, the NDA will play a more prominent role in preparing, facilitating, and strengthening the capacity of nominated and accredited direct access entities (including providing pre- and post- accreditation capacity building, upgrading their accreditation scope, and developing their capacity throughout the project cycle).",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p55-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 55
+  },
+  "heading": "",
+  "text": "Policy, Strategy, Planning and Institutional Needs Chapter 5",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p56-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 56
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 56 The Country Program is a living document and will be revisited regularly to ensure its relevance to the latest developments in Indonesia, including updated climate change adaptation and mitigation priorities, progress in implementation of GCF readiness programs, development of project pipelines, and other climate finance developments. In this document, the national government’s commitment on climate change is clear. Indonesia’s readiness to access international climate finance including GCF has significantly improved. However, gaps remain and need to be addressed. To achieve Indonesia’s NDC targets, there is a need to improve the country’s readiness to access interna- tional climate finance.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p56-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 56
+  },
+  "heading": "",
+  "text": "From 2018 to 2019, the Readi- ness and Preparatory Support Program (RPSP-1) funded by the GCF has laid the foundation and institutional arrangements such as the establishment of the NDA Secretariat, the development of NDA operational guidelines and provision of technical assistance to nominated Direct Access Entities (DAEs). From 2020 to 2021, the second RPSP (RPSP-2) has begun to reach a wider range of stake- holders and improve their awareness of the GCF and its funding potential. Despite these early efforts, Indonesia’s capacity to access international climate finance is still lacking in some key areas. Remaining challenges include: (1) balancing the needs of NDC priority sector areas to be adequately financed, (2) promoting country ownership in a large and multi-level governance setting, and (3) catalyzing private investment in the country’s climate actions.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p56-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 56
+  },
+  "heading": "",
+  "text": "The commitments on the approved GCF projects and programs have improved the development of project pipelines in some of the NDC priority sectors, particu- larly energy and forestry, while the other sectors tend to be “overlooked”. In this case, funding from the GCF can be complementary when it is channelled to the “overlooked” areas. Stakeholders should improve their understanding on the robust climate project to realize a fair distribution of climate finance across the NDC priority sector and leverage private sector investment. This includes understanding the impor- tance of mainstreaming climate impact vulnerability in policy making and the business potential of the sector. This understanding will be a foundation for a further need for improvement such as of the capa- city of stakeholders on working on the “overlooked” areas. Institutional capacity and responsibilities to respond to climate change in Indonesia is distributed across key government institutions.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p56-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 56
+  },
+  "heading": "",
+  "text": "This is reflected from the climate budget tagging and several information sharing platforms established and operated by different Ministries and Agencies for their respective sectors. The Ministry of Finance has a role in climate budgeting and financing as well as investment, brings synergy between international and public financial resources for climate actions, and plays a role as the NDA for the GCF. However, there is still a lot of engagement required in order to facilitate climate financing in the country. Effective stakeholder coordination in Indonesia requires significant institu- tional capacity and political support to manage the network of key stakeholders and to increase the capacity of stakeholders, including the Direct Access Entities (DAEs) and sub-national actors. Domestic public finance for mitigation and adaptation actions in Indonesia has been long insufficient, and the COVID-19 pandemic has posed additional 5. Policy, Strategy, Planning and Institutional Needs",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p57-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 57
+  },
+  "heading": "",
+  "text": "Indonesia’s GCF Country Programme Document 57 challenges. The involvement of the private sector in Indonesia’s climate actions is still limited, slowly progressing, and concentrated in certain sub-sectors. Considering the size of the GCF as compared to the financial need to implement climate actions, the GCF should be used to leverage more resources to close the financial gap for climate action imple- mentation. On climate mitigation, the GCF should be used as the catalyst for transforming financial and capital markets to finance low carbon projects/pro- grams. On climate adaptation, the focus should be given to vulnerable regions where micro and small grants should be made available for marginal commu- nities to adapt to climate variabilities and climate change, particularly in the priority sectors of water, agriculture, health, and marine and coastal.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p57-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 57
+  },
+  "heading": "",
+  "text": "In determining priorities for Indonesia, some empha- sis needs to be given to priority sectors of Indonesia’s Country Program which have been identified to have significant financing gaps. Based on the Readiness Needs Assessment, the identified priorities are con- sistent with the GCF strategic priorities: scaled-up funding with equal balance between mitigation and adaptation, strengthening country ownership pro- gramming, and catalyzing private sector finance at scale through blended finance, as listed in Table 19 below.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p57-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 57
+  },
+  "heading": "",
+  "text": "To improve distribution of funding across climate priority sectors Strengthen capacity of national and sub-national government for project development and for the collection of climate finance data for planning and budgeting Improve climate coordination in climate finance Identify strategic and effective approaches to develop pipeline investment for priority sectors • • • To improve capacity and project pipeline of DAEs Improve the capacity of DAEs to develop concept notes and proposals Develop programmatic approach concept notes and proposals from DAEs • • To improve private climate investment Engage with the private sector to discuss blended financing arrangement in the priority sectors Coordinate blended financed stakeholders Strengthen the linkage between de-risking instruments and project pipeline to attract more private sector investments • • • Table 19. Priorities for Indonesia Source: Readiness Needs Assessment, MoF, 2021",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p59-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 59
+  },
+  "heading": "",
+  "text": "1 Annex 1: GCF Country Program Pipeline N o Project/ Program Title (D)AE Status Sector Sector Areas matching with Indonesia CPD Type of GCF Proposal ** PPF Requir ed Country ownership* ** Estimat ed GCF Financin g Estimate d Co- financing E&S Risk Category Estimated Submission 2021 2022 2023 2024 1 Green Hybrid Minigrid for Remote Areas in Indonesia PT. SMI Concept Note in revision Mitigatio n Energy FP N/A Targeting priority area: Maluku USD 16.8 million USD 4.3 million Category B X* 2 PT SMI Renewable Energy Financing Facility PT.SMI Concept Note in developm ent Cross- cutting Energy FP Yes Targeting priority area: multiple locations USD 250 millio in discussio n Category B X 3 Advancing Adaptation Finance Facility (AFF) to Highly Vulnerable Communities in Central and Eastern Indonesia Kemitr aan Concept Note available Adaptati on Economic resilience; Social and Livelihood resilience;",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p59-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 59
+  },
+  "heading": "",
+  "text": "Ecosystem and landscape resilience SAP Yes Targeting priority sectors: Food & Water Security, Health, Ecosystem USD 10 million N/A Category C X 4 Local Food Diversification Program for Climate Change Adaptation in East Nusa Tenggara, Indonesia Kemitr aan Concept Note available Adaptati on Economic resilience; Ecosystem and landscape resilience SAP Yes Targeting priority sector: Food security USD 7.5 million N/A Category C X 5 Community - based adaptation approach fostering resilient landscape Kemitr aan Concept Note available Adaptati on Forestry and Landuse; Ecosystem and landscape resilience SAP Yes Targeting priority area & sector: Ecosystem USD 9.6 million N/A Category C X",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p60-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 60
+  },
+  "heading": "",
+  "text": "2 management in Kerinci Seblat, Sumatra 6 Reducing Emissions Through Strategic Agriculture Zone in Gorontalo District: Transforming Food Crops, Coconut and Livestock Industries Kemitr aan Concept Note submitted Cross- cutting Energy; Forestry and land use; Economic resilience; Ecosystem and landscape resilience SAP Yes Targeting priority sector: Food security USD 9.9 million USD 1.6 million Category C X 7 Climate Adaptive Livelihood for Ecosystem and Socio-Economic Resilience (CALEER) Kemitr aan Concept Note available Adaptati on Economic resilience; Social and Livelihood resilience; Ecosystem and landscape resilience FP Yes Targeting priority area & sector: water security USD 7.9 million Under discussio n Category C X 8 Mitigating Green House Gas Emissions in Indonesia through Sustainable Forest and Landscape Management Conser vation Interna tional NOL published.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p60-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 60
+  },
+  "heading": "",
+  "text": "PPF submitted Mitigatio n Forestry and Land-use FP Yes Targeting priority area: North Sumatra and West Papua USD 37 million USD 3 million Category B X 9 Land-based mitigation and adaptation through a Jurisdictional Approach in West Kalimantan GIZ FP in developm ent Cross- cutting Forestry and Land-use; Ecosystem and landscape resilience FP No Targeting priority area: West Kalimantan USD 55 million USD 70 million Category B X 10 Berbak Peatlands: Catalyzing Financing and Investment for Sustaining Carbon IUCN Concept Note in revision Cross- cutting Forestry and Land-use; Ecosystem and landscape resilience FP Yes Targeting priority sector & area USD 55.75 million USD 20.75 million Category B X*",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p61-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 61
+  },
+  "heading": "",
+  "text": "3 in Peat Ecosystems in Indonesia 11 Collaborative R&DB Programme for Promoting the Innovation of Climate Technopreneursh ip, Multicountries Program KDB NOL published. FP in revision Cross- cutting All FP Yes N/A USD 112.75 million USD 113.25 million Category B X 12 Developing Climate Resilience in Small- scale Farming Systems in NTT UNDP NOL published Adaptati on Economic resilience;",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p61-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 61
+  },
+  "heading": "",
+  "text": "Social and Livelihood resilience FP No Targeting priority sectors & area: food security, NTT USD 23.5 million USD 61 million Category B 13 Managing Indonesia Watersheds and Riparian Ecosystems for Water Resource Resilience UNEP Concept Note in developm ent Adaptati on Economic resilience, Social and Livelihood resilience, Ecosystem and landscape resilience FP Yes Targeting priority sector: food and water security USD 31.5 million USD 10 million Category B X* 14 Renewstable Sumba Power Plant BNP Paribas Concept Note available Mitigatio n Energy FP N/A Targetting priority locations & sector: RE (hydrogen) USD 20.15 million USD 47 million Category B X 15 Green Peatland Economy Program FAO Concept note available Cross- cutting Forestry and Land use; Economic Resilience FP No Targeting priority sector USD 28.5 million USD 6 million Category B X",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p62-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 62
+  },
+  "heading": "",
+  "text": "4 16 Coral Reefs Resiliency Program WWF Concept Note in developm ent Adaptati on Economic resilience, Social and Livelihood resilience, Ecosystem and landscape resilience FP N/A Targetting priority sector: coastal USD 50 million USD 113 million Category B X 17 Strengthening Climate Resilience of the Indonesia Health System Save the Childre n Concept Note in developm ent Adaptati on Health SAP N/A Targetting priority sector: health USD 25 million USD 2.5 million Category C X 18 Catalysing the development of the seaweed value chain in Indonesia for climate action UNIDO Project ideas in developm ent Cross- cutting In discussion FP Yes In discussion In discussi on In discussi on In discussion X *Target for PPF submission ** Response to a GCF Request for Proposals such as Enhanced Direct Access (EDA), REDD+ , Simplified Approval Process proposals (SAP), or regular Funding Proposal (FP) ***Targeting the priority areas and/or the most vulnerable locations/beneficiaries based on 2020– 2024 RPJMN, NDC roadmap, NAPs",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p63-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 63
+  },
+  "heading": "",
+  "text": "5 Annex 2: GCF Readiness Request Readiness Request Description Estimated GCF Financing (USD) Estimated CO- Financing (USD) Delivery Partner Estimated Submission 2021 2022 2023 2024 Indonesia GCF Readiness III: Enhancing Indonesia’s access to international public finance and private investments for climate priority sectors The long-term goal of this project is for Indonesia to be ready to mobilize international public finance and private sector investment to close the climate finance gap for all priority sectors. The proposed project will build on and complement the achievements of previous Readiness projects by addressing the above-mentioned challenges through three workstreams: 1) Improve the distribution of funding across NDC priority sectors, 2) Improve DAEs’ capacity and project pipeline, 3) Increase private climate investments.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p63-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 63
+  },
+  "heading": "",
+  "text": "2,501,017 GGGI X Annex 3: Indonesia “No-Objection Letters/NOL” Project/Program List No Date Project Name Accredited Entity GCF Financing Co-Financing Type Status Sector 1 June 2018 Developing Climate Resilient and Eco-friendly Tourism at Lake Toba PT SMI $ 1,144,000 - PPF Rejected Cross-cutting 2 June 2018 Bus Rapid Transit Development in Semarang PT SMI $ 788,000 - PPF Approved by GCF Board Mitigation",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p64-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 64
+  },
+  "heading": "",
+  "text": "6 3 September 2018 Climate Investor One (multi countries) FMO $ 100,000,000 $ 721,700,000 FP Approved by GCF Board Mitigation 4 June 2018 Building Climate Resilient Coastal Communities and Ecosystems in Asia IUCN $ 77,893,000 - FP Rejected Cross-cutting 5 June 2018 Geothermal Resource Risk Mitigation (GREM) World Bank $ 100,000,000 $ 475,000,000 FP Approved by GCF Board Mitigation 6 October 2019 Sustainable Wave Energy in Nusa Penida Island, Indonesia PT SMI $ 1,164,775 $ 100,000 PPF Pending (potentially withdrawn) Mitigation 7 January 2020 Indonesia’s REDD-plus Results- Based Payment (RBP) for Results Period 2014– 2017 UNDP $ 100,000,000 - FP Approved by GCF Board Mitigation 8 May 2020 Global Sub national Climate Fund/SnCF (multi countries) Pegasus Capital & IUCN $ 150,000,000 $ 600,000,000 FP Approved by GCF Board Mitigation 9 September 2020 Mitigating Green House Gas Emissions in Indonesia through Sustainable Forest and Landscape Management Conservation International $ 549,126 $ 57,",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p64-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 64
+  },
+  "heading": "",
+  "text": "843 PPF Pending Mitigation 10 October 2020 ASEAN Catalytic Green Finance Facility/ACGF (multi countries) ADB $ 350,000,000 - FP Approved by GCF Board Mitigation 11 November 2020 Program of Energy Efficiency in Building (PEEB) Cool (multi countries) AFD $ 400,000,000 $ 1,815,000,000 FP Pending Mitigation 12 December 2020 Sustainable Renewables Risk Mitigation Initiative/SRMI (multi countries) World Bank $ 400,000.000 $ 2,572,000,000 FP Pending Mitigation 13 January 2021 Collaborative R&DB Program for Promoting the Innovation of Climate Technopreneurship (multi countries) KDB $ 60,000,000 $ 60,000,000 PPF Approved by GCF Board Cross-cutting 14 April 2021 Community Resilience Partnership Program (multi countries) ADB $ 150,000,000 $ 750,000,000 FP Pending Adaptation",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p65-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 65
+  },
+  "heading": "",
+  "text": "7 15 June 2021 E-Mobility Program - Multi C ountries Program ADB $ 255,000,000 $ 714,000,000 FP Pending Mitigation 16 August 2021 Industrial Energy Efficiency KDB $ 105,000,000 $ 142,700,000 FP Approved by GCF Board Mitigation 17 October 2021 Global Fund for Coral Reefs Pegasus Capital $ 125,000,000 $ 375,000,000 FP Approved by GCF Board Adaptation 18 October 2021 Green Guarantee Company (GGC) MUFG PPF Approved by GCF Board Cross-cutting 19 October 2021 Smallholder Farmer NTT UNDP FP Pending Adaptation 20 March 2022 CALEER Kemitraan PPF Pending Adaptation 21 March 2022 Green Guarantee Company (GGC) MUFG $ 40,500,000 $ 322,500,000 FP Approved by GCF Board Cross-cutting 22 March 2022 Food Diversification NTT Kemitraan PPF Pending Adaptation 23 April 2022 Climate Investor Two (CI2) FMO $ 145,000,000 $ 735,000,000 FP Approved by GCF Board Cross-cutting 24 May 2022 &Green Fund FMO FP Pending Cross-cutting 25 June 2022 YRE Gorontalo Kemitraan PPF Pending Cross-cutting 26 July 2022 Project GAIA MUFG FP Pending Cross-cutting 27 October 2022 Blue Halo S Conservation International PPF Approved by GCF Board Cross-cutting",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p66-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 66
+  },
+  "heading": "",
+  "text": "8 Annex 4: Consultation Process No Time Activity Participants Description 1 30-Jan-19 Kick off meeting: Multi- Stakeholder Forum on National Program within the GCF Framework for Inclusive Climate Change Funding Agence Française De Développement (AFD) Arbeiter Samariter Bund (ASB) Asosiasi Energi Surya Indonesia (AESI) Asosiasi Industri dan Pelaku Pengembangan Energi Baru Terbarukan Indonesia (ASIPEBTI) Asosiasi Pemerintah Kabupaten Seluruh Indonesia (APEKSI) Badan Pengembangan Infrastruktur Wilayah (BPIW) - Ministry of Public Works Bandung Institute of Technology ( Institut Teknologi Bandung ;",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p66-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 66
+  },
+  "heading": "",
+  "text": "ITB) Bank Artha Graha Indonesia Bank Central Asia Bank Mandiri Bank Muamalat Bank Pembangunan Daerah Jawa Barat dan Banten Center for Climate Change and Multilateral Policy - Ministry of Finance Center for Climate Change ITB Center for Sustainable Transportation Development - Ministry of Transportation Conservation International (CI) Departemen Internasional - Indonesia Financial Services Authority (OJK) Directorate General of Climate Change - Ministry of Environment and Forestry Directorate General of New Renewable Energy and Energy Conservation - Ministry of Energy and Mineral Resources Directorate of Adaptation - Ministry of Environment and Forestry Directorate of GHG Inventory and MRV - Ministry of Environment and Forestry Directorate of Mobilization of Sectoral and Regional Resources - Ministry of Environment and Forestry Direktorat Adaptasi Perubahan Iklim (API) - Ministry of Environment and Forestry Direktorat Jenderal Pengelolaan Pembiayaan dan R i siko (DJPPR) - Two main agenda of the meeting were: (i) public dialog between ministries and non-governmental institutions and (ii) focus group discussion with stakeholders on climate change.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p66-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 66
+  },
+  "heading": "",
+  "text": "The public dialog aimed (i) to disseminate information about the GCF, (ii) to obtain input from relevant ministries and governmental institution regarding the priorities on climate change mitigation and adaptation program or project, and (iii) to explain and obtain input on the upcoming process of revising the Country Program Document of the GCF. The goal of the focus group discussion was to gather input from stakeholders, including women, people with disabilities, and indigenous communities regarding inclusive natural resources management programs so that the funding benefit could be easily accessed by the public .",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p67-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 67
+  },
+  "heading": "",
+  "text": "9 Ministry of Finance Direktorat Jenderal Pengelolaan Ruang Laut - Ministry of Maritime Affairs and Fisheries Fiscal Policy Agency - Ministry of Finance Global Green Growth Institute (GGGI) Global Water Partnership Southeast Asia (GWP-SEA) Himpunan Wanita Disabilitas Indonesia (HWDI) Hivos Southeast Asia Hutan Kemasyarakatan (HKm) Mandiri Kalibiru Yogyakarta Indonesia Agency of Agricultural Research and Development - Ministry of Agriculture Indonesia Chamber of Commerce and Industry Indonesia Clean Energy Development II (ICED II) - USAID Indonesia Indonesia Climate Change Trust Fund - Indonesia Ministry of National Development Planning Indonesia Ministry of National Development Planning Indonesia Red Cross Society (IFRC) Indonesia Renewable Energy Society (Masyarakat Energi Terbarukan Indonesia/METI) Inovasi Bumi (INOBU) Institute for Essential Services Reform (IESR) International Fund for Agricultural Development (IFAD) Kantor Utusan Khusus Presiden untuk Pengendalian Perubahan Iklim Kemitraan Kiroyan Partners Landscape Indonesia Lingkar Temu Kabupaten Lestari (LTKL) Ministry of Agriculture Ministry of Industry Ministry of Internal Affairs Ministry of Public Works Mitra Aksi Foundation National Institute of Public Administration Indonesia (LAN) Penabulu Foundation Presidential Staff Office PT 3GT Servis Indonesia PT Adhi Karya (Persero) Tbk.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p68-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 68
+  },
+  "heading": "",
+  "text": "Sawit Nagan Raya Makmur Resource Management Development and Consultant (REMDEC SWAPRAKARSA) Rumah Energi Solidaritas Perempuan The Samdhana Institute United Nations Development Programme (UNDP) Wahana Lingkungan Hidup Indonesia (WALHI) World Bank World Wildlife Fund (WWF) Yayasan Pemberdayaan Perempuan Kepala Keluarga (PEKKA) 2 4-Apr-19 Focus Group Discussion: Method of Prioritization on Green Climate Fund Program Badan Pengembangan Infrastruktur Wilayah (BPIW) - Ministry of Public Works Center for Climate Change and Multilateral Policy - Ministry of Finance Directorate General of New Renewable Energy and Energy Conservation - Ministry of Energy and Mineral Resources Direktorat Kehutanan dan Konservasi Sumber Daya Air - Indonesia Ministry of National Development Planning Direktorat Pengembangan Penyehatan Lingkungan Permukiman Cipta Karya - Ministry of Public Works Global Green Growth Institute (GGGI) Inovasi Bumi (INOBU) Ministry of Industry Presisi Indonesia The focus group discussion aimed: (i) to discuss methods of program/project prioritization based on GCF criteria; and (ii) to update mitigation and adaptation programs that are potentially proposed as GCF’ s funded project.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p68-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 68
+  },
+  "heading": "",
+  "text": "The FGD was intended to compile climate change programs or projects from ministries or governmental institutions in the template provided by the NDA GCF. 25-Apr-19 One on one interview with Ministry of Transportation Center for Sustainable Transportation Development - Ministry of Transportation Fiscal Policy Agency - Ministry of Finance The interview aimed to gather input regarding the priority project for GCF and how the GCF should be best used given the existing climate finance in Indonesia. The directorate conveyed that they needed additional time to discuss the priority project internally. 26-Apr-19 One on one interview with Ministry of Public Works Badan Pengembangan Infrastruktur Wilayah (BPIW) - Ministry of Public Works Fiscal Policy Agency - Ministry of Finance Kiroyan Partners The interview aimed to discuss communication strategy within NDA GCF and to coordinate potential programs or projects from the Ministry of Public Works to Country Program NDA GCF.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p68-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 68
+  },
+  "heading": "",
+  "text": "The ministry would coordinate internally and the interview attendees (Kepala Pusat Perencanaan Infrastruktur PUPR, tim pelaksana MAPI, dan PRB PUPR) will be the PIC for the climate c hange project in the ministry.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p69-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 69
+  },
+  "heading": "",
+  "text": "11 2-May-19 One-on-one interview with the Ministry of Environment and Forestry Director for Resource Mobilization for Climate Change, Ministry of Environment and Forestry The interview gathered the perspectives of the Ministry, particularly the Directorate General of Climate Change on climate priorities that should be financed by the GCF.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p69-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 69
+  },
+  "heading": "",
+  "text": "3 3-May-19 NDA GCF Indonesia's Routine Coordination Meeting with National Accredited Entities (AE), Prospective National AE, and International AE that have Activities in Indonesia Conservation International (CI) Fiscal Policy Agency - Ministry of Finance Food and Agricultural Organization (FAO) Global Green Growth Institute (GGGI) Indonesia Infrastructure Finance (IIF) International Fund for Agricultural Development (IFAD) Japan International Cooperation Agency (JICA) Kemitraan Presisi Indonesia PT Sarana Multi Infrastruktur (Persero) Swisscontact Indonesia United Nations Development Programme (UNDP) World Wildlife Fund (WWF) The routine coordination meeting was conducted as part of regular consultation to share information and experience between NDA- GCF Secretariat Indonesia, national AE, prospective national AE, and international AE.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p69-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 69
+  },
+  "heading": "",
+  "text": "The meeting was also meant to evaluate GCF project or program progress which are both planned and/or executed by national AE, prospective national AE, and international AE. Finally the meeting also aimed to disseminate information regarding GCF funding opportunity, accreditation mechanism, and accreditation benefit to prospective AE. 4 17-May-19 One on one interview with Ministry of Energy and Mineral Resources Directorate General of New Renewable Energy and Energy Conservation - Ministry of Energy and Mineral Resources Global Green Growth Institute (GGGI) Presisi Indonesia The interview was conducted to gather information about the climate change program or project which are potentially funded by GCF.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p69-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 69
+  },
+  "heading": "",
+  "text": "5 8-Aug-19 FGD CPD GCF Badan Pengembangan Infrastruktur Wilayah (BPIW) - Ministry of Public Works Bank Pembangunan Daerah Jawa Barat dan Banten Conservation International Directorate General of New Renewable Energy and Energy Conservation - Ministry of Energy and Mineral Resources Direktorat Jenderal Pengelolaan Pembiayaan dan Ri siko (DJPPR) - Ministry of Finance Direktorat Jenderal Pengendalian Perubahan Iklim - Ministry of Environment and Forestry ENGIE Indonesia Fiscal Policy Agency - Ministry of Finance Indonesia Climate Change Trust Fund - Indonesia Ministry of National Development Planning Indonesia Infrastructure Finance (IIF) Indonesia Ministry of National Development Planning The FGD aimed to gather input for the CPD draft and to review the list of compiled priority projects. The output of the FGD was input from ministries and non- governmental institutions on the thematic priorities for climate mitigation and adaptation. The input were included in the existing draft.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p70-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 70
+  },
+  "heading": "",
+  "text": "12 Indonesia Palm Oil Association (IPOA) - Pusat Penelitian Kelapa Sawit (PPKS) Inovasi Bumi (INOBU) International Finance Corporation (IFC) International Fund for Agricultural Development (IFAD) Kantor Utusan Khusus Presiden untuk Pengendalian Perubahan Iklim Kemitraan Ministry of Agriculture Ministry of Health Ministry of Industry Ministry of Maritime Affairs and Fisheries Ministry of Transportation Mitra Aksi Foundation Penabulu Foundation Presisi Indonesia PT Sarana Multi Infrastruktur (Persero) Pusat Kebijakan Ekonomi Makro - Ministry of Finance Rumah Energi Solidaritas Perempuan The Committee for Acceleration of Priority Infrastructure Delivery The National Disaster Management Agency (BNPB) Tropical Landscape Finance Facility (TLFF) United Nations Development Programme (UNDP) Wahana Lingkungan Hidup Indonesia (WALHI) World Bank World Wildlife Fund (WWF) Yayasan Keanekaragaman Hayati Indonesia (KEHATI) 6 26 June 2020 Webinar on ““Accessing the Green Climate Fund in Indonesia” Ministry of Finance, Ministry of Agriculture, Ministry of Internal Affairs, Ministry of Transportation, Indonesian Environment Fund (BPDLH), PT Sarana Multi Infrastruktur (PT.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p70-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 70
+  },
+  "heading": "",
+  "text": "SMI), ICCTF, the Green Climate Fund (GCF), GGGI, Badan Pemeriksa Keuangan (BPK), LIPI, MoEF, BPS, BMKG, Worldbank, GIZ, BNI, Bank OCBC NISP , Bank Mandiri, UNICEF, Save the Children, IFC, Mercy Corps Indonesia, SNV Indonesia, KKI Warsi, Tenure Facility, Ford Foundation, Kemitraan, PT Sucofindo, WCS, Yayasan Kehati, UNEP, Hivos, UNDP, Yayasan Konservasi Alam Nusantara , British Embassy, Coaction Indonesia, ICBC (Indonesia China Business Council), KfW, Embassy of the Kingdom of the Netherlands, Indonesia Business Council for Sustainable Development , Provincial Governments, Universities One of the objectives of the event was to i nform stakeholders on the national priorities under the CPD (ver 01).",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p71-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 71
+  },
+  "heading": "",
+  "text": "13 7 10 Septembe r 2020 Coordination meeting with AEs MoF, IFAD, BNP Paribas, IIF, GIZ, IUCN, FAO, JICA, UNEP, PT SMI, Conservation International, ADB, UNDP, Kemitraan, WFP, Save the Children, GGGI One of the objectives of the event was to discuss how AEs can contribute in the implementation of the national strategies as outlined in the CPD (ver 01). 8 29 April 2021 Coordination meeting with AEs MoF, UNEP, PT SMI, Conservation International, Worldbank, KDB, ADB, GIZ, IUCN, UNDP, Kemitraan, WFP, FAO, Save the Children, GGGI The event aimed to inform the (D)AEs on the CPD updates (ver 02) and to update the status and progress of (D)AEs’ GCF Project Pipelines. 9 6 May 2021 Internal meeting on project pipeline discussion for forestry sector MoEF, MoF, GGGI The event aims to discuss the prioritization of existing pipelines in the forestry sector.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p71-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 71
+  },
+  "heading": "",
+  "text": "10 June-July 2021 Pre-event Sectoral Workshop and Sectoral Consultation workshops Ministry of Public Works Ministry of Transportation Ministry of Environment and Forestry Ministry of Energy and Mineral Resources Ministry of Maritime Affairs and Fisheries Ministry of Finance Global Green Growth Institute (GGGI) Ministry of Agriculture Indonesia Ministry of National Development Planning Ministry of Industry Ministry of Internal Affairs Ministry of Public Works Ministry of Health Ministry of Agrarian Affairs and Spatial Planning Ministry of Social Affairs Meteorology Climatology and Geophysics Council National Board for Disaster Management Geospatial Information Agency The event aimed to share information on the updated CPD, provide input on Project Prioritization for GCF project pipeline resulting from the shortlisted project ideas from the 2 nd Call for Project Concept Note, and discuss ways to enhance climate finance implementation in Indonesia.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p72-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 72
+  },
+  "heading": "",
+  "text": "14 Annex 5: Ministerial Strategic Plans The Ministry of Environment and Forestry (KLHK) According to the five-year strategic plan of the Ministry of Environment and Forestry (Renstra KLHK 2020– 2024), the two primary climate-related strategic targets include: (i) Improving the environmental and forest quality that is responsive to climate change, and (ii) Optimal utilization of forests and other resources in accordance with the environmental carrying capacity.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p72-2",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 72
+  },
+  "heading": "",
+  "text": "Specific programs related to climate change under the DG of Climate Change within the ministry include the following: Adaptation ● Preparing data and information on climate change vulnerability/risks, and recommendations for climate change adaptation strategies ● Encouraging the development of climate-resilient villages and expanding the scope of the Climate Village Program (ProKlim) to all districts/municipalities in each province ● Developing SIDIK (Vulnerability Index Data Information System), which is integrated with climate data and vulnerability data for priority sectors ● Monitoring the implementation of NDC and national adaptation plan Mitigation ● Preparing climate change mitigation policy tools to achieve NDC targets and REDD+ implementation ● Providing GHG data inventory in key sectors, including registering, monitoring, verifying, and reporting mitigation actions at the national and sub-national levels ● Effective prevention and management of forest fires ● Developing polic",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p72-3",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 72
+  },
+  "heading": "",
+  "text": "ies to mobilize climate financing (including incentive and financing schemes) and preparing Indonesia’s position in international climate negotiations The Ministry of Energy and Mineral Resources (Kementrian ESDM) In the energy sector, the strategic plan of the Ministry of Energy and Mineral Resources (Renstra ESDM 2020-2024) includes the following climate-related targets: Increased national energy independence and resilience ● Utilization of renewable energy to fulfill energy needs ● Development of renewable energy potential by providing fiscal incentives to the renewable industry Increased services for geological disaster mitigation ● Monitoring and mapping geological disasters ● Providing technical recommendations to mitigate geological disasters The Ministry of Industry (Kemenperin) The Ministry of Industry’s (Renstra Kemenperin 2020–2024) policy directions on climate change are clustered around the development of green industries.",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p72-4",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 72
+  },
+  "heading": "",
+  "text": "The scope of the green industry initiative includes : ● Developing standards for green industries ● Strengthening infrastructure for green industries",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p73-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 73
+  },
+  "heading": "",
+  "text": "15 ● Providing fiscal and non-fiscal incentives for green industries ● Capacity building to improve human resources’ competence and skill in green industries ● Encouraging efficient use of resources in green industries (raw materials, energy, and water) and controlling their environmental impacts ● Promoting industrial competitiveness through development of green industries The Ministry of Agriculture (Kementan) The five-year strategic plan of the Ministry of Agriculture (Renstra Kementan 2020– 2024) outlines the following climate-related strategies: Maintaining national food resilience and sovereignty ● Increasing agricultural production and productivity ● Improving pest control and mitigation and adaptation measures in this sector Maintaining the sustainability of agricultural resources ● Supporting green fuel development using palm oil (accelerating, replanting, implementation of good agricultural practices) -",
+  "language": "en"
+ },
+ {
+  "id": "id-gcf-country-programme-v2#p74-1",
+  "source": "id-gcf-country-programme-v2",
+  "locator": {
+   "page": 74
+  },
+  "heading": "",
+  "text": "NDA-GCF Indonesia Secretariate Fiscal Policy Agency Ministry of Finance, Republic of Indonesia R.M. Notohamiprodjo Building Jl. Dr Wahidin Raya No. 1 Jakarta 10710 Phone: (+62)21 3483 1678 E-mail: [email removed] Website: https://fiskal.kemenkeu.go.id/nda_gcf/en",
+  "language": "en"
+ }
+]
