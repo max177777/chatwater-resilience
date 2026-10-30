@@ -408,7 +408,7 @@
     const lib = META.library;
     if (!lib) return '';
     if (!lib.loaded) return `<div class="notice small warn" data-evidence-notice="missing"><b>${esc(t('evidence_title'))}</b> ${esc(t('evidence_body_missing'))}</div>`;
-    return `<div class="notice small" data-evidence-notice="library" data-library-build="${esc(lib.build_id || '')}">${esc(t('evidence_body_library').replace('{n}', lib.sources).replace('{build}', t('diagnostics')))}<details><summary>${esc(t('diagnostics'))}</summary>${esc(lib.build_id||'–')}</details></div>`;
+    return `<div class="notice small" data-evidence-notice="library" data-library-build="${esc(lib.build_id || '')}">${esc(t('evidence_body_open').replace('{n}', lib.sources))}</div>`;
   }
   const genErrorNotice = what => state.ui.genError?.what === what
     ? `<div class="notice error" data-gen-error="${what}"><b>${esc(t('gen_failed_' + what))}</b> ${esc(state.ui.genError.message)}<br>${esc(t('gen_failed_kept'))}
