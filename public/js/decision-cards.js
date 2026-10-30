@@ -9,10 +9,16 @@
  * What an action addresses and its emission classification come from action-sources.js (AS).
  */
 (function (root, factory) {
-  if (typeof module === 'object' && module.exports) module.exports = factory(require('./cw-core'), require('./action-sources'));
-  else root.DC = factory(root.CW, root.AS);
-})(typeof self !== 'undefined' ? self : this, function (CW, AS) {
+  if (typeof module === 'object' && module.exports) module.exports = factory(require('./cw-core'), require('./action-sources'), require('./support-docs'));
+  else root.DC = factory(root.CW, root.AS, root.SD);
+})(typeof self !== 'undefined' ? self : this, function (CW, AS, SD) {
   const { needsConfirm } = CW;
+  /** Open-source reading for the option's rule (support-docs.js): title, page and a link that opens the PDF there. */
+  function supportDocs(o, { t, esc }) {
+    const docs = SD ? SD.forRule(o.rule) : [];
+    if (!docs.length) return esc(t('no_supporting_doc'));
+    return `<ul class="support-docs">${docs.map(d => `<li data-support-doc="${esc(d.id)}">📄 <a href="${esc(d.url)}" target="_blank" rel="noopener">${esc(d.title)}</a> <span class="muted">· ${esc(t('page_short'))} ${d.page}</span></li>`).join('')}</ul><div class="small muted">${esc(t('support_docs_note'))}</div>`;
+  }
   const COVERED_RULES = ['pump_upgrade', 'pump_audit', 'nrw_reduction', 'septic_desludging'];
   const OTHER_RULES = ['cso_reduction', 'biogas_capture', 'fuel_switch', 'solar_pv'];
 
@@ -206,7 +212,7 @@
             ${o.scenario ? `<div class="small"><span class="muted">${esc(t('scenario'))}:</span> ${esc(L(o.scenario))}</div>` : ''}
             <div class="small" data-basis><span class="muted">${esc(t('basis'))}:</span> ${o.basis_text ? esc(L(o.basis_text)) : esc(t('basis_ecam'))}</div></dd>
           ${sourceDetails(o, ctx)}
-          ${base ? '' : `<dt>${esc(t('supporting_doc'))}</dt><dd data-support>${esc(t('no_supporting_doc'))}</dd>
+          ${base ? '' : `<dt>${esc(t('supporting_doc'))}</dt><dd data-support>${supportDocs(o, ctx)}</dd>
           <dt>${esc(t('before_deciding'))}</dt><dd><div class="small"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</div>
             ${check ? `<div class="small muted">${esc(t('input_status'))}</div>${completeness(check, ctx)}<div class="small">${zeroNotes(check, ctx)}</div>${inputRows(check, ctx)}${untrackedList(check, ctx)}` : `<div class="small muted" data-not-tracked>${esc(t('not_tracked'))}</div>`}</dd>`}
         </dl>

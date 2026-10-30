@@ -254,11 +254,11 @@ test('missing supporting documents are labelled honestly; nothing is presented a
   for (const o of options) {
     const html = cardOf(o, checks, {}, { open: true });
     if (o.rule === 'baseline') { assert.ok(!html.includes('data-support')); continue; }
-    assert.ok(html.includes('<dd data-support>Supporting document not yet added.</dd>'), o.rule);
+    assert.ok(html.includes('data-support-doc=') && /href="\/sources\/[\w.-]+\.pdf#page=\d+"/.test(html), o.rule + ' links open-source reading');
     assert.ok(!/Related reading|class="sources"/.test(html), 'no sources or related reading in a card');
   }
   const id = DC.card(options[1], ctxFor({}, 'a_main', 'id'), { checks });
-  assert.ok(id.includes('Dokumen pendukung belum ditambahkan.'));
+  assert.ok(id.includes('Bacaan sumber terbuka') && id.includes('hlm.'), 'Indonesian card labels its open-source reading');
   // rules without input-status coverage say so
   const solar = options.find(o => o.rule === 'solar_pv');
   assert.ok(cardOf(solar, checks, {}).includes('Input status is not tracked for this rule yet.'));

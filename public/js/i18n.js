@@ -1331,3 +1331,10 @@ Object.assign(UI.id, {
   adapt_creat: 'Penapisan risiko iklim (CREAT)', adapt_wsp: 'Rencana Pengamanan Air Minum tangguh iklim (WHO)',
   fo_general_btn: 'Proposal Umum', fo_general_note: 'Pengembangan berikutnya: format proposal yang tidak terikat pada satu dana.',
 });
+Object.assign(UI.en, { evidence_body_open: 'AI drafts cite excerpts from the {n} documents in the library. Click a source to open the document at the cited page. Citations support the text; they do not confirm funding eligibility.' });
+Object.assign(UI.id, { evidence_body_open: 'Draf AI mengutip dari {n} dokumen dalam pustaka. Klik sumber untuk membuka dokumen pada halaman yang dikutip. Kutipan mendukung teks; kutipan tidak memastikan kelayakan pendanaan.' });
+Object.assign(UI.en, { page_short: 'p.', support_docs_note: 'Open-source reading for this type of action; not proof that it fits your utility.' });
+Object.assign(UI.id, { page_short: 'hlm.', support_docs_note: 'Bacaan sumber terbuka untuk jenis aksi ini; bukan bukti bahwa aksi ini cocok untuk PDAM/PAM Anda.' });
+// Responsibility questions now live in Home → Your utility details (Oct 30)
+Object.assign(UI.en, { tier_desc_unspecified: 'Answer "What your utility is responsible for" in Home → Your utility details (or ✎ Edit utility data at the top).' });
+Object.assign(UI.id, { tier_desc_unspecified: 'Jawab "Tanggung jawab PDAM/PAM Anda" di Beranda → Data PDAM/PAM Anda (atau ✎ Ubah data PDAM/PAM di bagian atas).' });

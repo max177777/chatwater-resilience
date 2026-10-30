@@ -74,7 +74,7 @@ test('supported classifications are shown; containment and unmapped rules show "
   assert.deepStrictEqual([...new Set(attr(deslHtml, 'data-classification'))], ['pending']);
   assert.ok(deslHtml.includes('Classification pending review') && !deslHtml.includes('Direct emissions') && !deslHtml.includes('Indirect emissions'));
   // classification sits next to, not instead of, the existing notices
-  assert.ok(deslHtml.includes('Supporting document not yet added.') && deslHtml.includes('Emissions from treating the emptied sludge are not yet included.'));
+  assert.ok(deslHtml.includes('not proof that it fits your utility') && deslHtml.includes('Emissions from treating the emptied sludge are not yet included.'));
   assert.ok(!DC.card(byRule(opts, 'baseline'), c, {}).includes('data-addresses'), 'baseline addresses nothing');
   // a rule without a mapping is never classified
   const unknown = { ...byRule(opts, 'pump_upgrade'), rule: 'future_rule', key: 'a_main|future_rule|wsa_0' };
@@ -90,7 +90,7 @@ test('classification is independent of input confirmation and evidence', () => {
   const a = DC.card(o, ctx(), {}), b = DC.card(o, confirmed, {});
   assert.deepStrictEqual(attr(a, 'data-classification'), attr(b, 'data-classification'));
   assert.ok(b.includes('Classification pending review'), 'confirming inputs does not resolve the classification');
-  assert.ok(b.includes('Supporting document not yet added.'), 'and does not imply evidence');
+  assert.ok(b.includes('not proof that it fits your utility'), 'reading is labelled as not evidence for this utility');
 });
 
 test('Indonesian card text uses the translation table', () => {
