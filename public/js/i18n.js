@@ -1277,3 +1277,19 @@ Object.assign(UI.id, {
   home_save_start: 'Simpan dan lanjut ke Langkah 1',
   details_one_utility: 'Ini adalah data PDAM/PAM Anda. Data ini dipakai untuk semua penilaian Anda (contoh fiktif memakai datanya sendiri).',
 });
+
+// Oct 29 follow-up: home intro wording (as before), tidier action notes, no internal codes in the benefit basis
+Object.assign(UI.en, {
+  home_lead: 'Turn your utility\'s energy and emissions data into actions, a project plan and a financing proposal. Start with your utility details, then work through four steps.',
+  notes_label: 'Notes for this action (optional)',
+  notes_placeholder: 'e.g. local conditions, constraints, budget timing',
+  notes_help: 'Saved with this action and used when the plan and financing proposal are drafted.',
+  basis_ecam: 'Calculated by ECAM from your assessment inputs.',
+});
+Object.assign(UI.id, {
+  home_lead: 'Ubah data energi dan emisi PDAM/PAM Anda menjadi aksi, rencana proyek, dan proposal pendanaan. Mulai dengan data PDAM/PAM, lalu ikuti empat langkah.',
+  notes_label: 'Catatan untuk aksi ini (opsional)',
+  notes_placeholder: 'misalnya kondisi setempat, kendala, waktu anggaran',
+  notes_help: 'Disimpan bersama aksi ini dan dipakai saat rencana dan proposal pendanaan disusun.',
+  basis_ecam: 'Dihitung oleh ECAM dari masukan penilaian Anda.',
+});

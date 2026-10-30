@@ -343,3 +343,13 @@ details.grp > summary.grp-h { cursor: pointer; }
 @media (max-width: 900px) { .home-grid-2 { grid-template-columns: 1fr; } }
 .home-profile textarea { width: 100%; }
 .home-video { max-height: 180px; }
+
+/* Oct 29 follow-up: consistent, full-width text boxes */
+.field textarea, textarea[data-note], .rv-mini textarea, .home-profile textarea {
+  width: 100%; box-sizing: border-box; min-height: 64px; resize: vertical; background: #fff;
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 14px/1.5 Inter, system-ui, sans-serif;
+}
+.field textarea:focus, textarea[data-note]:focus { outline: 2px solid var(--teal-soft); border-color: var(--teal); }
+.action-note { display: block; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.action-note > span { font-weight: 600; color: var(--ink); }
+.action-note + p.small { margin: 4px 0 8px; }

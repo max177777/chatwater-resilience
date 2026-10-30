@@ -58,7 +58,7 @@
     return `<ul class="dc-inputs">${check.inputs.map(i => {
       const s = ctx.status(check.sid, i.code, i.value), v = shown(i.code, i.value, ctx);
       return `<li data-input="${esc(i.code)}" data-input-origin="${s.origin}" data-input-confirmed="${s.confirmed}">${ctx.labelOf(i.code)}: <b>${esc(v.text)}</b> ${esc(v.unit)}
-        <span class="in-st in-${s.origin}${s.confirmed ? ' in-confirmed' : ''}">${esc(statusText(s, t))}</span>${needsConfirm(s) ? ` <button class="link" data-confirm="${esc(check.sid)}|${esc(i.code)}">${esc(t('confirm_value'))}</button>` : ''}</li>`;
+        <span class="in-st in-${s.origin}${s.confirmed ? ' in-confirmed' : ''}">${esc(statusText(s, t))}</span>${needsConfirm(s) ? ` <button class="sym-btn" data-confirm="${esc(check.sid)}|${esc(i.code)}" title="${esc(t('confirm_value'))}" aria-label="${esc(t('confirm_value'))}">✓</button>` : ''}</li>`;
     }).join('')}</ul>`;
   }
   const unconfirmed = (check, ctx) => check ? check.inputs.filter(i => needsConfirm(ctx.status(check.sid, i.code, i.value))).length : 0;
@@ -204,14 +204,13 @@
             <div class="small"><span class="muted">${esc(t('assessment_data'))}:</span> ${esc(L(o.evidence))}</div></dd>
           <dt>${esc(t('est_benefit'))}</dt><dd>${benefit(o, ctx)}
             ${o.scenario ? `<div class="small"><span class="muted">${esc(t('scenario'))}:</span> ${esc(L(o.scenario))}</div>` : ''}
-            <div class="small" data-basis><span class="muted">${esc(t('basis'))}:</span> ${o.basis_text ? esc(L(o.basis_text)) : `<code>${esc(o.basis)}</code>`}</div>
-            ${o.basis_text && /\b(?:\w+_\w+|TotalGHG|TotalNRG)\b/.test(o.basis || '') ? `<div class="small muted" data-basis-codes>${esc(t('basis_codes'))}: <code>${esc((o.basis.match(/\b(?:\w+_\w+|TotalGHG|TotalNRG)\b/g) || []).join(', '))}</code></div>` : ''}</dd>
+            <div class="small" data-basis><span class="muted">${esc(t('basis'))}:</span> ${o.basis_text ? esc(L(o.basis_text)) : esc(t('basis_ecam'))}</div></dd>
           ${sourceDetails(o, ctx)}
           ${base ? '' : `<dt>${esc(t('supporting_doc'))}</dt><dd data-support>${esc(t('no_supporting_doc'))}</dd>
           <dt>${esc(t('before_deciding'))}</dt><dd><div class="small"><span class="muted">${esc(t('condition'))}:</span> ${esc(L(o.condition))}</div>
             ${check ? `<div class="small muted">${esc(t('input_status'))}</div>${completeness(check, ctx)}<div class="small">${zeroNotes(check, ctx)}</div>${inputRows(check, ctx)}${untrackedList(check, ctx)}` : `<div class="small muted" data-not-tracked>${esc(t('not_tracked'))}</div>`}</dd>`}
         </dl>
-        <label class="field small"><span>${esc(t('notes_label'))}</span><textarea data-note="${esc(k)}" rows="2" aria-describedby="note-help-${esc(k)}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea></label><p id="note-help-${esc(k)}" class="small muted">${esc(t('notes_help'))}</p>
+        <label class="field small action-note"><span>✎ ${esc(t('notes_label'))}</span><textarea data-note="${esc(k)}" rows="3" aria-describedby="note-help-${esc(k)}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea></label><p id="note-help-${esc(k)}" class="small muted">${esc(t('notes_help'))}</p>
         ${opts.explainHtml || ''}
       </details>
     </div>`;
@@ -250,7 +249,7 @@
           <dt>${esc(t('ca_classification'))}</dt><dd data-classification="none">${esc(t('ca_no_classification'))}</dd>
           <dt>${esc(t('supporting_doc'))}</dt><dd data-support>${esc(t('no_supporting_doc'))}</dd>
         </dl>
-        <label class="field small"><span>${esc(t('notes_label'))}</span><textarea data-note="${esc(k)}" rows="2" maxlength="2000" aria-describedby="note-help-${esc(k)}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea></label><p id="note-help-${esc(k)}" class="small muted">${esc(t('notes_help'))}</p>
+        <label class="field small action-note"><span>✎ ${esc(t('notes_label'))}</span><textarea data-note="${esc(k)}" rows="3" maxlength="2000" aria-describedby="note-help-${esc(k)}" placeholder="${esc(t('notes_placeholder'))}">${esc(opts.note || '')}</textarea></label><p id="note-help-${esc(k)}" class="small muted">${esc(t('notes_help'))}</p>
       </details>
     </div>`;
   }
