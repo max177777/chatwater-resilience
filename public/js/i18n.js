@@ -1297,3 +1297,19 @@ Object.assign(UI.id, {
 // Oct 30: header and review simplification
 Object.assign(UI.en, { demo_steps: 'Fictional complete example: finish the assessment, choose actions (e.g. pump improvement) and save, generate the plan, then create the GCF preliminary concept. All example values are hypothetical.' });
 Object.assign(UI.id, { demo_steps: 'Contoh lengkap fiktif: selesaikan penilaian, pilih aksi (misalnya perbaikan pompa) lalu simpan, buat rencana, kemudian susun konsep awal GCF. Semua nilai contoh bersifat hipotetis.' });
+
+// Home hero (Oct 30)
+Object.assign(UI.en, {
+  home_kicker: 'Climate resilience planning for water utilities',
+  home_pt1: 'From ECAM energy and emissions results to practical actions',
+  home_pt2: 'A draft project plan and schedule your team can edit',
+  home_pt3: 'A preliminary financing proposal for the Green Climate Fund',
+  home_cta: 'Start with your utility details',
+});
+Object.assign(UI.id, {
+  home_kicker: 'Perencanaan ketahanan iklim untuk PDAM/PAM',
+  home_pt1: 'Dari hasil energi dan emisi ECAM menjadi aksi nyata',
+  home_pt2: 'Draf rencana proyek dan jadwal yang dapat diubah tim Anda',
+  home_pt3: 'Proposal pendanaan awal untuk Green Climate Fund',
+  home_cta: 'Mulai dengan data PDAM/PAM Anda',
+});
