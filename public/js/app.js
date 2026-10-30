@@ -234,6 +234,24 @@
   function deleteScenario() {
     if (Scenarios.length < 2) return;
     Scenarios.splice(state.current, 1); setCurrent(0);
+    clearOrphanOutputs();
+  }
+  /**
+   * Actions, plan and proposal belong to the assessment they were made from. When that assessment no longer
+   * exists (deleted now, or in an older session), they are cleared instead of being shown as outdated work.
+   * Returns true when something was cleared. User-proposed actions are kept (they are listed as orphans).
+   */
+  function clearOrphanOutputs() {
+    const gone = id => !!id && !Scenarios.some(sc => idOf(sc) === id);
+    let changed = false;
+    if (gone(state.actionResult?.assessmentId) || gone(state.actionSet?.assessmentId)) {
+      Object.assign(state, { actionResult: null, selectedKeys: [], actionSet: null, selectedActions: [], actionReview: [] }); changed = true;
+    }
+    if (gone(state.plan?.deps?.assessmentId)) { state.plan = null; changed = true; }
+    if (gone(state.proposal?.deps?.assessmentId)) { state.proposal = null; changed = true; }
+    if (gone(state.financingAssessmentId)) { state.financing = { route: PC.ROUTE, pathways: ['gcf'] }; state.financingAssessmentId = null; changed = true; }
+    if (gone(state.selectedAssessmentId)) { state.selectedAssessmentId = null; changed = true; }
+    return changed;
   }
   /** Add checked ECAM assessments (CW.parseEcamFile), renaming copies whose name is already used. Returns the names as loaded. */
   function addAssessments(list) {
@@ -586,6 +604,7 @@
 
   function render() {
     attachToHomeUtility();
+    if (clearOrphanOutputs()) save(); // older sessions may hold outputs of an assessment that no longer exists
     applyShell();
     const root = document.createElement('div');
     $('#view').replaceChildren(root);
