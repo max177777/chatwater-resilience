@@ -1313,3 +1313,7 @@ Object.assign(UI.id, {
   home_pt3: 'Proposal pendanaan awal untuk Green Climate Fund',
   home_cta: 'Mulai dengan data PDAM/PAM Anda',
 });
+
+// Home: utility details folded behind a button (Silvia, Oct 30)
+Object.assign(UI.en, { home_profile_t: 'Your utility details', home_profile_empty: 'Not filled in yet. Used for your actions, plan and financing proposal.', home_profile_enter: 'Enter utility details', home_profile_edit: 'Edit utility details' });
+Object.assign(UI.id, { home_profile_t: 'Data PDAM/PAM Anda', home_profile_empty: 'Belum diisi. Dipakai untuk aksi, rencana, dan proposal pendanaan Anda.', home_profile_enter: 'Isi data PDAM/PAM', home_profile_edit: 'Ubah data PDAM/PAM' });

@@ -370,3 +370,9 @@ details.grp > summary.grp-h { cursor: pointer; }
 .hero-art { width: 100%; height: auto; max-height: 300px; filter: drop-shadow(0 6px 18px rgba(31,111,120,.12)); }
 .hero-wave { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 28px; fill: var(--teal-soft); opacity: .8; pointer-events: none; }
 @media (max-width: 900px) { .home-hero { grid-template-columns: 1fr; padding: 22px 18px 38px; } .home-hero h1 { font-size: 27px; } .hero-art { max-height: 220px; } }
+.home-profile-card { border: 2px solid var(--teal); padding-top: 14px; padding-bottom: 14px; }
+.home-profile-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.home-profile-head h2 { margin: 0 0 2px; display: flex; align-items: center; gap: 10px; font-size: 18px; }
+.home-profile-head p { margin: 0; }
+.home-profile { border: 0; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.home-profile[hidden] { display: none; }

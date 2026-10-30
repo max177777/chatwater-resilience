@@ -627,11 +627,14 @@
           <div class="row hero-actions"><button class="btn primary hero-cta" data-home-start>${esc(t('home_cta'))}</button><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
         <img class="hero-art" src="/media/hero-water.svg" alt="" aria-hidden="true">
         <svg class="hero-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 C150 4 300 40 450 22 C600 4 750 40 900 22 C1050 4 1150 30 1200 18 V40 H0 Z"/></svg></div>
-      <form class="card home-profile" id="home-profile"><h2><span class="home-num">0</span> ${esc(t('home_profile_t'))}</h2><p class="small muted">${esc(t('home_profile_d'))}</p>
+      <div class="card home-profile-card"><div class="home-profile-head"><div><h2><span class="home-num">0</span> ${esc(t('home_profile_t'))}</h2>
+          <p class="small muted" data-home-profile-status>${p.name ? `<b>${esc(p.name)}</b>${p.location ? ' · ' + esc(p.location) : ''}` : esc(t('home_profile_empty'))}</p></div>
+          <button type="button" class="btn ${p.name ? '' : 'primary'}" data-home-toggle aria-expanded="false" aria-controls="home-profile">✎ ${esc(t(p.name ? 'home_profile_edit' : 'home_profile_enter'))}</button></div>
+      <form class="home-profile" id="home-profile" hidden><p class="small muted">${esc(t('home_profile_d'))}</p>
         <div class="grid2">${DETAIL_FIELDS.map(([k, lab]) => `<label class="field"><span>${esc(t(lab))}</span><input type="text" name="${k}" value="${esc(p[k] ?? '')}" placeholder="${esc(t('not_specified'))}"></label>`).join('')}</div>
         <label class="field"><span>${esc(t('home_notes'))}</span><textarea name="notes" rows="2" placeholder="${esc(t('home_notes_ph'))}">${esc(p.notes ?? '')}</textarea></label>
         ${responsibilityFields(p)}
-        <div class="actions-row"><span class="small muted" data-home-saved></span><button class="btn primary">${esc(t('home_save_start'))}</button></div></form>
+        <div class="actions-row"><button type="button" class="btn" data-home-close>${esc(t('cancel'))}</button><button class="btn primary">${esc(t('home_save_start'))}</button></div></form></div>
       <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
       <div class="home-grid home-grid-2">
         <div class="card"><h2>${esc(t('home_prepare_t'))}</h2><ul class="small">${['home_prep1', 'home_prep2', 'home_prep3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul></div>
@@ -648,7 +651,13 @@
       go(Scenarios.length ? 'assess:entry' : 'assess:choose');
     };
     root.querySelector('[data-home-example]').onclick = async () => { go('assess:entry'); await loadSample(); };
-    root.querySelector('[data-home-start]').onclick = () => { const f = root.querySelector('#home-profile'); f.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => f.querySelector('input[name=name]')?.focus({ preventScroll: true }), 400); };
+    // Utility details stay folded until the user asks for them (keeps the landing page light)
+    const form = root.querySelector('#home-profile'), toggle = root.querySelector('[data-home-toggle]');
+    const openForm = (on, focus) => { form.hidden = !on; toggle.setAttribute('aria-expanded', String(on)); toggle.hidden = on;
+      if (on && focus) { root.querySelector('.home-profile-card').scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => form.querySelector('input[name=name]')?.focus({ preventScroll: true }), 400); } };
+    toggle.onclick = () => openForm(true, true);
+    root.querySelector('[data-home-close]').onclick = () => openForm(false);
+    root.querySelector('[data-home-start]').onclick = () => openForm(true, true);
   }
 
   // ---------------------------------------------------------------- stage 1: choose module (ECAM is the entry point)
