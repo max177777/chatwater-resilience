@@ -37,11 +37,23 @@ const custom = (over = {}) => ({
   const base = `http://localhost:${server.address().port}`;
   const post = async (p, body) => { const r = await fetch(base + p, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(fixtureStatus.withConfirmedInputs(body)) }); return { status: r.status, body: await r.json() }; };
   const boundedRelease=library.summary().loaded&&library.summary().build_id===require('../scripts/library/releases/gcf-guidance-v1.lock.json').build_id;
-  const built = library.summary().loaded&&!boundedRelease;
+  const loadedManifest=library.summary().loaded?JSON.parse(fs.readFileSync(path.join(LIB_DIR,'manifest.json'),'utf8')):null;
+  const openRelease=loadedManifest?.release==='open-sources-v1'; // all-open-source library committed on 2026-10-30
+  const built = library.summary().loaded&&!boundedRelease&&!openRelease;
   try {
     if(boundedRelease){const lock=require('../scripts/library/releases/gcf-guidance-v1.lock.json');assert.equal(library.summary().passages,lock.passages);assert.equal(library.summary().sources.filter(s=>s.status==='indexed').length,lock.sources);for(const q of lock.retrieval_checks)assert(library.retrieve(q.query,{sources:[q.source]}).passages.some(p=>p.sourceId===q.source));console.log('  ok - bounded deployed release: pinned build/counts and known questions; 19-source legacy-corpus evaluation is not applicable');}
     // ------------------------------------------------------------ library and retrieval evaluation
-    if (!built) {
+    if (openRelease) {
+      const idx = loadedManifest.sources.filter(s => s.status === 'indexed');
+      assert.ok(idx.length >= 10, 'open-source library indexes the supplied guidance');
+      for (const s of loadedManifest.sources) { assert.ok(s.id && s.title && s.sha256 && s.role && s.review_status, s.id + ' identity'); assert.match(s.public_url, /^\/sources\/[\w.-]+\.pdf$/, s.id + ' public link'); assert.ok(fs.existsSync(path.join(__dirname, '..', 'public', s.public_url)), s.id + ' public copy exists'); }
+      const all = idx.flatMap(s => JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'passages', `${s.id}.json`), 'utf8')));
+      assert.ok(all.every(p => p.locator && p.locator.page), 'every passage has a page locator');
+      for (const [q, src] of [['climate rationale sanitation', 'gcf-sanitation-part3-2024-consultation'], ['methane wastewater treatment emission factor', 'ipcc-2019-wastewater-ch6'], ['pump energy efficiency water utility', 'ecam-methodology-guide']]) {
+        const r = library.retrieve(q); assert.equal(r.status, 'found', q); assert.ok(r.passages.some(p => p.sourceId === src && p.url === `/sources/${src}.pdf`), q + ' → ' + src);
+      }
+      console.log(`  ok - open-source library: ${idx.length} indexed sources, page locators, public PDF links, known retrievals`);
+    } else if (!built) {
       console.log(boundedRelease?'  NOT RUN - legacy 19-source corpus evaluation (release intentionally has two guides)':'  SKIPPED - document library not built (run: node scripts/library/build.js); retrieval evaluation not run');
     } else {
       const man = JSON.parse(fs.readFileSync(path.join(LIB_DIR, 'manifest.json'), 'utf8'));

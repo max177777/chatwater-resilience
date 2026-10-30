@@ -108,10 +108,10 @@
   const headingText = x => (x.locator && x.locatorLabel && String(x.heading || '').startsWith(x.locatorLabel)
     ? SN.locator(x.locator, state.lang) + x.heading.slice(x.locatorLabel.length) : x.heading);
   const sourcesHtml = list => list?.length ? `<div class="sources"><b>${esc(t('sources'))}</b><ol>${list.map(x =>
-    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${CV.noteHtml(x.cite, { t, esc, lang: state.lang }, 'date')}` : ''}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.caveats || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ol></div>` : '';
+    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(CV.pageUrl(x))}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${CV.noteHtml(x.cite, { t, esc, lang: state.lang }, 'date')}` : ''}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.caveats || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ol></div>` : '';
   // Passages retrieved for template text, which cites none of them
   const relatedHtml = list => list?.length ? `<div class="sources related"><b>${esc(t('related_reading'))}</b><ul>${list.map(x =>
-    `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ul></div>` : '';
+    `<li>${x.url ? `<a href="${esc(CV.pageUrl(x))}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ul></div>` : '';
   // What the library was searched for, the library build, and what the citation checks do and do not cover
   // Participant review (Oct 29): search/library diagnostics are not shown to users; sources carry their own links.
   const evidenceHtml = () => '';
@@ -623,11 +623,11 @@
       <div class="home-hero card"><div class="hero-text">
           <p class="hero-kicker">💧 ${esc(t('home_kicker'))}</p>
           <h1>${esc(t('home_title'))}</h1><p class="home-lead">${esc(t('home_lead'))}</p>
-          <ul class="hero-points">${['home_pt1', 'home_pt2', 'home_pt3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul>
+          <ul class="hero-points">${['home_pt1', 'home_pt2', 'home_pt3'].map(k => `<li>${esc(t(k))}${k === 'home_pt1' ? ` <a href="https://climatesmartwater.org/ecam/" target="_blank" rel="noopener" class="ecam-link">(ECAM ↗)</a>` : ''}</li>`).join('')}</ul>
           <div class="row hero-actions"><button class="btn primary hero-cta" data-home-start>${esc(t('home_cta'))}</button><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
         <img class="hero-art" src="/media/hero-water.svg" alt="" aria-hidden="true">
         <svg class="hero-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 C150 4 300 40 450 22 C600 4 750 40 900 22 C1050 4 1150 30 1200 18 V40 H0 Z"/></svg></div>
-      <div class="card home-profile-card"><div class="home-profile-head"><div><h2><span class="home-num">0</span> ${esc(t('home_profile_t'))}</h2>
+      <div class="card home-profile-card"><div class="home-profile-head"><div><h2>💧 ${esc(t('home_profile_t'))}</h2>
           <p class="small muted" data-home-profile-status>${p.name ? `<b>${esc(p.name)}</b>${p.location ? ' · ' + esc(p.location) : ''}` : esc(t('home_profile_empty'))}</p></div>
           <button type="button" class="btn ${p.name ? '' : 'primary'}" data-home-toggle aria-expanded="false" aria-controls="home-profile">✎ ${esc(t(p.name ? 'home_profile_edit' : 'home_profile_enter'))}</button></div>
       <form class="home-profile" id="home-profile" hidden><p class="small muted">${esc(t('home_profile_d'))}</p>
@@ -1373,7 +1373,7 @@
     const exportBlocked = !state.proposal || upstreamStale || fr.proposal.length > 0 || sums.plan || sums.proposal.length > 0;
     const legacy=state.proposal&&state.proposal.route!==PC.ROUTE;
     const supported=PC.demoSupported(f)&&!legacy;
-    root.innerHTML = `<div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
+    root.innerHTML = `<div class="planned-route small"><button class="btn sm" disabled aria-disabled="true">${esc(t('fo_general_btn'))}</button> <span class="muted">${esc(t('fo_general_note'))}</span></div><div class="page-head"><h1>${esc(t('finance_title'))}</h1><p class="muted">${esc(t('finance_sub'))}</p></div>
       ${!state.plan ? `<div class="notice warn">${esc(t('no_plan'))}</div>` : ''}
       ${staleNotice(fr.actions, 'actions')}${staleNotice(fr.plan, 'plan')}${staleNotice(fr.proposal, 'proposal')}${genErrorNotice('proposal')}
       ${state.plan ? summedNotice('plan') : ''}${state.proposal ? summedNotice('proposal') : ''}

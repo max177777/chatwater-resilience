@@ -28,11 +28,13 @@
     return `<details class="small src-notes" ${attr}><summary><b>${ctx.esc(ctx.t('chat_warnings'))}</b> (${items.length})</summary><ul>${items.join('')}</ul></details>`;
   }
 
+  /** Link to the source, opened at the cited page when the locator has one (PDF viewers honour #page=N). */
+  const pageUrl = p => { const page = p.locator && p.locator.page; return page && !String(p.url).includes('#') ? `${p.url}#page=${page}` : p.url; };
   /** One source as a short line: title, page and a link to open it; the quoted passage is one click away. */
   function sourceLine(p, ctx, tag) {
     const { t, esc } = ctx;
     const role = ROLES.includes(p.role) ? p.role : null;
-    return `<li class="src-line" data-passage="${esc(p.id || p.passage_id || '')}" data-source="${esc(p.sourceId || p.source_id || '')}"><details><summary>📄 ${tag ? `<b>[${esc(tag)}]</b> ` : ''}${esc(p.title)}${locatorText(p, ctx) ? ` · <span data-locator>${esc(locatorText(p, ctx))}</span>` : ''}${role ? ` <span class="badge-role role-${role}" data-role="${role}">${esc(t('chat_role_' + role))}</span>` : ''}</summary><blockquote class="quote" data-quote>${esc(p.text || '')}</blockquote></details>${p.url ? ` <a href="${esc(p.url)}" target="_blank" rel="noopener" data-source-link>${esc(t('chat_open_source'))} ↗</a>` : ''}</li>`;
+    return `<li class="src-line" data-passage="${esc(p.id || p.passage_id || '')}" data-source="${esc(p.sourceId || p.source_id || '')}"><details><summary>📄 ${tag ? `<b>[${esc(tag)}]</b> ` : ''}${esc(p.title)}${locatorText(p, ctx) ? ` · <span data-locator>${esc(locatorText(p, ctx))}</span>` : ''}${role ? ` <span class="badge-role role-${role}" data-role="${role}">${esc(t('chat_role_' + role))}</span>` : ''}</summary><blockquote class="quote" data-quote>${esc(p.text || '')}</blockquote></details>${p.url ? ` <a href="${esc(pageUrl(p))}" target="_blank" rel="noopener" data-source-link>${esc(t('chat_open_source'))} ↗</a>` : ''}</li>`;
   }
   function excerpt(p, ctx, tag) {
     const { t, esc } = ctx;
@@ -169,5 +171,5 @@
       <div class="small muted" data-readonly>${esc(t('chat_readonly'))}${ai ? '' : ' ' + esc(t('chat_ai_off_short'))}</div>`;
   }
 
-  return { excerpt, sourceLine, contextPanel, assistant, scope, focusLabel, qualificationsHtml, noteHtml };
+  return { excerpt, sourceLine, pageUrl, contextPanel, assistant, scope, focusLabel, qualificationsHtml, noteHtml };
 });
