@@ -1338,3 +1338,17 @@ Object.assign(UI.id, { page_short: 'hlm.', support_docs_note: 'Bacaan sumber ter
 // Responsibility questions now live in Home → Your utility details (Oct 30)
 Object.assign(UI.en, { tier_desc_unspecified: 'Answer "What your utility is responsible for" in Home → Your utility details (or ✎ Edit utility data at the top).' });
 Object.assign(UI.id, { tier_desc_unspecified: 'Jawab "Tanggung jawab PDAM/PAM Anda" di Beranda → Data PDAM/PAM Anda (atau ✎ Ubah data PDAM/PAM di bagian atas).' });
+
+// Compact Home (Oct 30 mockup)
+Object.assign(UI.en, {
+  home_s1_d: 'Understand energy use and emissions.', home_s2_d: 'Compare options for your utility.',
+  home_s3_d: 'Draft activities and a schedule.', home_s4_d: 'Draft a preliminary GCF concept.',
+  home_prep1: 'An ECAM file or one year of water, energy, and service data.', home_prep2: 'Your utility\'s location and services.',
+  home_video_btn: 'How ChatWater works',
+});
+Object.assign(UI.id, {
+  home_s1_d: 'Pahami pemakaian energi dan emisi.', home_s2_d: 'Bandingkan pilihan aksi untuk PDAM/PAM Anda.',
+  home_s3_d: 'Susun draf kegiatan dan jadwal.', home_s4_d: 'Susun konsep awal GCF.',
+  home_prep1: 'Berkas ECAM atau data satu tahun tentang air, energi, dan layanan.', home_prep2: 'Lokasi dan layanan PDAM/PAM Anda.',
+  home_video_btn: 'Cara kerja ChatWater',
+});
