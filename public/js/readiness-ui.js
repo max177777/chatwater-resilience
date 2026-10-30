@@ -13,7 +13,8 @@
  const caveats=['plan','finance:draft'].includes(state.ui?.view)?(report.sharedWarnings?.length?`<p><a href="#review-action-caveats">${esc(t('gc_shared_warnings'))}</a></p>`:''):report.sharedWarnings?.length?`<details id="readiness-action-caveats"><summary>${esc(t('gc_shared_warnings'))}</summary><ul>${report.sharedWarnings.map(w=>`<li><b>${esc(local(w.title))}</b>: ${esc(w.warning?local(w.warning):t('gc_unquantified'))}</li>`).join('')}</ul></details>`:'';
 
  // Participant review (Oct 29): one short summary line; the detailed list stays one click away.
- const sum=summarize(r.issues),blocked=report.operations[r.operation]?.blocked;
+ r.issues=r.issues.filter(i=>!['review_unreviewed','review_evidence'].includes(i.messageKey)); // Oct 30: section check boxes removed
+ const sum=summarize(r.issues),blocked=report.operations[r.operation]?.blocked;sum.check=0;
  const line=sum.fix?t('rs_fix').replace('{n}',sum.fix).replace('{operation}',operationText(r.operation,t,label)):blocked&&sum.check?t('rs_check_only'):t('rs_ok');
  return `<section id="readiness-panel" class="card readiness readiness-compact${sum.fix?' has-fix':''}" aria-labelledby="readiness-title"><p class="rs-line"><b id="readiness-title" tabindex="-1">${sum.fix?'⚠':'✓'} ${esc(line)}</b>${sum.check?` <span class="small muted">· ${esc(t('rs_check').replace('{n}',sum.check))}</span>`:''}</p>
  ${sum.fix||sum.check||r.issues.length?`<details><summary class="small">${esc(t('rs_show'))}</summary>${caveats}${['blocker','warning','optional'].map((severity,n)=>{const xs=r.issues.filter(i=>i.severity===severity);return xs.length?`<h3>${['!','△','○'][n]} ${esc(t('gc_'+severity))} (${xs.length})</h3>${groups(xs)}`:'';}).join('')}<p class="small muted">${esc(t('gc_work_allowed'))}</p></details>`:''}<p id="readiness-navigation-error" role="alert" tabindex="-1"></p></section>`;
