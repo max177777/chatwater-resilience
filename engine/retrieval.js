@@ -76,7 +76,7 @@ const tagsIn = text => [...new Set((String(text || '').match(/\[S\d+(?:\s*,\s*S\
 /** Citation record for one retrieved passage; keeps the fields older saved outputs used (id, title, cite, heading). */
 function citeOf(p, tag, build) {
   return {
-    id: tag, tag, passage_id: p.id, source_id: p.sourceId, title: p.title,
+    id: tag, tag, passage_id: p.id, source_id: p.sourceId, title: p.title, url: p.url || null,
     cite: [p.publisher, p.date].filter(Boolean).join(', '),
     heading: [p.locatorLabel, p.heading].filter(Boolean).join(' — '),
     locator: p.locator, locatorLabel: p.locatorLabel, role: p.role, review_status: p.review_status,

@@ -271,7 +271,7 @@ const custom = (over = {}) => ({
     const offHtml = CV.assistant({ ai: false, retrieval: { status: 'found', passages: [evil] }, context: off.body.context }, vctx);
     assert.ok(offHtml.includes('data-ai-off-label') && offHtml.includes('chat_ai_off_head'));
     assert.ok(!offHtml.includes('<script>') && !offHtml.includes('<img'), 'excerpt text is escaped');
-    assert.ok(offHtml.includes('data-role="training_example"') && offHtml.includes('data-not-independent') && offHtml.includes('data-context'));
+    assert.ok(offHtml.includes('data-role="training_example"') && offHtml.includes('data-context'), 'source role caveat and project context remain (simplified source lines, Oct 29)');
     const noneHtml = CV.assistant({ ai: false, retrieval: { status: 'none', passages: [] }, context: offNone.body.context }, vctx);
     assert.ok(noneHtml.includes('chat_no_passage') && noneHtml.includes('chat_project_data_hint'));
     const otherHtml = CV.assistant({ ai: true, content: 'x', retrieval: { status: 'none', passages: [] }, context: ctxB.context, sources: [], support: [] }, vctx);

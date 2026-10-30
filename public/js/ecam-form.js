@@ -80,8 +80,7 @@ const CWForm = (() => {
     }
     const source=CW.inputState(A().state.inputStatus[A().idOf(Global)],A().inputSid(stage),code,stage[code]);
     extra += `<div class="small muted" data-input-provenance="${code}">${esc(t('in_'+source.origin))} · ${esc(t('status_'+status))}${status === 'unconfirmed' ? ' — '+esc(t('legacy_zero')) : ''}${source.confirmed ? ' · '+esc(t('status_confirmed')) : ''}</div>
-      <button type="button" class="link small" data-confirm-input="${code}" ${typeof stage[code]!=='number'||!Number.isFinite(stage[code])?'disabled':''}>${esc(t('confirm_value'))}${stage[code] === 0 ? ' (0)' : ''}</button>
-      <button type="button" class="link small" data-unknown-input="${code}">${esc(t('mark_unknown'))}</button>`;
+      <span class="sym-btns"><button type="button" class="sym-btn" data-confirm-input="${code}" title="${esc(t('confirm_value'))}" aria-label="${esc(t('confirm_value'))}" ${typeof stage[code]!=='number'||!Number.isFinite(stage[code])?'disabled':''}>✓</button><button type="button" class="sym-btn" data-unknown-input="${code}" title="${esc(t('mark_unknown'))}" aria-label="${esc(t('mark_unknown'))}">?</button></span>`;
     const expla = A().tE(code + '_expla');
     return `<tr class="${nested ? 'nested' : ''}">
       <td class="lab"><label for="${id}">${A().rich(labelOf(code))}</label>
@@ -158,7 +157,7 @@ const CWForm = (() => {
     const shown = v => (typeof v === 'number' && Number.isFinite(v) ? String(+v.toPrecision(12)) : esc(v ?? ''));
     const generalSource=k=>{const source=CW.inputState(state.inputStatus[A().idOf(Global)],'General',k,g[k]),av=RSData.input(state.inputStatus[A().idOf(Global)],'General',k,g[k],Info,Tables);return esc(t('in_'+source.origin))+' · '+esc(t('status_'+av.status))+(source.confirmed?' · '+esc(t('status_confirmed')):'');};
     const num = (k, unit) => `<label class="field"><span>${esc(t(k))}</span><div class="row"><input type="text" inputmode="decimal" data-numeric="1" data-gen="${k}" value="${shown(g[k])}" class="grow"><span data-error="${k}" class="field-error"></span><span class="small muted">${esc(CW.unitLabel(unit, state.lang))}</span></div><span class="small muted" data-input-provenance="${k}">${generalSource(k)}</span><button type="button" class="link small" data-confirm-input="${k}" ${typeof g[k]!=='number'||!Number.isFinite(g[k])?'disabled':''}>${esc(t('confirm_factor'))}</button> <button type="button" class="link small" data-unknown-input="${k}">${esc(t('mark_unknown'))}</button></label>`;
-    return `<div class="card"><h2>${esc(t('general'))}</h2><details open><summary>${esc(t('more_info'))}</summary><p>${esc(t('input_legend'))}</p></details><p>${esc(t('period_help'))}</p><button type="button" class="btn sm" data-last-year>${esc(t('last_year'))}</button>
+    return `<div class="card"><h2>${esc(t('general'))}</h2><p>${esc(t('period_help'))}</p><button type="button" class="btn sm" data-last-year>${esc(t('last_year'))}</button>
       <label class="field"><span>${esc(t('p_type'))}</span><select data-service-scope><option value="">${esc(t('not_specified'))}</option>${['water','wastewater','both'].map(v=>`<option value="${v}" ${state.profile?.service_type===v?'selected':''}>${esc(v==='water'?(state.lang==='id'?'Air minum (PDAM/PAM)':'Drinking water (PDAM/PAM)'):v==='both'?(state.lang==='id'?'Air minum dan air limbah':'Water and wastewater'):(state.lang==='id'?'Air limbah':'Wastewater'))}</option>`).join('')}</select></label>
       <label class="field"><span>${esc(t('a_name'))}</span><input type="text" data-gen="Name" value="${esc(g.Name)}"></label>
       <div class="grid2">
@@ -243,14 +242,15 @@ const CWForm = (() => {
         <button class="btn sm danger" data-act="del-sc" ${Scenarios.length < 2 ? 'disabled' : ''}>${esc(t('delete'))}</button>
         <span class="spacer"></span>
         <label class="btn sm">${esc(t('load_file'))}<input type="file" accept=".json,application/json" id="load-ecam" multiple hidden></label>
-        <button class="btn sm" data-act="save-project">${esc(t('full_backup'))}</button><label class="btn sm">${esc(t('restore_backup'))}<input type="file" accept=".json,application/json" id="load-project" hidden></label>
-        <button class="btn sm" data-act="save-ecam">${esc(t('save_file'))}</button>
         <button class="btn sm" data-act="load-sample">${esc(t('load_sample'))}</button>
-      </div><p class="small muted" data-full-backup-scope>${esc(t('full_backup_scope').replace('{n}',Scenarios.length))}</p></div>
+      </div><details class="more-tools small"><summary>${esc(t('more_tools'))}</summary><div class="row" style="margin-top:6px">
+        <button class="btn sm" data-act="save-ecam">${esc(t('save_file'))}</button>
+        <button class="btn sm" data-act="save-project">${esc(t('full_backup'))}</button><label class="btn sm">${esc(t('restore_backup'))}<input type="file" accept=".json,application/json" id="load-project" hidden></label></div>
+      <p class="small muted" data-full-backup-scope>${esc(t('full_backup_scope').replace('{n}',Scenarios.length))}</p></details></div>
       <div class="kpis" id="kpis">${kpis()}</div>
       <div class="ecam">
         <nav class="stagenav" id="stagenav">${stageNav(sel)}</nav>
-        <div id="panel">${state.transferWarning ? `<div class="notice warn">${esc(state.transferWarning)}</div>` : ''}${!anySubstage && sel.kind === 'general' ? `<div class="notice">${esc(t('no_substages'))}</div>` : ''}${panel}
+        <div id="panel"><p class="small symbol-key" data-symbol-key>${esc(t('symbol_key'))}</p>${state.transferWarning ? `<div class="notice warn">${esc(state.transferWarning)}</div>` : ''}${!anySubstage && sel.kind === 'general' ? `<div class="notice">${esc(t('no_substages'))}</div>` : ''}${panel}
           <div class="actions-row"><button class="btn" data-go="assess:choose">${esc(t('back'))}</button><button class="btn primary" data-go="assess:results">${esc(t('view_results'))}</button></div>
         </div>
       </div>`;

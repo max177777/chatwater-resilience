@@ -39,7 +39,7 @@
     chatThreads: {}, // assessment ID -> messages about that assessment only
     checkpoints: [], explanations: {},
     inputStatus: {}, // assessment ID -> entry status of the inputs read by the covered rule checks (see CW.inputStatus)
-    ui: { tab: 'assess', view: 'assess:choose', sel: { kind: 'general' }, chatOpen: true, actionSort: 'original' },
+    ui: { tab: 'home', view: 'home', sel: { kind: 'general' }, chatOpen: true, actionSort: 'original' },
   });
   // storageLock: the saved session could not be read or backed up, so it must not be written over
   // until the user chooses to. storageFail: the last write failed (the previous save is still in place).
@@ -108,12 +108,13 @@
   const headingText = x => (x.locator && x.locatorLabel && String(x.heading || '').startsWith(x.locatorLabel)
     ? SN.locator(x.locator, state.lang) + x.heading.slice(x.locatorLabel.length) : x.heading);
   const sourcesHtml = list => list?.length ? `<div class="sources"><b>${esc(t('sources'))}</b><ol>${list.map(x =>
-    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${CV.noteHtml(x.cite, { t, esc, lang: state.lang }, 'date')}` : ''}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${x.passage_id ? ` <span class="muted small" data-passage-id>${esc(x.passage_id)}</span>` : ''}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.caveats || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ol></div>` : '';
+    `<li><span class="sid">${esc(x.id)}</span> ${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.cite ? `, ${CV.noteHtml(x.cite, { t, esc, lang: state.lang }, 'date')}` : ''}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.caveats || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ol></div>` : '';
   // Passages retrieved for template text, which cites none of them
   const relatedHtml = list => list?.length ? `<div class="sources related"><b>${esc(t('related_reading'))}</b><ul>${list.map(x =>
     `<li>${x.url ? `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.title)}</a>` : esc(x.title)}${x.heading ? ` <span class="muted">— ${esc(headingText(x))}</span>` : ''}${roleBadge(x.role)}${CV.qualificationsHtml(x.review_status, [...(x.warnings || []), ...(x.qualification_details || []).map(q => `${q.id}: ${q.title}: ${q.text}`)], { t, esc, lang: state.lang })}</li>`).join('')}</ul></div>` : '';
   // What the library was searched for, the library build, and what the citation checks do and do not cover
-  const evidenceHtml = (ev, cited) => ev?.searched ? `<details class="small muted ev-note" data-evidence data-library-build="${esc(ev.library_build || '')}"><summary>${esc(t('more_info'))}</summary>${esc(t('chat_searched'))}: ${esc(ev.searched.query || '–')}${ev.searched.status === 'none' ? ` — ${esc(t('chat_no_passage'))}` : ev.searched.status === 'unavailable' ? ` — <span data-library-unavailable>${esc(t('chat_library_unavailable'))}</span>` : ''} · ${esc(t('ev_build'))} ${esc(ev.library_build || '–')}${cited ? ` · ${esc(t('ev_checks'))}` : ''}${ev.unknown_tags?.length ? ` <span class="dc-flag" data-unknown-tags>${esc(t('chat_unknown_tag').replace('{list}', ev.unknown_tags.join(', ')))}</span>` : ''}</details>` : '';
+  // Participant review (Oct 29): search/library diagnostics are not shown to users; sources carry their own links.
+  const evidenceHtml = () => '';
   const busy = (btn, on, label) => {
     if (!btn) return;
     if (on) { btn.dataset.label = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spin"></span> ${esc(label || '')}`; }
@@ -434,6 +435,9 @@
     document.querySelectorAll('[data-tab]').forEach(b => { b.classList.toggle('stale', !!staleTab[b.dataset.tab]); b.title = staleTab[b.dataset.tab] ? t('tab_outdated') : ''; });
     $('#ai-chip').textContent = t(META.ai ? 'ai_chip_on' : 'ai_chip_off');
     $('#ai-chip').classList.toggle('off', !META.ai);
+    // Clear loading state while a plan or concept is being generated (participant review: users could not tell it was working)
+    let gs=$('#gen-status');if(!gs){gs=document.createElement('div');gs.id='gen-status';gs.className='gen-status';gs.setAttribute('role','status');gs.setAttribute('aria-live','polite');document.body.append(gs);}
+    gs.hidden=!state.ui.reviewGenerating;gs.innerHTML=state.ui.reviewGenerating?`<span class="spin"></span> ${esc(t('gen_wait'))}`:'';
     const chipText = `${t('details_title')} — ${t('utility_identity')}: ${state.profile?.name || t('not_specified')} · ${t('a_name')}: ${identityAssessment()?.General?.Name || '–'}`;
     $('#profile-chip').textContent = chipText;
     $('#profile-chip').hidden = false;
@@ -444,7 +448,7 @@
     $('#chat-input').placeholder = t('chat_placeholder');
     $('#chat').classList.toggle('collapsed', !state.ui.chatOpen);
     $('#chat-toggle').textContent = state.ui.chatOpen ? '–' : '+';
-    let help=$('#participant-help');if(!help){help=document.createElement('details');help.id='participant-help';$('#view').insertAdjacentElement('beforebegin',help);}help.innerHTML=`<summary>${esc(t('operation_help_title'))}</summary><p>${esc(t('operation_help'))}</p><p>${esc(t('ai_operations'))}</p><p>${esc(t('required_legend'))}</p>`;
+    let help=$('#participant-help');if(!help){help=document.createElement('details');help.id='participant-help';$('#view').insertAdjacentElement('beforebegin',help);}help.innerHTML=`<summary>${esc(t('operation_help_title'))}</summary><p>${esc(t('operation_help'))}</p><p>${esc(t('ai_operations'))}</p><p>${esc(t('required_legend'))}</p>`;help.hidden=true; // shown on the Home page instead (participant review: too much text on every page)
     $('#chat-toggle').setAttribute('aria-label', t(state.ui.chatOpen ? 'aria_hide_chat' : 'aria_show_chat'));
   }
 
@@ -480,12 +484,13 @@
     clearTimeout(readinessTimer);if(!Global)return;
     const report=latestReadiness=readinessReport(),stage=state.ui.view.split(':')[0],root=$('#view');
     if(state.ui.readyIssueId&&!report.issues.some(i=>i.id===state.ui.readyIssueId)){clearGuidedTarget();state.ui.readyIssueId=null;}
+    if(stage==='home'){$('#readiness-panel')?.remove();document.querySelector('[data-tab="home"] [data-readiness-count]')?.remove();return;}
     const html=ReadyUI.panel(report,readinessState(),stage,{t,esc,label:readinessLabel}),old=$('#readiness-panel');
     if(old)old.outerHTML=html;else {const heading=root.querySelector('.page-head');if(heading)heading.insertAdjacentHTML('afterend',html);else root.insertAdjacentHTML('afterbegin',html);}
     root.querySelectorAll('[data-ready-issue]').forEach(b=>b.onclick=()=>navigateReadiness(b.dataset.readyIssue,b.dataset.readyExcerpt));
-    document.querySelectorAll('[data-tab]').forEach(b=>{
-      const local={...state,ui:{...state.ui,readyOperation:null}},relevant=ReadyUI.relevant(report,local,b.dataset.tab),n=relevant.issues.filter(i=>i.severity==='blocker').length,w=relevant.issues.filter(i=>i.severity==='warning').length;
-      b.querySelector('[data-readiness-count]')?.remove();const badge=document.createElement('span');badge.dataset.readinessCount='';badge.className='readiness-count';badge.textContent=` ! ${n} · △ ${w}`;b.append(badge);b.setAttribute('aria-label',t('tab_'+b.dataset.tab)+` — ${t('gc_blocker')}: ${n}; ${t('gc_warning')}: ${w}`);
+    document.querySelectorAll('#tabs [data-tab]:not([data-tab="home"])').forEach(b=>{
+      const local={...state,ui:{...state.ui,readyOperation:null}},relevant=ReadyUI.relevant(report,local,b.dataset.tab),n=relevant.issues.filter(i=>i.severity==='blocker').length,w=relevant.issues.filter(i=>i.severity==='warning').length,sum=ReadyUI.summarize(relevant.issues);
+      b.querySelector('[data-readiness-count]')?.remove();const badge=document.createElement('span');badge.dataset.readinessCount='';badge.className='readiness-count';badge.textContent=sum.fix?` ⚠ ${sum.fix}`:'';if(sum.fix){badge.title=t('rs_fix_short').replace('{n}',sum.fix);b.append(badge);}b.setAttribute('aria-label',t('tab_'+b.dataset.tab)+` — ${t('gc_blocker')}: ${n}; ${t('gc_warning')}: ${w}`);
     });
     const r=ReadyUI.relevant(report,state,stage),counts=['blocker','warning','optional'].map(k=>t('gc_'+k)+': '+r.issues.filter(i=>i.severity===k).length).join('; '),announce=$('#readiness-announcement');
     if(announce&&announce.textContent!==counts)announce.textContent=counts;
@@ -553,6 +558,7 @@
   function go(view) { state.ui.readyOperation=null;state.ui.view = view; save(); render(); window.scrollTo({ top: 0 }); }
 
   const VIEWS = {
+    'home': viewHome,
     'assess:choose': viewChoose,
     'assess:entry': root => CWForm.renderEntry(root),
     'assess:results': root => CWForm.renderResults(root),
@@ -568,7 +574,33 @@
     const root = document.createElement('div');
     $('#view').replaceChildren(root);
     (VIEWS[state.ui.view] || viewChoose)(root);
+    document.querySelectorAll('#gen-plan,#draft').forEach(b=>{if(state.ui.reviewGenerating){b.disabled=true;b.innerHTML=`<span class="spin"></span> ${esc(t('gen_busy'))}`;}});
     renderChat();refreshReadiness();
+  }
+
+  // ---------------------------------------------------------------- Home (Stage 0): what the tool does, how to prepare, utility details
+  // Participant review (Oct 29): first-time users need a light landing page before the working stages.
+  const VIDEO_URL = ''; // set to the tutorial link once it is recorded
+  function viewHome(root) {
+    const p = state.profile || {};
+    const filled = ['name', 'location', 'service_type'].filter(k => p[k]).length;
+    const steps = [['assess', 'home_s1'], ['actions', 'home_s2'], ['plan', 'home_s3'], ['finance', 'home_s4']];
+    root.innerHTML = `<section class="home">
+      <div class="home-hero card"><h1>${esc(t('home_title'))}</h1><p class="home-lead">${esc(t('home_lead'))}</p>
+        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn primary" data-home-start>${esc(t('home_start'))}</button><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
+      <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
+      <div class="home-grid">
+        <div class="card"><h2>${esc(t('home_profile_t'))}</h2><p class="small">${esc(t('home_profile_d'))}</p>
+          <p class="small"><b>${esc(t('utility_identity'))}:</b> ${esc(p.name || t('not_specified'))}${p.location ? ' · ' + esc(p.location) : ''} <span class="muted">(${filled}/3)</span></p>
+          <button class="btn" data-home-profile>✎ ${esc(t('utility_data_btn'))}</button></div>
+        <div class="card"><h2>${esc(t('home_prepare_t'))}</h2><ul class="small">${['home_prep1', 'home_prep2', 'home_prep3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul></div>
+        <div class="card"><h2>${esc(t('home_video_t'))}</h2>${VIDEO_URL ? `<p><a class="btn" href="${esc(VIDEO_URL)}" target="_blank" rel="noopener">▶ ${esc(t('home_video_open'))}</a></p>` : `<div class="home-video" aria-label="${esc(t('home_video_soon'))}">▶</div><p class="small muted">${esc(t('home_video_soon'))}</p>`}</div>
+      </div>
+      <details class="card small"><summary><b>${esc(t('home_help_t'))}</b></summary><p>${esc(t('home_save'))}</p><p>${esc(t('ai_operations'))}</p></details>
+    </section>`;
+    root.querySelector('[data-home-start]').onclick = () => go(Scenarios.length ? 'assess:entry' : 'assess:choose');
+    root.querySelector('[data-home-example]').onclick = async () => { go('assess:entry'); await loadSample(); };
+    root.querySelector('[data-home-profile]').onclick = openDetails;
   }
 
   // ---------------------------------------------------------------- stage 1: choose module (ECAM is the entry point)
@@ -1122,12 +1154,14 @@
   function reviewPanel(kind) {
     const report=documentReview(),d=report.documents[kind];if(!d)return '';
     const tr=k=>DR.t(k,state.lang),issues=kind==='proposal'?report.issues:d.issues.map(i=>({...i,document:kind}));
-    return `<section class="card" id="review-${kind}" tabindex="-1" aria-label="${esc(tr('review'))}"><h2>${esc(tr('status'))}: <span data-document-status="${kind}">${esc(tr(d.status))}</span></h2><p class="small">${esc(tr('meaning'))}</p>
-      <div id="review-action-caveats" tabindex="-1"><h3>${esc(t('gc_shared_warnings'))}</h3>${state.selectedActions.filter(a=>a.provisional_warning||CW.isCustom(a)).map(a=>`<p class="notice warn small"><b>${esc(L(a.title)||a.id)}</b>: ${esc(a.provisional_warning?L(a.provisional_warning):t('gc_unquantified'))}</p>`).join('')}</div><h3>${esc(tr('unresolved'))}</h3><div role="status" aria-live="polite">${issues.length?`<p>${issues.length} · <a href="#readiness-panel">${esc(t('gc_title'))}</a></p>`:`<p>${esc(tr('none'))}</p>`}</div>
-      ${d.sections.map(r=>`<fieldset data-local-review="${kind}|${r.id}"><legend>${esc(r.title)} — ${esc(tr(r.status))}</legend>${r.warnings.length?`<ul class="small">${r.warnings.map(w=>`<li>${w==='calculation'?`<a href="#review-action-caveats">${esc(t('gc_shared_warnings'))}</a>`:esc(tr(w))}</li>`).join('')}</ul>`:''}
-        <details ${r.warnings.length?'open':''}><summary>${esc(tr('note'))}${r.warnings.length?' *':''}</summary><label class="field"><span>${esc(t(r.warnings.length?'gc_required':'gc_optional_field'))} · ${esc(tr('note'))}</span><textarea data-review-note="${kind}|${r.id}" aria-required="${r.warnings.length>0}" aria-label="${esc(r.title+' — '+tr('note'))}">${esc(state[kind]?.reviewNotes?.[r.id]??r.note)}</textarea></label></details>
-        <label><input type="checkbox" data-review-confirm="${kind}|${r.id}" data-review-association="${esc(r.association)}" ${r.status==='reviewed'?'checked':''} ${!r.canReview||state.ui.reviewGenerating?'disabled':''}> ${esc(tr('confirm').replace('{section}',r.title))}</label>
-        <details class="small muted"><summary>${esc(t('diagnostics'))}</summary>${esc(tr('association'))}: ${esc(r.association)}</details><p data-review-error="${r.id}" role="alert"></p></fieldset>`).join('')}</section>`;
+    // Participant review (Oct 29): short status line; each section gets an optional notes box and one check box.
+    const checked=d.sections.filter(r=>r.status==='reviewed').length,caveats=state.selectedActions.filter(a=>a.provisional_warning||CW.isCustom(a));
+    return `<section class="card review-compact" id="review-${kind}" tabindex="-1" aria-label="${esc(tr('review'))}"><p class="small"><b>${esc(tr('status'))}:</b> <span data-document-status="${kind}">${esc(tr(d.status))}</span> · <span role="status" aria-live="polite">${esc(t('rv_progress').replace('{n}',checked).replace('{m}',d.sections.length))}</span>${issues.length?` · <a href="#readiness-panel">${esc(t('rs_show'))}</a>`:''}</p>
+      ${caveats.length?`<details id="review-action-caveats" tabindex="-1" class="small"><summary>${esc(t('gc_shared_warnings'))} (${caveats.length})</summary>${caveats.map(a=>`<p class="small"><b>${esc(L(a.title)||a.id)}</b>: ${esc(a.provisional_warning?L(a.provisional_warning):t('gc_unquantified'))}</p>`).join('')}</details>`:'<div id="review-action-caveats" tabindex="-1"></div>'}
+      ${d.sections.map(r=>`<fieldset class="rv-mini" data-local-review="${kind}|${r.id}"><legend class="sr-only">${esc(r.title)}</legend>${r.warnings.length?`<p class="small rv-flag">⚠ ${esc(t('rv_flag'))}</p>`:''}
+        <details ${(state[kind]?.reviewNotes?.[r.id]??r.note)?'open':''}><summary class="small">✎ ${esc(t('rv_add_info'))}</summary><textarea data-review-note="${kind}|${r.id}" rows="3" aria-label="${esc(r.title+' — '+t('rv_add_info'))}">${esc(state[kind]?.reviewNotes?.[r.id]??r.note)}</textarea></details>
+        <label class="small"><input type="checkbox" data-review-confirm="${kind}|${r.id}" data-review-association="${esc(r.association)}" ${r.status==='reviewed'?'checked':''} ${!r.canReview||state.ui.reviewGenerating?'disabled':''}> ${esc(t('rv_checked'))}</label>
+        <p data-review-error="${r.id}" role="alert"></p></fieldset>`).join('')}</section>`;
   }
   function refreshDocumentReview(root,kind) {
     root.querySelectorAll(`[data-local-review^="${kind}|"]`).forEach(el=>el.remove());
@@ -1145,7 +1179,7 @@
       const [what,id]=tx.dataset.reviewNote.split('|'),doc=state[what];doc.reviewNotes={...doc.reviewNotes,[id]:tx.value};DR.clear(doc,id);save();
       const panel=root.querySelector('#review-'+what),report=documentReview();
       panel.querySelector('[data-document-status]').textContent=DR.t(report.documents[what].status,state.lang);
-      panel.querySelector('[role=status]').textContent=DR.t('unreviewed',state.lang);
+      {const ds=report.documents[what].sections;panel.querySelector('[role=status]').textContent=t('rv_progress').replace('{n}',ds.filter(r=>r.status==='reviewed').length).replace('{m}',ds.length);}
       const cb=root.querySelector(`[data-review-confirm="${what}|${id}"]`);cb.checked=false;
       root.querySelectorAll('[data-reviewed-export]').forEach(b=>b.disabled=true);
     });
@@ -1535,7 +1569,7 @@
     if (g) { e.preventDefault(); return go(g.dataset.go); }
     const tab = e.target.closest('[data-tab]');
     if (tab) {
-      const map = { assess: Scenarios.length?'assess:entry':'assess:choose', actions: state.actionResult && !state.actionResult.legacy ? 'actions:compare' : 'actions:select', plan: 'plan', finance: state.proposal ? 'finance:draft' : 'finance' };
+      const map = { home: 'home', assess: Scenarios.length?'assess:entry':'assess:choose', actions: state.actionResult && !state.actionResult.legacy ? 'actions:compare' : 'actions:select', plan: 'plan', finance: state.proposal ? 'finance:draft' : 'finance' };
       return go(map[tab.dataset.tab]);
     }
     const lang = e.target.closest('[data-lang]');

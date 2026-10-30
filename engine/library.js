@@ -185,6 +185,7 @@ function view(p, extra = {}) {
     locator: p.locator, locatorLabel: locatorLabel(p.locator), heading: p.heading || '', text: p.text,
     qualifications: quals, warnings, flags: p.flags || [],
     framework_ref: p.framework_ref || null, derived_from: p.derived_from || null, also_in: p.also_in || null,
+    url: s.public_url || s.urls?.[0]?.url || null, // link for readers to open the document (participant review)
     root: rootOf(p.source), ...extra,
   };
 }

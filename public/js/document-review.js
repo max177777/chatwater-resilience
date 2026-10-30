@@ -95,7 +95,7 @@
   if(!part||part.association!==association||!part.canReview||ctx.pending)throw new Error('stale_request');
   const doc=state[kind];doc.humanReview=doc.humanReview||{version:VERSION,sections:{}};
   if(!checked){delete doc.humanReview.sections[id];return;}
-  if(part.warnings.length&&!note.trim())throw new Error('required_note');
+  // Participant review (Oct 29): notes are optional extra information; a flagged section can be checked without one.
   doc.humanReview={version:VERSION,sections:{...doc.humanReview.sections,[id]:{version:VERSION,association,confirmed:true,sourceClaims:true,warnings:true,note:note.trim(),at:new Date().toISOString()}}};
  }
  function clear(doc,id){
