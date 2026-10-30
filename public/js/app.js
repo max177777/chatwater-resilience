@@ -183,12 +183,27 @@
     state.ui.sel = { kind: 'general' };
     save();
   }
+  // ---------------------------------------------------------------- the user's own utility (one per workspace)
+  // Workflow (Oct 29): users describe their utility once on Home; every assessment they create or import uses it.
+  // The fictional complete example keeps its own fictional utility.
+  function homeUtilityId() {
+    if (state.homeUtilityId && state.utilities[state.homeUtilityId]) return state.homeUtilityId;
+    const own = Scenarios.filter(sc => !state.demoAssessments?.[idOf(sc)]).map(sc => state.assessmentUtilities[idOf(sc)]).filter(u => u && state.utilities[u]);
+    let uid = own.find(u => Object.values(state.utilities[u] || {}).some(Boolean)) || own[0];
+    if (!uid) { uid = newId('u'); state.utilities[uid] = {}; }
+    return (state.homeUtilityId = uid);
+  }
+  function attachToHomeUtility() {
+    if (!state.utilities || !state.assessmentUtilities) return;
+    const uid = homeUtilityId();
+    for (const sc of Scenarios) { const aid = idOf(sc); if (!state.demoAssessments?.[aid]) state.assessmentUtilities[aid] = uid; }
+  }
+  const homeUtility = () => state.utilities[homeUtilityId()] || {};
+
   function newScenario() {
     const s = new Ecam();
     const n = Scenarios.length + 1;
-    const currentUtility=state.assessmentUtilities[Global ? idOf(Global) : ''];
-    const reuse=currentUtility && confirm(state.lang==='id'?'Gunakan utilitas yang sama? Pilih Batal untuk membuat utilitas lain.':'Reuse the current utility? Choose Cancel to create another utility.');
-    UtilityIdentity.create(state,idOf(s),reuse?currentUtility:null,newId);
+    UtilityIdentity.create(state,idOf(s),homeUtilityId(),newId);
     s.General.Name = (state.lang === 'id' ? 'Penilaian' : 'Assessment') + ' ' + n;
     if (state.location === 'indonesia' || state.profile?.country) {
       const country = state.profile?.country || 'Indonesia';
@@ -570,6 +585,7 @@
   };
 
   function render() {
+    attachToHomeUtility();
     applyShell();
     const root = document.createElement('div');
     $('#view').replaceChildren(root);
@@ -582,25 +598,32 @@
   // Participant review (Oct 29): first-time users need a light landing page before the working stages.
   const VIDEO_URL = ''; // set to the tutorial link once it is recorded
   function viewHome(root) {
-    const p = state.profile || {};
-    const filled = ['name', 'location', 'service_type'].filter(k => p[k]).length;
+    const p = homeUtility();
     const steps = [['assess', 'home_s1'], ['actions', 'home_s2'], ['plan', 'home_s3'], ['finance', 'home_s4']];
     root.innerHTML = `<section class="home">
       <div class="home-hero card"><h1>${esc(t('home_title'))}</h1><p class="home-lead">${esc(t('home_lead'))}</p>
-        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn primary" data-home-start>${esc(t('home_start'))}</button><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
+        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
+      <form class="card home-profile" id="home-profile"><h2><span class="home-num">0</span> ${esc(t('home_profile_t'))}</h2><p class="small muted">${esc(t('home_profile_d'))}</p>
+        <div class="grid2">${DETAIL_FIELDS.map(([k, lab]) => `<label class="field"><span>${esc(t(lab))}</span><input type="text" name="${k}" value="${esc(p[k] ?? '')}" placeholder="${esc(t('not_specified'))}"></label>`).join('')}</div>
+        <label class="field"><span>${esc(t('home_notes'))}</span><textarea name="notes" rows="2" placeholder="${esc(t('home_notes_ph'))}">${esc(p.notes ?? '')}</textarea></label>
+        ${responsibilityFields(p)}
+        <div class="actions-row"><span class="small muted" data-home-saved></span><button class="btn primary">${esc(t('home_save_start'))}</button></div></form>
       <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
-      <div class="home-grid">
-        <div class="card"><h2>${esc(t('home_profile_t'))}</h2><p class="small">${esc(t('home_profile_d'))}</p>
-          <p class="small"><b>${esc(t('utility_identity'))}:</b> ${esc(p.name || t('not_specified'))}${p.location ? ' · ' + esc(p.location) : ''} <span class="muted">(${filled}/3)</span></p>
-          <button class="btn" data-home-profile>✎ ${esc(t('utility_data_btn'))}</button></div>
+      <div class="home-grid home-grid-2">
         <div class="card"><h2>${esc(t('home_prepare_t'))}</h2><ul class="small">${['home_prep1', 'home_prep2', 'home_prep3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul></div>
         <div class="card"><h2>${esc(t('home_video_t'))}</h2>${VIDEO_URL ? `<p><a class="btn" href="${esc(VIDEO_URL)}" target="_blank" rel="noopener">▶ ${esc(t('home_video_open'))}</a></p>` : `<div class="home-video" aria-label="${esc(t('home_video_soon'))}">▶</div><p class="small muted">${esc(t('home_video_soon'))}</p>`}</div>
       </div>
       <details class="card small"><summary><b>${esc(t('home_help_t'))}</b></summary><p>${esc(t('home_save'))}</p><p>${esc(t('ai_operations'))}</p></details>
     </section>`;
-    root.querySelector('[data-home-start]').onclick = () => go(Scenarios.length ? 'assess:entry' : 'assess:choose');
+    root.querySelector('#home-profile').onsubmit = e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const answers = Object.fromEntries([...DETAIL_FIELDS.map(([k]) => k), 'notes', ...RS.PROFILE_KEYS].map(k => [k, String(fd.get(k) ?? '').trim()]));
+      const uid = homeUtilityId(); state.utilities[uid] = { ...(state.utilities[uid] || {}), ...answers };
+      attachToHomeUtility(); save(); toast(t('details_saved'));
+      go(Scenarios.length ? 'assess:entry' : 'assess:choose');
+    };
     root.querySelector('[data-home-example]').onclick = async () => { go('assess:entry'); await loadSample(); };
-    root.querySelector('[data-home-profile]').onclick = openDetails;
   }
 
   // ---------------------------------------------------------------- stage 1: choose module (ECAM is the entry point)
@@ -644,7 +667,7 @@
     const m = $('#modal');
     m.innerHTML = `<form class="box" id="details-form" aria-labelledby="details-title"><h2 id="details-title">${esc(t('details_title'))}</h2><p class="muted">${esc(t('details_sub'))}</p>
       <div class="grid2">${DETAIL_FIELDS.map(([k, lab]) => `<label class="field"><span>${esc(t(lab))}</span><input type="text" name="${k}" value="${esc(p[k] ?? '')}" placeholder="${esc(t('not_specified'))}"></label>`).join('')}</div>
-      <label class="field"><span>${esc(t('utility_association'))}</span><select name="utilityAssociation"><option value="">${esc(t('utility_new'))}</option>${Object.entries(state.utilities).map(([id,p])=>`<option value="${esc(id)}" ${state.assessmentUtilities[aid]===id?'selected':''}>${esc(p?.name||t('not_specified'))}</option>`).join('')}</select></label>
+      <p class="small muted">${esc(t('details_one_utility'))}</p>
       ${responsibilityFields(p)}
       <div class="actions-row"><button type="button" class="btn" id="details-cancel">${esc(t('cancel'))}</button><button class="btn primary">${esc(t('details_apply'))}</button></div></form>`;
     m.hidden = false;
@@ -652,9 +675,6 @@
     $('#details-form').onsubmit = e => {
       e.preventDefault();
       const fd = new FormData(e.target);
-      const chosen=String(fd.get('utilityAssociation')||'');
-      const old=state.assessmentUtilities[aid];
-      if(chosen!==old){UtilityIdentity.create(state,aid,chosen,newId);if(chosen){m.hidden=true;save();render();return;}}
       const answers = Object.fromEntries([...DETAIL_FIELDS.map(([k]) => k), ...RS.PROFILE_KEYS].map(k => [k, String(fd.get(k) ?? '').trim()]));
       if (state.profile || Object.values(answers).some(Boolean)) state.profile = { ...(state.profile || {}), ...answers };
       m.hidden = true; save(); toast(t('details_saved')); render();

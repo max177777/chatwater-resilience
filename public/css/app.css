@@ -337,3 +337,19 @@ details.grp > summary.grp-h { cursor: pointer; }
 .src-list { list-style: none; padding: 0; margin: 4px 0; } .src-line { margin: 3px 0; } .src-line details { display: inline; } .src-line summary { cursor: pointer; display: inline; }
 .gen-status { position: fixed; left: 50%; top: 12px; transform: translateX(-50%); z-index: 70; background: var(--teal-dark); color: #fff; padding: 10px 18px; border-radius: 10px; box-shadow: var(--shadow); font-size: 14px; }
 .gen-status[hidden] { display: none; }
+.home-profile h2 { display: flex; align-items: center; gap: 10px; margin-top: 0; }
+.home-profile { border: 2px solid var(--teal); }
+.home-grid-2 { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 900px) { .home-grid-2 { grid-template-columns: 1fr; } }
+.home-profile textarea { width: 100%; }
+.home-video { max-height: 180px; }
+
+/* Oct 29 follow-up: consistent, full-width text boxes */
+.field textarea, textarea[data-note], .rv-mini textarea, .home-profile textarea {
+  width: 100%; box-sizing: border-box; min-height: 64px; resize: vertical; background: #fff;
+  border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 14px/1.5 Inter, system-ui, sans-serif;
+}
+.field textarea:focus, textarea[data-note]:focus { outline: 2px solid var(--teal-soft); border-color: var(--teal); }
+.action-note { display: block; margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--line); }
+.action-note > span { font-weight: 600; color: var(--ink); }
+.action-note + p.small { margin: 4px 0 8px; }

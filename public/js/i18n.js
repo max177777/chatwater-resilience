@@ -1259,3 +1259,37 @@ Object.assign(UI.id, {
   chat_open_source: 'Buka dokumen', chat_cited: 'Sumber',
   gen_wait: 'Sedang membuat… bisa memakan waktu hingga satu menit. Biarkan halaman ini tetap terbuka.', gen_busy: 'Sedang membuat…',
 });
+
+// Workflow (Oct 29): utility details are filled in once on Home and used by every assessment
+Object.assign(UI.en, {
+  home_lead: 'Describe your utility, add your ECAM data, and ChatWater works out actions, a project plan and a financing proposal step by step.',
+  home_profile_t: 'Start here: your utility details',
+  home_profile_d: 'Tell us who you are. These details are used together with your ECAM results when actions, the plan and the financing proposal are generated. You can change them at any time.',
+  home_notes: 'Anything else to consider (optional)', home_notes_ph: 'e.g. flood-prone area, priority to reduce water losses, planned budget cycle',
+  home_save_start: 'Save and continue to Step 1',
+  details_one_utility: 'These are the details of your utility. They are used for all your assessments (the fictional example keeps its own).',
+});
+Object.assign(UI.id, {
+  home_lead: 'Jelaskan PDAM/PAM Anda, masukkan data ECAM, lalu ChatWater menyusun aksi, rencana proyek, dan proposal pendanaan langkah demi langkah.',
+  home_profile_t: 'Mulai di sini: data PDAM/PAM Anda',
+  home_profile_d: 'Ceritakan siapa Anda. Data ini dipakai bersama hasil ECAM saat aksi, rencana, dan proposal pendanaan dibuat. Anda dapat mengubahnya kapan saja.',
+  home_notes: 'Hal lain yang perlu dipertimbangkan (opsional)', home_notes_ph: 'misalnya daerah rawan banjir, prioritas menurunkan kehilangan air, siklus anggaran',
+  home_save_start: 'Simpan dan lanjut ke Langkah 1',
+  details_one_utility: 'Ini adalah data PDAM/PAM Anda. Data ini dipakai untuk semua penilaian Anda (contoh fiktif memakai datanya sendiri).',
+});
+
+// Oct 29 follow-up: home intro wording (as before), tidier action notes, no internal codes in the benefit basis
+Object.assign(UI.en, {
+  home_lead: 'Turn your utility\'s energy and emissions data into actions, a project plan and a financing proposal. Start with your utility details, then work through four steps.',
+  notes_label: 'Notes for this action (optional)',
+  notes_placeholder: 'e.g. local conditions, constraints, budget timing',
+  notes_help: 'Saved with this action and used when the plan and financing proposal are drafted.',
+  basis_ecam: 'Calculated by ECAM from your assessment inputs.',
+});
+Object.assign(UI.id, {
+  home_lead: 'Ubah data energi dan emisi PDAM/PAM Anda menjadi aksi, rencana proyek, dan proposal pendanaan. Mulai dengan data PDAM/PAM, lalu ikuti empat langkah.',
+  notes_label: 'Catatan untuk aksi ini (opsional)',
+  notes_placeholder: 'misalnya kondisi setempat, kendala, waktu anggaran',
+  notes_help: 'Disimpan bersama aksi ini dan dipakai saat rencana dan proposal pendanaan disusun.',
+  basis_ecam: 'Dihitung oleh ECAM dari masukan penilaian Anda.',
+});
