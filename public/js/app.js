@@ -620,8 +620,13 @@
     const p = homeUtility();
     const steps = [['assess', 'home_s1'], ['actions', 'home_s2'], ['plan', 'home_s3'], ['finance', 'home_s4']];
     root.innerHTML = `<section class="home">
-      <div class="home-hero card"><h1>${esc(t('home_title'))}</h1><p class="home-lead">${esc(t('home_lead'))}</p>
-        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
+      <div class="home-hero card"><div class="hero-text">
+          <p class="hero-kicker">💧 ${esc(t('home_kicker'))}</p>
+          <h1>${esc(t('home_title'))}</h1><p class="home-lead">${esc(t('home_lead'))}</p>
+          <ul class="hero-points">${['home_pt1', 'home_pt2', 'home_pt3'].map(k => `<li>${esc(t(k))}</li>`).join('')}</ul>
+          <div class="row hero-actions"><button class="btn primary hero-cta" data-home-start>${esc(t('home_cta'))}</button><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
+        <img class="hero-art" src="/media/hero-water.svg" alt="" aria-hidden="true">
+        <svg class="hero-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 C150 4 300 40 450 22 C600 4 750 40 900 22 C1050 4 1150 30 1200 18 V40 H0 Z"/></svg></div>
       <form class="card home-profile" id="home-profile"><h2><span class="home-num">0</span> ${esc(t('home_profile_t'))}</h2><p class="small muted">${esc(t('home_profile_d'))}</p>
         <div class="grid2">${DETAIL_FIELDS.map(([k, lab]) => `<label class="field"><span>${esc(t(lab))}</span><input type="text" name="${k}" value="${esc(p[k] ?? '')}" placeholder="${esc(t('not_specified'))}"></label>`).join('')}</div>
         <label class="field"><span>${esc(t('home_notes'))}</span><textarea name="notes" rows="2" placeholder="${esc(t('home_notes_ph'))}">${esc(p.notes ?? '')}</textarea></label>
@@ -643,6 +648,7 @@
       go(Scenarios.length ? 'assess:entry' : 'assess:choose');
     };
     root.querySelector('[data-home-example]').onclick = async () => { go('assess:entry'); await loadSample(); };
+    root.querySelector('[data-home-start]').onclick = () => { const f = root.querySelector('#home-profile'); f.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => f.querySelector('input[name=name]')?.focus({ preventScroll: true }), 400); };
   }
 
   // ---------------------------------------------------------------- stage 1: choose module (ECAM is the entry point)
