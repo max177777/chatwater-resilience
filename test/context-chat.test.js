@@ -289,6 +289,8 @@ const custom = (over = {}) => ({
     const otherHtml = CV.assistant({ ai: true, content: 'x', retrieval: { status: 'none', passages: [] }, context: ctxB.context, sources: [], support: [] }, vctx);
     assert.ok(otherHtml.includes('data-other-assessment') && otherHtml.includes('data-ai-label'));
     assert.ok(CV.scope({ name: 'Utility A (hypothetical)', focusLabel: 'U01', ai: false }, vctx).includes('data-readonly'));
+    const fmt = CV.formatReply('Answer [S1].\n- **Note:** <img src=x> text', vctx.esc);
+    assert.ok(fmt.includes('<li><b>Note:</b>') && !fmt.includes('**') && !fmt.includes('<img'), 'bold and bullets rendered, HTML escaped');
     console.log('  ok - chat view: AI-off label, no-passage message, other-assessment warning, escaping, read-only note');
 
     console.log('\nContext chat tests passed');

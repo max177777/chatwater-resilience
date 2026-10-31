@@ -18,3 +18,4 @@ Style (participant review, Oct 2026 — the users are water utility staff, not r
 - Do not use internal or technical words such as "freshness", "provenance", "association", "context block", "retrieval", "passage", input codes or variable names. Say "your results", "your plan", "the guidance document".
 - Cite only the one or two most useful sources with their [S#] tag; do not discuss how the sources were searched.
 - If something is missing, say in one sentence what to add and where (for example "Add your service area in Utility details").
+- The app shows each cited source under your answer with a link that opens the document at the cited page. Do not say that you have no link or web address for a source; refer to it by its [S#] tag.

@@ -132,6 +132,24 @@
       </dl></details>`;
   }
 
+  /**
+   * Light formatting for AI answers: the model writes Markdown (**bold**, "- " bullets, "#" headings).
+   * Text is escaped first, then only these patterns become tags, so no model-written HTML reaches the page.
+   */
+  function formatReply(text, esc) {
+    const inline = l => l.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<i>$2</i>');
+    const out = []; let list = null;
+    for (const raw of esc(String(text || '')).split('\n')) {
+      const bullet = raw.match(/^\s*(?:[-*•]|\d+[.)])\s+(.*)$/), head = raw.match(/^\s*#{1,6}\s+(.*)$/);
+      if (bullet) { (list || (list = [])).push(`<li>${inline(bullet[1])}</li>`); continue; }
+      if (list) { out.push(`<ul>${list.join('')}</ul>`); list = null; }
+      if (head) out.push(`<p><b>${inline(head[1])}</b></p>`);
+      else if (raw.trim()) out.push(`<p>${inline(raw)}</p>`);
+    }
+    if (list) out.push(`<ul>${list.join('')}</ul>`);
+    return out.join('');
+  }
+
   /** One assistant message from a /api/chat response. */
   function assistant(m, ctx) {
     const ret = m.retrieval || { status: 'none', passages: [] };
@@ -157,7 +175,7 @@
     const support = (m.support || []).map(s => s.status === 'unknown_source' ? '' :
       `<li data-support="${esc(s.status)}">[${esc(s.id)}] ${esc(t(s.status === 'low_overlap' ? 'chat_support_low' : 'chat_support_overlap').replace('{p}', Math.round(100 * s.overlap)))}</li>`).join('');
     return `<div class="msg bot" data-ai="on"><div class="small muted" data-ai-label>${esc(t('chat_ai_answer_label'))}</div>${other}${focusProblem}${dropped}
-      <div class="reply">${esc(m.content)}</div>
+      <div class="reply" data-reply-format>${formatReply(m.content, esc)}</div>
       ${(m.sources || []).length ? `<div class="small src-head"><b>${esc(t('chat_cited'))}</b></div><ul class="src-list small">${m.sources.map(p => sourceLine(p, ctx, p.tag)).join('')}</ul>` : ''}
       ${ret.status === 'unavailable' ? noPassage : ''}
       ${contextPanel(m.context, ctx, false)}</div>`;
@@ -171,5 +189,5 @@
       <div class="small muted" data-readonly>${esc(t('chat_readonly'))}${ai ? '' : ' ' + esc(t('chat_ai_off_short'))}</div>`;
   }
 
-  return { excerpt, sourceLine, pageUrl, contextPanel, assistant, scope, focusLabel, qualificationsHtml, noteHtml };
+  return { excerpt, sourceLine, pageUrl, formatReply, contextPanel, assistant, scope, focusLabel, qualificationsHtml, noteHtml };
 });

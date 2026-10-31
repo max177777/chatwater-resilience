@@ -402,3 +402,5 @@ details.grp > summary.grp-h { cursor: pointer; }
 .home-mode.home-chat-open .chat-head { border-bottom: 1px solid var(--line); }
 .home-mode.home-chat-open .chat.collapsed .chat-body, .home-mode.home-chat-open .chat.collapsed .chat-scope { display: block; }
 .home-mode.home-chat-open .chat.collapsed .chat-form { display: flex; }
+.msg .reply[data-reply-format] { white-space: normal; }
+.msg .reply p { margin: 0 0 6px; } .msg .reply ul { margin: 0 0 6px; padding-left: 18px; } .msg .reply li { margin: 2px 0; }
