@@ -1356,3 +1356,19 @@ Object.assign(UI.en, { ai_fail_figures: 'AI text only stated figures; kept the t
 Object.assign(UI.id, { ai_fail_figures: 'teks AI hanya berisi angka; versi tabel dipakai', ai_fail_timeout: 'AI terlalu lama merespons', ai_fail_empty: 'AI tidak mengembalikan teks', ai_fail_service: 'kesalahan layanan AI' });
 Object.assign(UI.en, { chat_resize: 'Drag to resize the chat', finance_title: 'Financing proposal: Green Climate Fund (GCF) preliminary project concept' });
 Object.assign(UI.id, { chat_resize: 'Seret untuk mengubah lebar obrolan', finance_title: 'Proposal pendanaan: konsep awal proyek Green Climate Fund (GCF)' });
+
+// Comprehensive worked example (Tirtawening Bandung, water + wastewater)
+Object.assign(UI.en, {
+  demo_accept: 'Load the worked example "Tirtawening Bandung" (water supply + wastewater)? It combines public 2023 utility data, historical 2019 proxies and labelled assumptions for demonstration. It is not a verified inventory, an approved project or utility endorsement. Your existing work is kept.',
+  demo_steps: 'Worked example: Tirtawening Bandung (water + wastewater; R reported · D derived · P proxy · A assumed). Finish the assessment, choose actions (e.g. water loss, pump checks and the three prepared custom actions) and save, generate the plan, then create the GCF preliminary concept.',
+  home_example: 'Try the worked example (Bandung)',
+  home_guide_doc: 'Worked example guide (Word)',
+});
+Object.assign(UI.id, {
+  demo_accept: 'Muat contoh "Tirtawening Bandung" (air minum + air limbah)? Contoh ini menggabungkan data publik PDAM 2023, proksi historis 2019 dan asumsi berlabel untuk demonstrasi. Bukan inventaris terverifikasi, proyek yang disetujui, atau dukungan PDAM. Pekerjaan Anda tetap tersimpan.',
+  demo_steps: 'Contoh: Tirtawening Bandung (air minum + air limbah; R dilaporkan · D turunan · P proksi · A asumsi). Selesaikan penilaian, pilih aksi (mis. kehilangan air, pemeriksaan pompa dan tiga aksi khusus yang disiapkan) lalu simpan, buat rencana, kemudian susun konsep awal GCF.',
+  home_example: 'Coba contoh (Bandung)',
+  home_guide_doc: 'Panduan contoh (Word)',
+});
+Object.assign(UI.en, { load_sample: 'Load worked example (Bandung)' });
+Object.assign(UI.id, { load_sample: 'Muat contoh (Bandung)' });

@@ -381,6 +381,45 @@
    }
   },
   {
+   "id": "team-tirtawening-bandung-worked-example",
+   "title": "Tirtawening Bandung: ChatWater Stages 1–4 worked example",
+   "publisher": "ChatWater team (working document)",
+   "date": "2026-10-30",
+   "language": "en",
+   "scope": "Indonesia (Kota Bandung)",
+   "stages": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "topic": "plan",
+   "role": "training_example",
+   "review_status": "Team working document combining public utility data, historical proxies and labelled assumptions. Not reviewed or endorsed by the utility.",
+   "caveats": [
+    "Worked demonstration: figures labelled A (assumed) or P (proxy) are not facts about the utility; investment amounts and benefits are illustrative."
+   ],
+   "public_url": "/sources/team-tirtawening-bandung-worked-example.pdf",
+   "relationships": [],
+   "family": "team-tirtawening-bandung-worked-example",
+   "urls": [
+    {
+     "url": "/sources/team-tirtawening-bandung-worked-example.pdf",
+     "status": "open-source copy hosted by ChatWater (team confirmation, 2026-10-30); pinned by SHA-256"
+    }
+   ],
+   "sha256": "f9896ef693223e03c5787739f475e92c42815fa0934e4c9a3aaf5a9cca672c7b",
+   "file": "Sources/Team/team-tirtawening-bandung-worked-example.pdf",
+   "status": "indexed",
+   "extraction": {
+    "method": "pdf-parse text layer; no OCR",
+    "quality": "good",
+    "unit_type": "page",
+    "units": 26,
+    "passages": 79
+   }
+  },
+  {
    "id": "wb-2020-waste-to-resource-lac",
    "title": "From Waste to Resource: Shifting paradigms for smarter wastewater interventions in Latin America and the Caribbean",
    "publisher": "World Bank (Rodriguez, Serrano, Delgado, Nolasco, Saltiel)",

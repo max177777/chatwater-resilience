@@ -279,10 +279,14 @@
   async function loadSample() {
     if(!confirm(t('demo_accept')))return;
     let text;
-    try { text = await fetch('/samples/complete-example.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
+    // Comprehensive worked example (water + wastewater, Tirtawening Bandung; team document Oct 2026)
+    try { text = await fetch('/samples/bandung-example.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
     catch { return toast(t('sample_unavailable')); }
     if(!importEcamText(text))return;
-    const demo=DemoExample.build(plain(Global),metaOf(Global),state.lang);
+    const demo=DemoBandung.build(plain(Global),metaOf(Global),state.lang);
+    { const aid=idOf(Global),now=new Date().toISOString();let used=[];
+      for(const input of demo.custom){const label=CA.nextLabel(used);const saved=CA.create({assessmentId:aid,cid:newId('c'),label,input,now});if(saved){state.customActions=[...customList(),saved];used.push(label);}}
+      if(used.length)state.customLastLabel={...(state.customLastLabel||{}),[aid]:used[used.length-1]}; }
     const uid=UtilityIdentity.create(state,idOf(Global),null,newId);state.utilities[uid]=demo.profile;
     state.inputStatus[idOf(Global)]=demo.record;
     state.demoAssessments={...state.demoAssessments,[idOf(Global)]:{language:state.lang,origin:demo.record.provenance}};
@@ -641,7 +645,7 @@
         <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" disabled aria-disabled="true">${esc(t('adapt_creat'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button>
         <button class="btn" disabled aria-disabled="true">${esc(t('adapt_wsp'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button></div></div>
       <div class="home-grid home-grid-2">
-        <div class="card home-prepare"><h2>${esc(t('home_prepare_t'))}</h2>${['home_prep1', 'home_prep2'].map(k => `<p>${esc(t(k))}</p>`).join('')}</div>
+        <div class="card home-prepare"><h2>${esc(t('home_prepare_t'))}</h2>${['home_prep1', 'home_prep2'].map(k => `<p>${esc(t(k))}</p>`).join('')}<p><a href="/sources/team-tirtawening-bandung-worked-example.docx" download>📄 ${esc(t('home_guide_doc'))}</a></p></div>
         <div class="card"><h2>${esc(t('home_video_t'))}</h2><div data-video-slot><button type="button" class="video-toggle" data-video-open><span class="vt-icon" aria-hidden="true">▷</span> ${esc(t('home_video_btn'))} · 0:59</button></div></div>
       </div>
       <details class="card home-fold"><summary>${esc(t('home_help_t'))}</summary><p class="small">${esc(t('home_save'))}</p><p class="small">${esc(t('ai_operations'))}</p></details>

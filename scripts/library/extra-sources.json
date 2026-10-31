@@ -1,0 +1,16 @@
+{
+  "_note": "Library metadata for team documents that are not in sources.json (keyed by path under the input folder).",
+  "Sources/Team/team-tirtawening-bandung-worked-example.pdf": {
+    "id": "team-tirtawening-bandung-worked-example",
+    "title": "Tirtawening Bandung: ChatWater Stages 1–4 worked example",
+    "publisher": "ChatWater team (working document)",
+    "date": "2026-10-30",
+    "language": "en",
+    "scope": "Indonesia (Kota Bandung)",
+    "stages": [1, 2, 3, 4],
+    "topic": "plan",
+    "role": "training_example",
+    "review_status": "Team working document combining public utility data, historical proxies and labelled assumptions. Not reviewed or endorsed by the utility.",
+    "caveats": ["Worked demonstration: figures labelled A (assumed) or P (proxy) are not facts about the utility; investment amounts and benefits are illustrative."]
+  }
+}
