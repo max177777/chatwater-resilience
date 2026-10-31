@@ -534,7 +534,7 @@ function retrievalContext(ctx) {
   const parts = [];
   const d = ctx.focus_detail;
   if (d?.action) parts.push(d.action.title, d.action.problem_addressed || '', d.action.description || '');
-  if (d?.substage) parts.push(d.substage.name, ...d.substage.components.map(c => c.source || c.component));
+  if (d?.substage) parts.push(d.substage.name, ...(d.substage.components || []).map(c => c.source || c.component)); // input focus carries a substage without components
   if (d?.section) parts.push(d.section.title);
   if (d?.code) parts.push(d.description);
   if (ctx.focus.kind === 'missing') parts.push('baseline data measurement');

@@ -1352,3 +1352,7 @@ Object.assign(UI.id, {
   home_prep1: 'Berkas ECAM atau data satu tahun tentang air, energi, dan layanan.', home_prep2: 'Lokasi dan layanan PDAM/PAM Anda.',
   home_video_btn: 'Cara kerja ChatWater',
 });
+Object.assign(UI.en, { ai_fail_figures: 'AI text only stated figures; kept the table version', ai_fail_timeout: 'AI took too long', ai_fail_empty: 'AI returned no text', ai_fail_service: 'AI service error' });
+Object.assign(UI.id, { ai_fail_figures: 'teks AI hanya berisi angka; versi tabel dipakai', ai_fail_timeout: 'AI terlalu lama merespons', ai_fail_empty: 'AI tidak mengembalikan teks', ai_fail_service: 'kesalahan layanan AI' });
+Object.assign(UI.en, { chat_resize: 'Drag to resize the chat', finance_title: 'Financing proposal: Green Climate Fund (GCF) preliminary project concept' });
+Object.assign(UI.id, { chat_resize: 'Seret untuk mengubah lebar obrolan', finance_title: 'Proposal pendanaan: konsep awal proyek Green Climate Fund (GCF)' });

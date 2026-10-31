@@ -404,3 +404,14 @@ details.grp > summary.grp-h { cursor: pointer; }
 .home-mode.home-chat-open .chat.collapsed .chat-form { display: flex; }
 .msg .reply[data-reply-format] { white-space: normal; }
 .msg .reply p { margin: 0 0 6px; } .msg .reply ul { margin: 0 0 6px; padding-left: 18px; } .msg .reply li { margin: 2px 0; }
+
+/* Resizable chat (drag the left edge) and a one-column context panel inside the chat */
+.layout { grid-template-columns: minmax(0, 1fr) var(--chat-w, 340px); }
+.chat { position: sticky; }
+.chat-resize { position: absolute; left: -7px; top: 0; bottom: 0; width: 12px; cursor: col-resize; z-index: 5; }
+.chat-resize::after { content: ''; position: absolute; left: 5px; top: 50%; width: 3px; height: 44px; margin-top: -22px; border-radius: 2px; background: var(--line); }
+.chat-resize:hover::after, .chat-resize:focus-visible::after, .chat-resizing .chat-resize::after { background: var(--teal); }
+.chat-resizing, .chat-resizing * { cursor: col-resize !important; user-select: none; }
+.chat .dc-dl { grid-template-columns: 1fr; gap: 2px; } .chat .dc-dl dt { font-weight: 600; margin-top: 6px; }
+@media (max-width: 1100px) { .layout { grid-template-columns: 1fr; } .chat-resize { display: none; } }
+.home-mode .chat-resize { display: none; }
