@@ -31,8 +31,13 @@ function sectionBody(sec,f,input,lang){
 }
 /** Removes sentences that state quantities (numbers with units, currency, percentages); other text is kept as written. */
 function dropFigureSentences(text){
+ // Split only where sentence punctuation is followed by whitespace, so "**Summary.** Text" and decimals such as 101.5 stay whole.
+ // Bold markers left unpaired by a dropped sentence are removed, so no stray ** reaches the document.
  const {hasFigures}=require('../public/js/feedback-ui');
- return String(text||'').split('\n').map(line=>(line.match(/[^.!?]+[.!?]*(\s+|$)/g)||[line]).filter(s=>!hasFigures(s)).join('').trimEnd()).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+ return String(text||'').split('\n').map(line=>{
+  const kept=line.split(/(?<=[.!?])\s+/).filter(s=>!hasFigures(s)).join(' ').trimEnd();
+  return (kept.match(/\*\*/g)||[]).length%2?kept.replace(/\*\*/g,''):kept;
+ }).join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
 /** Short reason for a section that kept the template text (shown to the user). */
 function failureReason(message){
