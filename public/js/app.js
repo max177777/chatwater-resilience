@@ -632,6 +632,9 @@
           <div class="row hero-actions"><button class="btn primary hero-cta" data-home-start>${esc(t('home_cta'))}</button><button class="btn" data-home-example>${esc(t('home_example'))}</button></div></div>
         <img class="hero-art" src="/media/hero-water.svg" alt="" aria-hidden="true">
         <svg class="hero-wave" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true"><path d="M0 22 C150 4 300 40 450 22 C600 4 750 40 900 22 C1050 4 1150 30 1200 18 V40 H0 Z"/></svg></div>
+      <div class="card planned-card" data-planned-assessments><h2>${esc(t('adapt_title'))}</h2><p class="small muted">${esc(t('adapt_sub'))}</p>
+        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" disabled aria-disabled="true">${esc(t('adapt_creat'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button>
+        <button class="btn" disabled aria-disabled="true">${esc(t('adapt_wsp'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button></div></div>
       <div class="card home-profile-card"><div class="home-profile-head"><div><h2>💧 ${esc(t('home_profile_t'))}</h2>
           <p class="small muted" data-home-profile-status>${p.name ? `<b>${esc(p.name)}</b>${p.location ? ' · ' + esc(p.location) : ''}` : esc(t('home_profile_empty'))}</p></div>
           <button type="button" class="btn ${p.name ? '' : 'primary'}" data-home-toggle aria-expanded="false" aria-controls="home-profile">✎ ${esc(t(p.name ? 'home_profile_edit' : 'home_profile_enter'))}</button></div>
@@ -641,9 +644,6 @@
         ${responsibilityFields(p)}
         <div class="actions-row"><button type="button" class="btn" data-home-close>${esc(t('cancel'))}</button><button class="btn primary">${esc(t('home_save_start'))}</button></div></form></div>
       <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
-      <div class="card planned-card" data-planned-assessments><h2>${esc(t('adapt_title'))}</h2><p class="small muted">${esc(t('adapt_sub'))}</p>
-        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" disabled aria-disabled="true">${esc(t('adapt_creat'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button>
-        <button class="btn" disabled aria-disabled="true">${esc(t('adapt_wsp'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button></div></div>
       <div class="home-grid home-grid-2">
         <div class="card home-prepare"><h2>${esc(t('home_prepare_t'))}</h2>${['home_prep1', 'home_prep2'].map(k => `<p>${esc(t(k))}</p>`).join('')}<p><a href="/sources/team-tirtawening-bandung-worked-example.docx" download>📄 ${esc(t('home_guide_doc'))}</a></p></div>
         <div class="card"><h2>${esc(t('home_video_t'))}</h2><div data-video-slot><button type="button" class="video-toggle" data-video-open><span class="vt-icon" aria-hidden="true">▷</span> ${esc(t('home_video_btn'))} · 0:59</button></div></div>
@@ -1047,7 +1047,7 @@
     const showDetails = !!state.ui.showDetails;
     const ctx = { ...cardCtx(r.assessmentId), chat: true };
     const explainHtml = o => o.rule === 'baseline' ? '' : `<div class="row" style="margin-top:6px"><button class="btn sm" data-explain="${esc(o.key)}" ${META.ai ? '' : `disabled title="${esc(t('ai_off_short'))}"`}>${esc(t('explain_ai'))}</button>${META.ai ? '' : ` <span class="small muted">${esc(t('ai_off_short'))}</span>`}</div>
-      ${state.explanations[o.key] ? `<div class="ai-text">${esc(state.explanations[o.key])}${sourcesHtml(state.explanationSources?.[o.key])}${evidenceHtml(state.explanationEvidence?.[o.key], true)}</div>` : ''}`;
+      ${state.explanations[o.key] ? `<div class="ai-text formatted">${CV.formatReply(state.explanations[o.key], esc)}${sourcesHtml(state.explanationSources?.[o.key])}${evidenceHtml(state.explanationEvidence?.[o.key], true)}</div>` : ''}`;
     const sort = AS.MEASURES[state.ui.actionSort] ? state.ui.actionSort : 'original';
     // user-proposed actions follow the calculated options; sorting puts them with the other unquantified ones
     const all = [...r.options, ...customFor(r.assessmentId)];

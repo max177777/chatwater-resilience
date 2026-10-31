@@ -139,7 +139,8 @@ const SIZE = { body: 22, note: 19, table: 19, tableNote: 18 };
 function runs(text, opts = {}) {
   const clean = s => chem(stageNames(s, opts.stageNames));
   return inline(text).map(r => {
-    const base = { text: r.code ? r.text : clean(r.text), bold: r.bold || opts.bold, italics: r.italic || opts.italics, size: opts.size, color: opts.color, font: r.code ? 'Consolas' : undefined };
+    const base = { text: r.code ? r.text : clean(r.text).replace(/\*\*+/g, ''), // unpaired ** never reaches Word
+      bold: r.bold || opts.bold, italics: r.italic || opts.italics, size: opts.size, color: opts.color, font: r.code ? 'Consolas' : undefined };
     if (r.placeholder) return new TextRun({ ...base, italics: true, color: COLORS.placeholderText, shading: { type: ShadingType.CLEAR, color: 'auto', fill: COLORS.placeholderFill } });
     if (r.link) return new ExternalHyperlink({ link: r.link, children: [new TextRun({ ...base, style: 'Hyperlink' })] });
     return new TextRun(base);
