@@ -253,10 +253,7 @@ const CWForm = (() => {
         <div id="panel"><p class="small symbol-key" data-symbol-key>${esc(t('symbol_key'))}</p>${state.transferWarning ? `<div class="notice warn">${esc(state.transferWarning)}</div>` : ''}${!anySubstage && sel.kind === 'general' ? `<div class="notice">${esc(t('no_substages'))}</div>` : ''}${panel}
           <div class="actions-row"><button class="btn" data-go="assess:choose">${esc(t('back'))}</button><button class="btn primary" data-go="assess:results">${esc(t('view_results'))}</button></div>
         </div>
-      </div>
-      <div class="card planned-card" data-planned-assessments><h2>${esc(t('adapt_title'))}</h2><p class="small muted">${esc(t('adapt_sub'))}</p>
-        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" disabled aria-disabled="true">${esc(t('adapt_creat'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button>
-        <button class="btn" disabled aria-disabled="true">${esc(t('adapt_wsp'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button></div></div>`;
+      </div>`;
     bindEntry(root, sel);
     showErrors(root,sel);
   }

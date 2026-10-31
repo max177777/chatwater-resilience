@@ -1,0 +1,792 @@
+[
+ {
+  "id": "team-tirtawening-bandung-worked-example#p1-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 1
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Tirtawening Bandung ChatWater Stages 1–4: a practical worked example Water supply, wastewater collection and Bojongsoang wastewater treatment Prepared October 30, 2026 | Reference water year: 2023 | English input guide We use a real Indonesian utility that operates both water and wastewater services. We combine published utility information with clearly identified historical proxies and example assumptions to show how to complete the whole ChatWater workflow. [1–6] This is a report-ready demonstration, not a verified Tirtawening emissions inventory, an approved investment, or evidence of utility endorsement. How to use this guide Step What we enter or prepare 1 Assess Utility profile; ECAM water and wastewater inputs; an additional climate-risk and water-safety worksheet. 2 Identify actions A short list of justified actions, including custom wastewater and resilience actions.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p1-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 1
+  },
+  "heading": "",
+  "text": "3 Project plan Eight planning fields, a 104-week schedule, an illustrative budget and measurable indicators. 4 Financing Proposal All preliminary-concept fields, financing choices, an eight-section narrative and preparation gaps. Our evidence labels Label Meaning R | Reported A figure or operating fact from an identified public source. We retain its year and boundary. D | Derived Our arithmetic using reported data. This does not make the result a utility-certified measurement. P | Proxy A historical value or a different statistical definition used temporarily for the demonstration. A | Assumed An illustrative number, target, cost, risk score or planning choice. It is not a reported utility fact. Unknown The verified input is unavailable. For actual reporting, we keep it unknown rather than treating it as zero. Enter numbers without thousands separators. Use annual totals unless stated otherwise.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p1-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 1
+  },
+  "heading": "",
+  "text": "For Unknown, use the ? control or leave the field blank; do not type the word into a numeric box. Bracketed source numbers refer to the linked references. We inspected the live forms. CREAT and WHO climate-resilient Water Safety Plan modules are labeled “Not active yet.” We therefore supply their additional inputs as manual planning notes, not as completed in-app assessments. We do not claim that this Bandung case was run and validated end to end. [16] Evidence-based worked example | 1",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p2-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 2
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG The real utility and the limits of our evidence Perumda Tirtawening Kota Bandung operates drinking-water and domestic wastewater services. Bojongsoang is in Kabupaten Bandung and serves wastewater from Kota Bandung. We keep the service area and the plant location distinct. Its treatment train uses anaerobic, facultative and maturation ponds, with inlet pumping, screening and grit removal. It is not an activated-sludge plant. [3, 4] Published indicator Value and reporting basis Water customers; active domestic connections 169,373 total customers; 165,680 active domestic connections, 2023 [1]. These are different categories. Population served; service-area population 965,283 served; 2,793,549 in the reported service area, 2023 [1]. Administrative population 2,569,107, 2023 [1]. Do not interchange this with the larger service-area denominator. Water service coverage; supply hours 34.55%; 18 hours/day, 2023 [1].",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p2-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 2
+  },
+  "heading": "",
+  "text": "Coverage uses the source’s service-area denominator. Non-revenue water (NRW) 39.42%, 2023 [1]. NRW includes unbilled authorized use as well as losses. Production capacity; reservoir storage 2,789 L/s installed; 667 L/s unavailable; 28,400 m³ reservoir capacity, 2023 [1]. Pipe length 126,300 m transmission; 1,487,522 m distribution, 2023 [1]. Water volume reported by BPS 36,622,383 m³ “air disalurkan,” 2023 [2]. It is not explicitly identified as ECAM billed consumption. Tariff and cost recovery Average tariff IDR 6,638/m³; full-cost-recovery indicator 85.53%, 2023 [1]. Company financial context Revenue IDR 331.032 billion; operating expense IDR 314.617 billion; net profit IDR 6.432 billion, 2023 [1]. Existing plans and staffing RPAM exists; business plan 2022–2026; RISPAM 2021–2040; 700 employees in 2023 [1]. The 2024 performance book reports 2023 operations. We use this consistent, traceable water reference year, not a claim about the latest utility performance.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p2-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 2
+  },
+  "heading": "",
+  "text": "The book reports an energy-cost indicator of IDR 79/m³, not electricity consumption in kWh. It cannot substitute for meter readings. [1] Our weakest evidence is annual wastewater and energy data: Bojongsoang’s available detailed monthly dataset is from 2019. We do not relabel it as measured 2023 data. All investment amounts and future benefits below are assumptions. Evidence-based worked example | 2",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p3-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | Utility profile and general settings We open ChatWater in English, use a separate DEMO utility profile and create a new assessment. The utility profile can be shared by several assessments, so we check its association before editing an existing profile. [16] Profile field Our entry Utility name DEMO | Perumda Tirtawening Kota Bandung City / regency, province Kota Bandung, West Java, Indonesia; Bojongsoang WWTP is in Kabupaten Bandung. Water supply; sewer network; central IPAL We operate it, for all three [R: 3]. Household septic tanks and pits Not our responsibility [A: individual household containment is outside this modeled operating boundary]. Desludging and faecal sludge treatment Not sure / not answered. Desludging services are publicly described, but confirm the current LLTT/IPLT operating scope before selecting a combined responsibility category [3]. Capital budget for new investment Partly; co-financing needed [A].",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p3-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "This is not an assessment of current borrowing capacity. In-house engineering capacity Some [A]. We assume internal operations staff plus specialist support. Operational data Partly measured, partly estimated [A: describes this example dataset]. General field Our entry Service type Water and wastewater Assessment name DEMO Tirtawening Bandung | 2023 reference + historical proxies Period From 2023-01-01 to 2024-01-01. The end date is exclusive: 365 days. Country; currency Indonesia; IDR Global warming potential IPCC Fifth Assessment Report, without climate–carbon feedbacks: CH₄ = 28; N₂O = 265. Grid emission factor 0.677 kgCO₂e/kWh [A: retained application default for reproducibility, not a verified 2023 Java–Bali factor]. Paste into Comments We use verified 2023 water indicators, historical 2019 Bojongsoang proxies and explicit test assumptions. Energy, nitrogen, sludge, discharge balance and emission-factor applicability are unverified.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p3-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 3
+  },
+  "heading": "",
+  "text": "This is a worked example, not a measured inventory or an approved project. We exclude onsite sanitation, fuels, trucking and downstream sludge management. Zero bypass means an assumed test boundary, not observed zero pollution. Climate evidence from 2025–2026 informs forward planning only. See this guide’s labeled input tables and sources. Evidence-based worked example | 3",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p4-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | Water supply inputs We add one substage each for Water abstraction, Water treatment and Water distribution. These aggregate the utility system for the example. We do not copy total utility electricity into each substage.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p4-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "Field in ChatWater Enter this value Unit Basis Water supply: resident population 2793549 people R [1] Water abstraction: volume abstracted / conveyed 64000000 m³/year A Water abstraction: grid energy consumed 1000000 kWh/year A Water treatment: volume treated 62000000 m³/year A Water treatment: grid energy consumed 800000 kWh/year A Water distribution: serviced population 965283 people R [1] Water distribution: volume distributed 60452927 m³/year D + P Water distribution: grid energy consumed 1200000 kWh/year A Water distribution: authorized consumption 37226912 m³/year D + A Water distribution: billed consumption 36622383 m³/year P [2] Grid factor in each water substage 0.677 kgCO₂e/kWh A Why these volumes are internally consistent For the test only, we map the BPS volume to billed consumption. We then calculate distribution input = 36,622,383 ÷ (1 − 0.3942) = 60,452,927 m³, rounded. We assume unbilled authorized use is 1% of distribution input, or 604,529 m³.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p4-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "Authorized consumption becomes 36,622,383 + 604,529 = 37,226,912 m³. This reproduces 39.42% NRW by construction. Water loss is 38.42% because it excludes unbilled authorized use. Neither the distribution volume nor the match to NRW independently validates the BPS-to-billing mapping. Confirm system input and customer billing records before actual reporting. Optional fields and switches Choose Yes for water-efficiency inputs in distribution to expose authorized and billed consumption. If a treatment description is requested, enter “Aggregated conventional surface-water treatment plus other sources; verify plant-specific allocation.” Official sources include river water, springs and boreholes; do not describe all water as pumped groundwater. [3] Keep pumping-efficiency and electromechanical-efficiency modules off until pump head, flow and electrical measurements are available. Keep stage operating costs unknown.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p4-4",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 4
+  },
+  "heading": "",
+  "text": "For an optional training-only total water energy cost, enter IDR 4,500,000,000 = 3,000,000 kWh × assumed IDR 1,500/kWh. Do not treat company operating expense as the cost of one process. Evidence-based worked example | 4",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p5-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 5
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | What the wastewater evidence supports We add Wastewater collection and Wastewater treatment. We represent the connected sewer and Bojongsoang pond train, not every household in Bandung. We leave Onsite sanitation outside this run. Wastewater pumping stations include Gumuruh and Cijaura; Bojongsoang also has inlet screw pumps. The energy allocation must avoid counting any pump twice. [3, 4] Item What we use and what it means Treatment technology [R] Screening and grit removal, then anaerobic, facultative and maturation ponds in parallel sets A and B [4]. Historical design flow [R] 80,835 m³/day [5]. This is a design reference, not current demonstrated treatment capacity. Historical inlet flow [D] 24,566,522 m³ in 2019, derived by multiplying each monthly average daily flow by calendar days and summing [5]. Historical outlet flow [D] 18,829,038 m³ in 2019, calculated in the same way [5].",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p5-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 5
+  },
+  "heading": "",
+  "text": "Historical flow discrepancy [D] 5,737,484 m³ between inlet and outlet. The available records do not close this balance. Historical influent BOD load [D] 2,250,840.14 kg/year, calculated from monthly inlet flows and monthly BOD results [5]. Historical effluent BOD load [D] 438,036.28 kg/year, calculated from monthly outlet flows and monthly BOD results [5]. What is missing A verified 2023 sewer population, bypass record, energy allocation, nitrogen balance, sludge removals and representative pond emission factor. Two corrections that matter The 2019 flow table prints annual-average figures that do not agree with its monthly rows. We use the monthly rows and show the calculation in Appendix A. We do not copy the inconsistent printed average. [5] Monthly BOD observations are not a continuous, flow-proportional sampling program. January and February results cover set A; later results cover A and B.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p5-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 5
+  },
+  "heading": "",
+  "text": "Our annual load is a historical approximation, not a certified annual pollutant mass balance. [5] Our explicit demonstration choice We use the derived 2019 inlet volume and influent BOD as proxies. To create a simple closed-flow test, we assume the same annual volume is collected, treated and discharged, with no reuse or bypass in the modeled branch. This deliberately replaces the unexplained historical outlet balance. It does not establish that Bojongsoang actually has no bypass, water losses, withdrawals or reuse. Evidence-based worked example | 5",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p6-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 6
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | Wastewater collection inputs Field in ChatWater Enter this value Unit Basis Sanitation: resident population 2569107 people R, 2023 [1] Sanitation: wastewater generated Unknown m³/year No city total Population connected to sewer network 500000 people A Volume of collected wastewater 24566522 m³/year D + P, 2019 Collected wastewater discharged untreated 0 m³/year A: test only Collected wastewater sent to treatment 24566522 m³/year D + P + A BOD₅ load in collected wastewater 2250840.14 kg/year D + P, 2019 Total nitrogen in collected wastewater 491330.44 kg N/year A: 20 mg/L Grid electricity for collection 500000 kWh/year A Grid emission factor 0.677 kgCO₂e/kWh A CH₄ factor for sewer collection 0 kgCH₄/kgBOD A: flowing N₂O factor for sewer collection 0 kgN₂O-N/kgN A CH₄ factor for untreated discharge 0.021 kgCH₄/kgBOD A, method N₂O factor for untreated discharge 0.005 kgN₂O-N/kgN A, method We select flowing-sewer assumptions for the demonstration.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p6-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 6
+  },
+  "heading": "",
+  "text": "Zero collection factors do not prove the real sewer is always aerobic or free of sediment, stagnation and emissions. Untreated-discharge factors have no numerical effect while the assumed untreated volume is zero. [7] The 500,000-person value is an example denominator, not a verified 2023 customer count. It must not be used to claim current sewer coverage. The citywide sanitation-access percentage includes onsite services and is not Bojongsoang’s sewer coverage. [6] Extra settings Keep pump-efficiency calculations off until measurements are available. Assign collection electricity to upstream sewer pumping and assign inlet screw pumps to treatment. Mark actual stage costs unknown. If a total wastewater energy-cost example is needed, use IDR 1,875,000,000 = 1,250,000 kWh × assumed IDR 1,500/kWh. We do not estimate citywide wastewater generation by equating it to the sewer inlet flow. Infiltration, stormwater connections and non-sewered households make those quantities different.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p6-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 6
+  },
+  "heading": "",
+  "text": "For an actual inventory, untreated discharge and sewer factors remain unknown until the operating records support them. Evidence-based worked example | 6",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p7-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 7
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | Bojongsoang treatment inputs Field in ChatWater Enter this value Unit Basis Serviced population 500000 people A Volume of treated wastewater 24566522 m³/year D + P Discharged effluent to water body 24566522 m³/year A: closed flow Influent BOD₅ load 2250840.14 kg/year D + P Effluent BOD₅ load 614163.05 kg/year A: 25 mg/L Influent total nitrogen load 491330.44 kg N/year A: 20 mg/L Effluent total nitrogen load 294798.26 kg N/year A: 12 mg/L Grid electricity consumed 750000 kWh/year A Grid emission factor 0.677 kgCO₂e/kWh A Sludge removed, dry weight 150000 kg dry/year A BOD₅ removed as sludge 150000 kg BOD/year A: separate CH₄ emission factor: treatment 0.48 kgCH₄/kgBOD P: deep pond N₂O emission factor: treatment 0 kgN₂O-N/kgN P: anaerobic CH₄ emission factor: discharge 0.021 kgCH₄/kgBOD A: river type N₂O emission factor: discharge 0.005 kgN₂O-N/kgN A: Tier 1 The pollutant-load equation is volume (m³) × concentration (mg/L) ÷ 1,000.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p7-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 7
+  },
+  "heading": "",
+  "text": "Concentration and mass are different inputs. For example, 24,566,522 × 25 ÷ 1,000 = 614,163.05 kg BOD/year. Do not type “25” into the annual BOD- load field. We enter sludge dry mass and sludge BOD separately. Their equal values are coincidental assumptions for this test, not a universal conversion. Pond sludge can remain stored for years; this removal quantity is not a measured annual sludge production rate. For the test, select No for fuel engines, captured biogas, trucked reused water, avoided reuse emissions and sludge-management calculations. These switches mean “outside this run,” not verified absence at the utility. An anaerobic pond can emit methane even when no biogas is collected. Do not select “covered lagoon” merely to make treatment emissions zero. Evidence-based worked example | 7",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p8-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 8
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | Factor choices and numerical checks The pond train needs a better factor before actual reporting For a reproducible screening run, we choose “Anaerobic deep lagoon (>2m depth)” for treatment CH₄. The historical study gives 3.5 m for anaerobic ponds, with shallower downstream ponds. Applying 0.48 to the entire aggregated train is a proxy, not a validated site factor. ECAM specifically advises additional or customized factors for treatment trains with multiple technologies. [5, 7] We duplicate the assessment and test 0.12, the shallow/facultative pond default, to show sensitivity. Neither endpoint is a confidence bound or a complete model of the serial train. We do not average factors by pond area or multiply both factors by the full influent load. A verified mass balance and suitable multi-stage method are required. The treatment N₂O default of zero is an anaerobic-pond screening assumption.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p8-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 8
+  },
+  "heading": "",
+  "text": "It does not demonstrate zero N₂O across facultative and maturation ponds. Likewise, 0.005 for discharge is a generic Tier 1 factor; assess the receiving water before substituting a site-specific or nutrient-impacted factor. [7] Check Expected demonstration result Water balance Billed ≤ authorized ≤ distributed ≤ treated ≤ abstracted. NRW; water loss 39.42% NRW; 38.42% water loss. Rounded-volume differences are negligible. Water electricity 3,000,000 kWh; 2,031 tCO₂e at factor 0.677. Wastewater electricity 1,250,000 kWh; 846.25 tCO₂e at factor 0.677. All included electricity 4,250,000 kWh; 2,877.25 tCO₂e. This is an assumed scenario, not reported utility emissions. WWTP energy intensity 0.0305 kWh/m³ treated. This low assumed value is for ponds and pumping, not activated-sludge aeration. BOD load removal 1,636,677.09 kg/year, or approximately 72.71% of influent load, under the test assumptions. ECAM treatment CH₄ uses (influent BOD − BOD removed as sludge) × treatment factor × CH₄ GWP.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p8-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 8
+  },
+  "heading": "",
+  "text": "It does not additionally subtract effluent BOD in that equation. Discharged-water emissions use effluent loads separately. Follow the implemented methodology rather than replacing its formula with a different mass-balance equation. [7, equations 80 and 99] We confirm values only after checking their intended use. An app “confirmed” flag is not scientific verification. Unknown values can leave totals incomplete. We do not use an aggregate emissions total from this exercise as Tirtawening’s inventory or claim any modeled reduction as achieved. Evidence-based worked example | 8",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p9-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 9
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | Additional climate-risk inputs CREAT is not active in this version. We retain this worksheet with our assessment and paste its key findings into Stage 3 and Stage 4. We use an asset–hazard–consequence–action structure inspired by CREAT, without claiming to have run the EPA tool. [8, 16] Input Our example entry Planning horizon 2027–2040 [A]. The investment lasts 104 weeks after funding, with longer-lived assets tested beyond completion. Assets and service dependencies Cikalong raw-water intake; source-to-treatment supply; selected distribution zones; Gumuruh/Cijaura pumping; Bojongsoang inlet, power equipment and ponds [3, 4]. Exact elevations and boundaries remain to be surveyed. Observed dry-season evidence Tirtawening’s September 2, 2026 notice reports lower Cikalong raw-water flow and distribution disruption [9]. It does not quantify a climate-change trend.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p9-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 9
+  },
+  "heading": "",
+  "text": "Observed flood evidence Local government reported flooding and a levee breach in Desa Bojongsoang in February 2025 [10]. This establishes local hazard context, not proven inundation of the plant. Projection information to obtain BMKG rainfall projections and local observations for source catchments and assets. BMKG’s portal uses CMIP6 scenarios and 25 km data; local hydraulic design needs finer analysis [11]. Scenario choice Review SSP2-4.5 and SSP5-8.5, near-term 2021–2050 relative to 1981–2010, plus observed extremes [A selection using the BMKG framework]. No local percentage change has been extracted here. Dry-season stress test Assume available source yield is 20% lower for 30 days [A, not a forecast]. Calculate storage, demand restrictions and priority-service needs from actual operating data. Wet-weather stress test Assume peak sewer inflow reaches 1.5 times measured dry-weather peak, and a 6-hour power outage occurs [A]. Use measured peak flow, not annual average, for design.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p9-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 9
+  },
+  "heading": "",
+  "text": "Flood design input Unknown. Survey ground, equipment and water levels; obtain flood depths, duration and return-period estimates. Do not use a news-reported road depth as plant design level. We separate three statements: an observed service disruption, a plausible climate-related vulnerability, and a quantified future projection. Only the first two are supported here. Climate attribution and local future hazard magnitudes remain preparation tasks. Evidence-based worked example | 9",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p10-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 10
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 1 | Water safety and risk priorities Tirtawening already reported an RPAM. We propose updating it with climate considerations, not creating a plan on the assumption none exists. WHO guidance supports source-to-consumer risk management and climate resilience. [1, 12] Hazard and consequence Initial priority [A] Controls and evidence needed Dry-season low source flow reduces supply continuity. Likelihood 4 × consequence 4 = 16, high Update drought triggers, source monitoring and demand management; verify available storage and alternative supply quality. Heavy rain changes raw-water quality and may overwhelm treatment control. 3 × 4 = 12, high Track turbidity, treatment performance and disinfectant residual; establish operating limits and shutdown/escalation rules. Intermittent or low-pressure supply permits contamination entry through leaks.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p10-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 10
+  },
+  "heading": "",
+  "text": "3 × 5 = 15, high Pressure logging, leakage repair, safe restart/flushing and water-quality verification. Do not reduce pressure below a validated safe operating range. Flooding or power interruption disables sewage conveyance or inlet pumping. 3 × 5 = 15, high Survey electrical elevations; test safe backup arrangements, alarms, maintenance access and overflow response. Pond overloading, accumulated sludge or short-circuiting worsens effluent quality. 3 × 4 = 12, high Measure flow and loads; inspect hydraulics; survey sludge depth; check actual capacity and discharge requirements before expansion. Our workshop scale is 1–5 for likelihood and consequence; scores 1–4 are low, 5–9 medium, 10–16 high and 17– 25 very high. These are illustrative team judgments, not official CREAT outputs, observed probabilities or financial loss estimates.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p10-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 10
+  },
+  "heading": "",
+  "text": "Water-safety worksheet to retain with the project We record the hazard, hazardous event, affected users, existing control, control limit, monitoring frequency, responsible role, corrective response and verification record. Utility staff must set actual operating limits from the approved RPAM, treatment design and current requirements. Example entry: “Low source flow during a dry period reduces available supply. We monitor source flow daily during an alert, coordinate distribution and communicate service changes. The operations manager triggers the approved drought response when the locally validated threshold is reached. We record supply hours, pressure, residual disinfectant and complaints, with special attention to health facilities and vulnerable households.” We do not invent a universal chlorine, turbidity, flood-elevation or pressure limit. Those are engineering and public-health control values that require the utility’s system data and applicable standards. Evidence-based worked example | 10",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p11-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 11
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 2 | Choose actions with reasons After Stage 1, we open View results and continue to action identification. We check that the assessment name is Bandung. In our form review, an earlier assessment’s actions remained visible while the new assessment was incomplete. We do not reuse another case’s action totals or plan. [16] Action Our choice and reason Reduce water loss Select, then narrow the scope to three demonstration DMAs. Published NRW is 39.42% [1]. Confirm physical versus apparent losses and service pressure before estimating benefits. Existing northern-area NRW contract Coordinate before selecting sites. The utility describes a long-term Adaro performance-based contract with a target of 17% NRW from a 2020 northern- area baseline of 45.79% [13]. Do not duplicate contract areas, funding or credited savings. Verify pump performance Select diagnostics for relevant water and wastewater pumps. We lack measured head, flow and input power.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p11-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 11
+  },
+  "heading": "",
+  "text": "Testing is justified; immediate replacement is not yet justified. Bojongsoang reliability and climate risk Add a custom action. Metering, pond condition, power resilience and flood exposure need verification before expansion or methane investment. Climate-resilient RPAM update Add a custom action. Link drought, wet-weather quality and distribution continuity to the existing plan. 400 additional sewer connections Add as a conditional phase. Proceed only after capacity, effluent performance, network levels, affordability and permissions are verified. Solar PV Defer procurement. Confirm load profiles, site/roof conditions, ownership, grid arrangements and lifecycle cost. A generic percentage saving is not a site design. Aeration optimization Do not select an activated-sludge aeration action for Bojongsoang’s pond train. Inlet pumping and pond performance are the relevant starting points. Biogas capture / covered ponds Select feasibility investigation only within the custom action.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p11-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 11
+  },
+  "heading": "",
+  "text": "No construction or methane-reduction claim before gas yield, hydraulics, structural design and safety are assessed. Route untreated sewage to treatment Do not infer a real bypass problem or its absence from our assumed zero. Add this action only when measured overflow/bypass evidence and spare treatment capacity support it. Action identifiers and automatic suggestions can change. We select by action title and location, review default savings assumptions, and use Save selected actions. For custom actions, ChatWater states that benefits are not calculated or scientifically reviewed. [16] Evidence-based worked example | 11",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p12-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 12
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 2 | Copy-ready custom actions Use “+ Add your own action.” Use each heading after “Action B1/B2/B3:” as the Title, then enter the four fields below. The entries fit the displayed character limits. [16] Action B1: Bojongsoang reliability and climate-risk assessment Field Paste this entry What will be done We will verify inlet/outlet meters and pump energy, sample BOD and total nitrogen, survey pond sludge and hydraulic condition, map flood exposure and test emergency power arrangements. We will prepare a prioritized rehabilitation design and a separate methane- capture feasibility decision. Problem addressed Historical flow records do not close the water balance. Current loads, energy, bypasses and pond performance require verification before expansion or emissions-reduction claims. Location Wastewater treatment › Wastewater treatment 1 Notes We model the actual anaerobic–facultative–maturation pond train.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p12-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 12
+  },
+  "heading": "",
+  "text": "We do not assume activated sludge, zero fugitive methane or safe agricultural reuse. Coordinate with Kabupaten Bandung and relevant river and environmental authorities. Methane works are outside the initial construction budget. Action B2: Climate-resilient RPAM and service-continuity update Field Paste this entry What will be done We will update the existing RPAM with dry-season source-yield and wet-weather water- quality risks, pressure and continuity monitoring, emergency communication, priority-user support and staff drills. We will maintain a linked wastewater flood and power-loss response procedure. Problem addressed Recent source-flow disruption and local flood exposure create plausible service risks. Asset-specific future climate and consequence data are incomplete. Location Whole assessment Notes Use local observations and BMKG projections. The 20% yield reduction and 6-hour outage are stress tests, not forecasts.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p12-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 12
+  },
+  "heading": "",
+  "text": "Utility staff will approve operating triggers and validate responsibilities. Action B3: Conditional pilot of 400 sewer connections Field Paste this entry What will be done We will survey an eligible sewered catchment and develop 400 proposed connections. Construction proceeds only after treatment-capacity and effluent checks, network design, consent, affordability support and funding approval. Problem addressed Some households may remain unconnected even where a feasible sewer connection exists. The eligible sites and actual beneficiaries are not yet confirmed. Location Wastewater collection › Wastewater collection 1 Notes We allow IDR 3.2 billion using the historical 2024 grant amount per connection as a rough reference, not a current quotation. If capacity or safeguard checks fail, defer this phase and rescope the budget; do not force new inflow into an overloaded system. Evidence-based worked example | 12",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p13-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 13
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 3 | Project summary and fields 1–4 Project summary We propose a 104-week Tirtawening water-loss and wastewater-reliability pilot. We will establish a measured baseline, work in three water DMAs outside or formally coordinated with the existing northern-area NRW contract, assess and improve selected sewer/WWTP reliability controls, update the RPAM for climate risks, and conditionally connect 400 households. The illustrative investment envelope is IDR 10 billion. Sites, engineering quantities, financing and all benefit estimates remain subject to verification. 1. Define the project Our objective is to improve dry-season water-service reliability and wet-weather wastewater-service continuity while reducing avoidable losses and energy use. Our demonstration scope is three DMAs with approximately 3,000 water connections, selected pump and control assets, Bojongsoang diagnostics and limited rehabilitation, and up to 400 new sewer connections.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p13-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 13
+  },
+  "heading": "",
+  "text": "All scope quantities are assumptions. We exclude a new treatment plant, complete pond reconstruction and methane-capture construction from this initial budget. 2. Establish the baseline We retain the published 2023 water context: 39.42% NRW, 18 supply hours/day and 169,373 customers. These company indicators are not the measured baseline for the chosen pilot zones. We collect at least eight weeks of initial DMA flow, pressure, billing and pump data, supported by available 12-month records. We reconcile Bojongsoang inflow/outflow, bypasses, BOD, nitrogen, electricity and sludge records. The 2019 wastewater proxy and assumed electricity inputs are replaced before claiming project benefits. We document wet/dry-season differences and data quality. If adequate historical records are unavailable, we extend baseline monitoring before fixing benefits or construction scope. 3.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p13-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 13
+  },
+  "heading": "",
+  "text": "Identify project activities We confirm the contract and asset boundary; calibrate meters; undertake leak detection, repairs and appropriate pressure management; verify pump duty and efficiency; inspect ponds and sludge; complete flood and power-risk screening; update operating and emergency procedures; prepare designs and procurement; execute justified limited works; and monitor performance. New sewer connections are a conditional work package. Methane capture remains a feasibility question, not a guaranteed mitigation activity. 4. Assign responsibilities We propose Tirtawening’s designated project manager as accountable lead, supported by water-distribution, wastewater-operations, engineering, laboratory, finance and procurement functions. A specialist consultant supports hydraulic, climate, environmental and economic analysis. Kota Bandung supports public coordination and financing discussions;",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p13-4",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 13
+  },
+  "heading": "",
+  "text": "Kabupaten Bandung and relevant authorities are consulted for works affecting the plant location and receiving waters. We confirm actual mandates, named staff, land rights and approvals before implementation. No organization has committed through this example. Evidence-based worked example | 13",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p14-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 14
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 3 | Fields 5–8 5. Develop the implementation schedule We plan 104 weeks from confirmed funding and authorization. Weeks 1–8 establish data and responsibilities; weeks 9–16 complete feasibility and design; weeks 17–24 finalize approvals and financing; weeks 25–36 cover procurement; weeks 37–52 cover works and commissioning; and weeks 53–104 verify performance across a full annual cycle. Monitoring begins during baseline development. Procurement and works remain gated by the approved design, environmental requirements and funding. We do not assign a calendar start date before these conditions are met. 6. Define technical and operational requirements We require calibrated bulk and customer meters, timestamped flow/pressure and electricity data, pump duty- point measurements, verified network maps, laboratory quality assurance, pond/sludge surveys and safe access.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p14-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 14
+  },
+  "heading": "",
+  "text": "Design must preserve drinking-water quality and minimum operating pressure, maintain sewage conveyance during construction and demonstrate treatment capacity before new connections. We include spare parts, staff training, maintenance responsibilities, emergency power arrangements where justified, cybersecurity/access controls for telemetry, and a funded operating budget. Equipment quantities and specifications follow the survey, not this example. 7. Assess implementation risks Our main risks are overlap with the existing NRW contract; inaccurate meters; mistaken estimates of real leakage; dry-season interruption; flood exposure or power loss; pond overloading; construction disruption; land or access constraints; unaffordable household connections; procurement delay; and unfunded maintenance.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p14-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 14
+  },
+  "heading": "",
+  "text": "We manage these through a contract-boundary review, calibrated baseline, staged works, safe service continuity procedures, early community engagement, affordability assessment and capacity/effluent decision gates. We record residual risk and an accountable owner before procurement. 8. Establish monitoring and evaluation We measure DMA input, billed and unbilled authorized use separately, pressure, supply hours, complaints and repair performance. We compare pump electricity at equivalent hydraulic duty and service output. For wastewater we track metered inflow/outflow, bypass events, BOD and nitrogen loads, effluent results, pond condition and functional new connections. We verify training and emergency exercises. We report baseline, target, result, source, uncertainty and responsible role, with separate water and wastewater beneficiary counts and checks for overlap. We do not claim emissions savings until the baseline, factors and post-project data are accepted.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p14-4",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 14
+  },
+  "heading": "",
+  "text": "Review before saving We use Review details, replace generic AI text with these case-specific entries, and resolve or document each missing-data item. A saved draft is not evidence of feasibility, utility approval or funding eligibility. We save the project plan only under the Bandung assessment. [16] Evidence-based worked example | 14",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p15-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 15
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 3 | Schedule and decision gates ID / task Owner role [A] Start / weeks After T1 Baseline, survey and boundary review Utility project manager + operations 1 / 8 None T2 Feasibility, risk assessment and design Engineering + specialist consultant 9 / 8 T1 T3 Approvals, safeguards and financing Project manager + finance 17 / 8 T2 T4 Procurement Procurement + engineering 25 / 12 T3 T5 Works, training and commissioning Contractor + utility operations 37 / 16 T4 T6 Performance monitoring and evaluation Operations + laboratory + finance 53 / 52 T5 These are sequential planning allowances, not commitments by the utility or a contractor. We enter Weeks and After in the task table; start weeks should follow the dependency logic. Activities such as stakeholder engagement and routine monitoring run throughout.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p15-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 15
+  },
+  "heading": "",
+  "text": "Gate Evidence needed to proceed G1: confirm pilot scope, end of week 8 Mapped DMAs and customer list; written check against the Adaro contract; preliminary wastewater flow balance and asset responsibilities. G2: approve design, end of week 16 Verified leakage and hydraulic diagnosis; pump duty tests; pond and flood assessment; cost estimate; current environmental and operating requirements. G3: commit procurement, end of week 24 Approved funding, procurement plan, land/access arrangements, safeguards and operating-cost provision. G4: authorize 400 connections Capacity and effluent evidence, network levels, household eligibility/consent, affordability measures and approved design. Failure defers this package. G5: accept works, end of week 52 Commissioning tests; as-built records; operator training; spare parts; water- quality and wastewater-performance checks.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p15-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 15
+  },
+  "heading": "",
+  "text": "G6: verify benefits, end of week 104 Twelve months of comparable post-commissioning records, seasonal adjustments, independent review where required and documented uncertainty. We do not infer spare capacity from annual average flow alone. The historical average inlet of about 67,306 m³/day is below the design reference, while individual historical monthly averages exceed it. Current peak flows, organic loads, pond condition and effluent results determine whether expansion is feasible. [5] Evidence-based worked example | 15",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p16-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 16
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 3 | Illustrative investment budget All figures below are assumptions in IDR, for concept-stage discussion. They are rounded allowances, not procurement estimates or commitments. We use a gross funding envelope; detailed tax treatment, escalation and procurement quantities remain to be priced.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p16-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 16
+  },
+  "heading": "",
+  "text": "Work package Basis [A unless stated] IDR billion Baseline, surveys, engineering and safeguards One integrated preparation package 0.80 Three DMA metering, telemetry and leak- repair pilots 3 × IDR 0.80 billion allowance 2.40 Pump tests, metering and justified minor rehabilitation Selected water/sewer assets; quantities to be designed 0.80 Bojongsoang monitoring and reliability controls Limited metering, controls and justified flood/power measures 1.20 Conditional 400 sewer connections 400 × IDR 8 million historical grant reference 3.20 RPAM update, training, engagement and monitoring One integrated support package 0.60 Base estimate Sum of six packages 9.00 Contingency IDR 1 billion, approximately 11.1% of base 1.00 Total illustrative investment Capital and project-preparation envelope 10.00 Bandung’s 2024 performance report records 577 wastewater connections and IDR 4.616 billion under Hibah Air Limbah. Dividing gives IDR 8 million per connection.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p16-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 16
+  },
+  "heading": "",
+  "text": "We use this only as a historical grant-per-connection reference. It is not a verified current construction unit cost, a current open funding program or a guarantee that all 400 connections cost the same. [6] Operating cost and financing assumptions We allow an additional IDR 300 million/year after commissioning for incremental maintenance, monitoring, calibration and support. This is separate from the IDR 10 billion investment and must be refined and funded. It excludes any large increase in pumping, treatment, sludge removal or major periodic replacement costs. Example financing mix: IDR 2 billion utility contribution, IDR 3 billion local/national public support and IDR 5 billion external development or climate support. All three are uncommitted assumptions. If any source is unavailable, we phase or redesign the project before procurement. The IDR 10 billion envelope is approximately 3.0% of reported 2023 company revenue.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p16-4",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 16
+  },
+  "heading": "",
+  "text": "That comparison does not establish affordability: cash flow, debt obligations, tariff constraints, connection charges and ongoing operating costs still require review. [1] Evidence-based worked example | 16",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p17-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 17
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 3 | Targets, benefits and verification Indicator Example target [A] How we verify DMA scope 3 DMAs, approximately 3,000 water connections Mapped boundaries and active customer register; exclude overlap with the existing contract. Pilot NRW 39.42% to 34.42% after 12 months Initial 39.42% is borrowed from company context, not measured pilot NRW. Replace with the pilot baseline. Recovered water, conditional illustration 90,000 m³/year at fixed pilot input of 1.8 million m³/year 1.8 million × 5 percentage points. Separate apparent-loss recovery from actual physical water savings. Service continuity Pilot average 18 to at least 20 hours/day 18 hours is a provisional borrowed baseline. Use customer/pressure records and protect water quality. Pump energy Target 10% reduction in tested pump kWh at comparable duty Measured head, volume, run hours and power; target is conditional on diagnostics, not guaranteed.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p17-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 17
+  },
+  "heading": "",
+  "text": "Wastewater reliability 100% of target meters calibrated; all events logged Calibration certificates, complete flow/energy records and overflow/outage logs. New sewer connections Up to 400 functional connections Commissioning, active service and household count; only after the capacity gate. Water safety and emergency response Updated RPAM; two documented drills Approved procedures, attendance, response records and corrective actions. Effluent quality Meet applicable permit/approval requirements Representative sampling and laboratory results; no unsupported claim of current compliance. GHG outcome No fixed tCO₂e target at this stage Recalculate using verified activity data, appropriate factors and consistent boundaries. For an optional energy illustration, 100,000 kWh/year of verified savings would equal 67.7 tCO₂e/year at the assumed factor 0.677 and IDR 150 million/year at assumed IDR 1,500/kWh.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p17-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 17
+  },
+  "heading": "",
+  "text": "We do not add this to other pump or leakage savings unless we establish they are independent. Recovered water can improve service instead of reducing production. In that case, it may deliver adaptation and service benefits without an equal reduction in energy. A billing recovery is a revenue benefit, not necessarily a water or GHG saving. We do not value all recovered water at the average tariff and call the result net profit. Evidence-based worked example | 17",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p18-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 18
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 4 | Preliminary-concept fields 1–7 The active route is the preliminary GCF concept. Other financing routes are shown as planned in the reviewed version. We can prepare a concept for discussion, but the app is not a funding application or approval system. [16] Field Our copy-ready entry Project title Bandung Water-Loss and Wastewater Reliability Pilot Location Kota Bandung, West Java, Indonesia, with wastewater-treatment works at Bojongsoang in Kabupaten Bandung. Exact DMA, sewer and asset boundaries will be confirmed during preparation. Organization Perumda Tirtawening Kota Bandung is the illustrative implementing utility. This is a public-data worked example; utility participation and submission authority have not been confirmed.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p18-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 18
+  },
+  "heading": "",
+  "text": "Objective We aim to improve dry-season water-service continuity and wet-weather wastewater reliability, reduce avoidable physical losses and energy use, and build a measured basis for future low-emission wastewater investment. Climate problem Lower raw-water flow at Cikalong disrupted service during the 2026 dry season. Local flooding has occurred around Bojongsoang. These observations identify vulnerabilities, but asset-specific projections, flood levels and future service consequences still need study. We will use local observations and BMKG scenarios to establish the climate rationale. Investment need We propose an illustrative IDR 10 billion package for metering, three DMA pilots, pump diagnostics and limited rehabilitation, Bojongsoang reliability controls, RPAM updating and up to 400 conditional sewer connections. Major pond reconstruction and methane- capture construction are excluded.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p18-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 18
+  },
+  "heading": "",
+  "text": "Beneficiaries / service area Our assumed direct scope is approximately 3,000 existing water connections in three DMAs and up to 400 new sewer connections. We will verify households and people, vulnerable groups and overlap. The utility-wide figure of 965,283 people served is context, not the pilot’s beneficiary count. If a people-count field is required by a later template, we first obtain actual household/connection occupancy and avoid counting customers receiving both services twice. We do not assume every utility customer benefits directly from a small pilot. Evidence-based worked example | 18",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p19-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 19
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 4 | Preliminary-concept fields 8–14 Field Our copy-ready entry Purpose Mitigation and adaptation. The mitigation potential remains unquantified until the measured baseline and feasible designs are available. Adaptation evidence We cite Tirtawening’s September 2, 2026 Cikalong source-flow notice and the February 2025 Bojongsoang flood report as observations. We will add catchment and asset projections, flood and drought analysis, service consequences and vulnerability data. A 20% source-yield reduction and 6-hour outage are illustrative stress tests, not forecasts. Duration 104 weeks from confirmed funding and authorization; approximately 24 months. The first year covers preparation, procurement and works; the second year verifies operating performance. Total cost IDR 10,000,000,000 illustrative investment, including IDR 1,000,000,000 contingency.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p19-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 19
+  },
+  "heading": "",
+  "text": "Additional operating-cost allowance: IDR 300,000,000 per year after commissioning, subject to detailed costing. Financing source Illustrative mix: IDR 2 billion utility funds, IDR 3 billion local/national public support and IDR 5 billion external support. None is committed. We first examine ordinary utility and public funding; a GCF route would require a suitable accredited partner and a stronger program-level climate case. Partners Proposed roles only: Tirtawening, Kota Bandung, Kabupaten Bandung where relevant, water-resources and environmental authorities, BMKG/data providers, communities and specialist advisers. PT Sarana Multi Infrastruktur is a possible GCF accredited-entity discussion partner, not a committed financier. Assumptions All sites, scope quantities, costs, targets and funding shares are provisional.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p19-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 19
+  },
+  "heading": "",
+  "text": "We must resolve existing-contract overlap, current wastewater capacity, environmental requirements, land/access, household affordability, O&M funding and emissions-factor applicability. Historical wastewater proxies and assumed energy values cannot support a final funding or GHG claim. We choose Create preliminary concept only after checking the selected assessment and the saved project plan. We review the generated narrative against these entries, remove invented local facts and retain every material preparation gap. We do not describe the result as approved, submitted, bankable or submission-ready. [16] Evidence-based worked example | 19",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p20-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 20
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 4 | Eight-section concept narrative Use the following eight short sections to review or replace the generated discussion draft. These are drafting sections, not a claim that ChatWater reproduces every field in the current official GCF template. 1. Project and applicant We present a 104-week, IDR 10 billion pilot for Tirtawening’s water and wastewater services. Kota Bandung is the service location; Bojongsoang treatment works are in Kabupaten Bandung. This example does not establish application authority or partner commitment. 2. Climate rationale Observed source-flow disruption and nearby flooding justify investigating water-service and wastewater-system vulnerability. We will quantify asset exposure, future hazards and service consequences using local observations, appropriate projections and engineering analysis. Routine repairs alone do not establish climate additionality. 3.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p20-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 20
+  },
+  "heading": "",
+  "text": "Activities and outputs We will verify data, implement three DMA pilots, test pumps, improve justified reliability controls, update the RPAM and conditionally add 400 sewer connections. Outputs include calibrated meters, validated designs, trained staff and a year of comparable monitoring records. 4. Expected outcomes We aim for better service continuity, lower physical leakage, more reliable sewage conveyance and treatment, and evidence-based energy reduction. The proposed NRW, energy and connection targets are assumptions requiring measured baselines. We make no verified emissions-reduction claim. 5. Implementation arrangements A designated utility project manager coordinates operations, engineering, laboratory, finance and procurement. Government, community and specialist roles will be agreed during preparation. Investment gates prevent duplicate funding and connections beyond demonstrated treatment capacity. 6.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p20-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 20
+  },
+  "heading": "",
+  "text": "Budget and financing The illustrative budget is IDR 10 billion plus an incremental IDR 300 million annual operating allowance. The 2/3/5 billion financing split is uncommitted. Detailed costs, affordability and lifecycle funding must be established before a funding request. 7. Risks, safeguards and inclusion We will assess service disruption, construction safety, waste/sludge handling, flood exposure, land/access, affordability and effects on vulnerable users. We will include accessible consultation, a grievance route and meaningful participation by women and underserved groups, without inventing beneficiary counts. 8. Monitoring and preparation needs We will track service, water balance, energy, wastewater quality, reliability and distribution of benefits. Priority preparation needs are the current operating dataset, climate and hydraulic studies, contract review, design, environmental/social assessment, procurement plan and partner/funding confirmation. Evidence-based worked example | 20",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p21-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 21
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Stage 4 | Financing route and report wording Route How we use it in this case Utility capital and operating budgets First check cash flow, maintenance needs, procurement authority and affordability. The reported tariff/FCR context does not prove debt capacity [1]. Local or national public support Explore eligibility for water, sanitation and public-service priorities. The 2024 wastewater grant is historical evidence of financing, not evidence a current program is open [6]. Performance contract / private partner Review the existing Adaro contract before funding overlapping NRW activities. New private-finance arrangements require verified savings, payment capacity and contract allocation [13]. Development finance or climate program Consider technical assistance and a larger aggregated investment program if the pilot produces a credible pipeline. Financing terms and eligibility remain unknown.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p21-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 21
+  },
+  "heading": "",
+  "text": "GCF discussion route Engage a suitable accredited entity and the Indonesian national designated authority as applicable. PT SMI is a listed accredited entity. No engagement or approval has occurred here [14, 15]. GCF’s concept stage does not create a funding commitment. We would need a documented climate rationale, feasibility, environmental and social assessment, gender/inclusion work, economic and financial analysis, implementation arrangements and national coordination. For a small pilot, ordinary utility/public funding or technical assistance may be more practical; any GCF discussion should consider program scale and transaction costs. [14, 15] Suggested paragraph for the report We developed a worked example for Perumda Tirtawening Kota Bandung, an Indonesian utility providing water and wastewater services.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p21-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 21
+  },
+  "heading": "",
+  "text": "We mapped published 2023 water indicators and historical Bojongsoang wastewater records to ChatWater’s assessment, action-selection, project-planning and preliminary-financing stages. We explicitly labeled historical proxies, calculated values and illustrative assumptions. Because current electricity, nitrogen, sludge, hydraulic and emissions-factor data were incomplete, the example demonstrates a structured planning workflow rather than a verified utility inventory or investment appraisal. Climate-risk and water-safety inputs were prepared as supplementary notes because those application modules were not active. Claims we can and cannot make We can say that the guide supplies case-specific example inputs and a traceable planning rationale for all four stages. We cannot say that Tirtawening approved the case, that users completed a validated field trial, that the project is funded, or that a stated quantity of GHG emissions has been measured or reduced. Evidence-based worked example | 21",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p22-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 22
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Before using the case as an actual utility submission Information to replace or verify Suggested source / responsible function 2023 or selected-year system input, production and billing Utility audited water balance; production, distribution and customer- billing teams. Keep one year and one boundary. Population and connections Active customer and sewer registers; separate water, sewer, domestic and total accounts; document occupancy and overlap. Energy and grid factor PLN bills and submeter readings for each asset; current authoritative factor for the relevant grid and reporting method/year. Wastewater volume and bypasses Calibrated inlet/outlet meters, storm and overflow logs, pumping records and verified reuse/withdrawals. BOD and nitrogen Quality-assured laboratory and sampling records covering seasonal and flow variation; derive annual loads from representative data.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p22-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 22
+  },
+  "heading": "",
+  "text": "Sludge and methane Sludge surveys, removal and dry-solids records; actual treatment train and suitable emission factors; biogas measurement if present. Pump and hydraulic data Measured flow, total dynamic head, electrical power, efficiency, duty cycle, network pressure and safe operating limits. Climate and asset exposure BMKG observations/projections, catchment studies, surveyed elevations, flood models and local emergency records. Existing contracts and plans Current Adaro scope, RPAM, business plan, RISPAM and approved capital program. Check changes since the cited records. Costs and financing Current engineering quantities and quotations, tax/escalation treatment, lifecycle cash flow, tariffs/charges, debt limits and funding eligibility. Permissions and people Asset/land rights, environmental requirements, household consent/affordability, roles, inclusion measures and grievance arrangements.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p22-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 22
+  },
+  "heading": "",
+  "text": "We maintain an evidence register with field name, value, unit, year, service boundary, source/page, method, evidence label, owner and date checked. If a verified figure replaces an assumption, we rerun dependent calculations and review all downstream action and funding text. Missing inputs do not have to stop a useful discussion draft. They do stop us from representing the result as a verified emissions baseline, a final engineering design or a finance-ready proposal. Evidence-based worked example | 22",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p23-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 23
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG Appendix A | Historical wastewater calculation Source: 2019 Bojongsoang study, Table 3.3 for monthly average flows and Table 3.35 for BOD. We retain the source’s monthly observations and calculate totals; we do not use its inconsistent printed average row. [5] 2019 month Inlet m³/day Outlet m³/day In BOD mg/L Out BOD mg/L Jan 108635 76198 23.94 13.43 Feb 109009 76691 63.32 15.03 Mar 76841 60528 85.14 36.28 Apr 82075 62546 62.19 29.52 May 82682 65011 116.25 24.41 Jun 59410 47451 219.05 15.64 Jul 55053 43970 105.44 18.69 Aug 48856 39015 86.51 23.82 Sep 35296 28176 184.52 39.36 Oct 38271 29096 150.02 19.47 Nov 52659 42122 73.19 27.22 Dec 61632 49822 69.44 25.64 Reproducible calculations Annual flow = sum of each monthly average daily flow × days in that month. Annual BOD load = sum of each monthly flow × days × monthly BOD concentration ÷ 1,000. February 2019 has 28 days; the year has 365 days.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p23-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 23
+  },
+  "heading": "",
+  "text": "Derived historical quantity Result Inlet volume; day-weighted mean 24,566,522 m³/year; 67,305.54 m³/day Outlet volume; day-weighted mean 18,829,038 m³/year; 51,586.41 m³/day Influent BOD; effective flow-weighted concentration 2,250,840.14 kg/year; approximately 91.62 mg/L Effluent BOD; effective flow-weighted concentration 438,036.28 kg/year; approximately 23.26 mg/L Inlet minus outlet volume 5,737,484 m³/year; unexplained in this calculation These calculations weight monthly concentration observations by reported monthly flow. They cannot correct nonrepresentative sampling, unequal A/B coverage or inconsistent meters. The demonstration uses 25 mg/L and a closed-flow discharge assumption instead of copying this historical outlet mass; both changes are labeled A. Evidence-based worked example | 23",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p24-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 24
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG References | Utility and operational evidence We checked the linked public materials for this guide. Publication years, operating years and historical proxies are kept separate. Page references refer to printed pages unless stated otherwise. [1] Ministry of Public Works / BPKP, 2024 Buku Kinerja BUMD Air Minum 2024, Wilayah II. Tirtawening profile, p. 40 (PDF page 41), reporting 2023. Primary source for the water, financial and planning indicators. Obtained through the ministry’s public performance-book distribution. Official performance-book collection 2024 Wilayah II book [2] BPS Kota Bandung, 2024 Statistik Daerah Kota Bandung 2024, p. 22. The 2023 volume is labeled air disalurkan. Its use as billed consumption in this guide is a proxy, not a confirmed statistical equivalence.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p24-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 24
+  },
+  "heading": "",
+  "text": "BPS publication page [3] Perumda Tirtawening, service descriptions Official, undated service pages describe raw-water sources, wastewater services, Bojongsoang and pumping stations. They establish system context, not annual operating totals. Drinking-water service Wastewater management Wastewater treatment installation [4] Perumda Tirtawening, treatment process Proses Pengolahan Air Limbah, two-page technical description. Supports the actual pond process and preliminary treatment. The document contains a design-flow unit typo; we corroborate m³/day with other records. Official treatment-process PDF [5] Tirtawening, 2019 Bojongsoang discharge study Dokumen Kajian IPLC, government-hosted report, foreword January 2020. Tables 3.3 and 3.35, pp. 17 and 77; pond depths p. 51. Historical observations only. The indexed report was readable during research, although direct download was unavailable.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p24-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 24
+  },
+  "heading": "",
+  "text": "Government-hosted wastewater study [6] Pemerintah Kota Bandung, 2024 performance report LKjIP Kota Bandung 2024, pp. 131–134, particularly p. 134 for 577 wastewater connections and IDR 4.616 billion. Sanitation-access coverage is broader than sewer coverage. Official city performance report Evidence-based worked example | 24",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p25-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 25
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG References | Methods, climate and financing [7] WaCCliM / GIZ, ECAM Methodology Guide Multi-stage treatment discussion p. 20; treatment equations 80–81; discharge equations 99–100; pond and nitrogen-factor tables. Method defaults are not local measurements. ECAM Methodology Guide [8] U.S. EPA, CREAT 3.1 Methodology Guide, 2021 Used for the manual asset, hazard, consequence and adaptation-option structure. We do not import U.S. local climate data into the Bandung case. CREAT methodology [9] Tirtawening, September 2, 2026 Official notice of reduced raw-water flow at Cikalong and service disruption during the dry season. Cikalong source-flow notice [10] Pemerintah Desa Bojongsoang, February 26, 2025 Report of local flooding and a levee breach. This is nearby hazard evidence, not a plant inundation survey. Bojongsoang flood report [11] BMKG, rainfall projections portal CMIP6-based scenario framework and periods.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p25-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 25
+  },
+  "heading": "",
+  "text": "No Bandung-specific projected percentage was extracted for this guide. BMKG rainfall projections [12] WHO, 2017 Climate-resilient water safety plans: Managing health risks associated with climate variability and change. WHO climate-resilient WSP guidance [13] Tirtawening, Adaro northern-area NRW contract Official description of the existing performance-based arrangement. Confirm the current contract and geographic scope before investment selection. Existing NRW contract Evidence-based worked example | 25",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p26-1",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 26
+  },
+  "heading": "",
+  "text": "CHATWATER RESILIENCE | TIRTAWENING BANDUNG References | Funding process and application scope [14] Green Climate Fund, project preparation and cycle Current official process and preparation-resource pages. We use these for the distinction between a preliminary discussion concept and a formal, supported funding proposal. We do not claim that the illustrative project is eligible or endorsed. Concept-note submission and screening Proposal preparation resources [15] Green Climate Fund, PT SMI and Indonesia PT Sarana Multi Infrastruktur is listed as an accredited entity. It is mentioned as a possible discussion route, with no implication of engagement, financing terms or commitment. PT SMI accredited-entity profile GCF Indonesia country page [16] ChatWater Resilience, live interface review We reviewed the Stage 1 ECAM inputs, utility profile, Stage 2 custom-action form, eight Stage 3 plan fields and Stage 4 preliminary-concept inputs on October 30, 2026.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p26-2",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 26
+  },
+  "heading": "",
+  "text": "The interface states that calculations use ECAM v3 formulas and identifies adaptation modules and other financing routes as planned. ChatWater Resilience The guide maps to the reviewed interface. Titles, available fields and generated content may change. We have not represented this document as a record of a completed, validated Bandung application run. Plain-language glossary Term Meaning in this guide PDAM / Perumda A local public utility; the current example uses Perumda Tirtawening Kota Bandung. IPAL / WWTP Wastewater treatment installation / plant. NRW Non-revenue water: system input minus billed authorized consumption. DMA District metered area: a defined part of the water network with measured inflows and customer use. BOD₅ Five-day biochemical oxygen demand, used here to describe organic pollution load. RPAM / WSP Rencana Pengamanan Air Minum / Water Safety Plan. RISPAM Master plan for the drinking-water supply system.",
+  "language": "en"
+ },
+ {
+  "id": "team-tirtawening-bandung-worked-example#p26-3",
+  "source": "team-tirtawening-bandung-worked-example",
+  "locator": {
+   "page": 26
+  },
+  "heading": "",
+  "text": "LLTT / IPLT Scheduled desludging service / faecal-sludge treatment installation. tCO₂e Metric tonnes of carbon-dioxide equivalent, combining gases using selected warming potentials. Evidence-based worked example | 26",
+  "language": "en"
+ }
+]

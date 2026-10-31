@@ -279,10 +279,14 @@
   async function loadSample() {
     if(!confirm(t('demo_accept')))return;
     let text;
-    try { text = await fetch('/samples/complete-example.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
+    // Comprehensive worked example (water + wastewater, Tirtawening Bandung; team document Oct 2026)
+    try { text = await fetch('/samples/bandung-example.json').then(r => { if (!r.ok) throw new Error(r.statusText); return r.text(); }); }
     catch { return toast(t('sample_unavailable')); }
     if(!importEcamText(text))return;
-    const demo=DemoExample.build(plain(Global),metaOf(Global),state.lang);
+    const demo=DemoBandung.build(plain(Global),metaOf(Global),state.lang);
+    { const aid=idOf(Global),now=new Date().toISOString();let used=[];
+      for(const input of demo.custom){const label=CA.nextLabel(used);const saved=CA.create({assessmentId:aid,cid:newId('c'),label,input,now});if(saved){state.customActions=[...customList(),saved];used.push(label);}}
+      if(used.length)state.customLastLabel={...(state.customLastLabel||{}),[aid]:used[used.length-1]}; }
     const uid=UtilityIdentity.create(state,idOf(Global),null,newId);state.utilities[uid]=demo.profile;
     state.inputStatus[idOf(Global)]=demo.record;
     state.demoAssessments={...state.demoAssessments,[idOf(Global)]:{language:state.lang,origin:demo.record.provenance}};
@@ -637,8 +641,11 @@
         ${responsibilityFields(p)}
         <div class="actions-row"><button type="button" class="btn" data-home-close>${esc(t('cancel'))}</button><button class="btn primary">${esc(t('home_save_start'))}</button></div></form></div>
       <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
+      <div class="card planned-card" data-planned-assessments><h2>${esc(t('adapt_title'))}</h2><p class="small muted">${esc(t('adapt_sub'))}</p>
+        <div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" disabled aria-disabled="true">${esc(t('adapt_creat'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button>
+        <button class="btn" disabled aria-disabled="true">${esc(t('adapt_wsp'))} <span class="chip small">${esc(t('fo_inactive_badge'))}</span></button></div></div>
       <div class="home-grid home-grid-2">
-        <div class="card home-prepare"><h2>${esc(t('home_prepare_t'))}</h2>${['home_prep1', 'home_prep2'].map(k => `<p>${esc(t(k))}</p>`).join('')}</div>
+        <div class="card home-prepare"><h2>${esc(t('home_prepare_t'))}</h2>${['home_prep1', 'home_prep2'].map(k => `<p>${esc(t(k))}</p>`).join('')}<p><a href="/sources/team-tirtawening-bandung-worked-example.docx" download>📄 ${esc(t('home_guide_doc'))}</a></p></div>
         <div class="card"><h2>${esc(t('home_video_t'))}</h2><div data-video-slot><button type="button" class="video-toggle" data-video-open><span class="vt-icon" aria-hidden="true">▷</span> ${esc(t('home_video_btn'))} · 0:59</button></div></div>
       </div>
       <details class="card home-fold"><summary>${esc(t('home_help_t'))}</summary><p class="small">${esc(t('home_save'))}</p><p class="small">${esc(t('ai_operations'))}</p></details>
@@ -1467,7 +1474,7 @@
       ${onlyLegacy(fr.proposal) && !fr.actions.length && !fr.plan.length ? `<div class="actions-row" style="margin-top:0"><button class="btn" id="proposal-reviewed">${esc(t('mark_reviewed'))}</button></div>` : ''}
       ${outputLangNotice(p, 'proposal')}
       ${p.lang && state.plan?.lang && p.lang !== state.plan.lang ? `<div class="notice small warn" data-mixed-lang>${esc(t('mixed_lang').replaceAll('{proposal}', langName(p.lang)).replaceAll('{plan}', langName(state.plan.lang)))}</div>` : ''}
-      ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}</li>`).join('')}</ul></div>`
+      ${p.ai_failed?.length ? `<div class="notice warn" data-ai-failed><b>${esc(t('ai_partial_title'))}</b> ${esc(t('ai_partial_body'))}<ul>${p.ai_failed.map(x => `<li>${esc(x.title)}${x.reason ? ` <span class="muted">(${esc(t('ai_fail_' + x.reason))})</span>` : ''}</li>`).join('')}</ul></div>`
         : p.ai === false ? `<div class="notice small">${esc(t('ai_off_note'))}</div>` : ''}
       ${evidenceNotice()}
       ${p.sections.map((s, i) => `<div class="card section-edit"><div class="row"><h2 class="grow">${esc(s.title)}${s.ai === false || (s.ai === undefined && p.ai === false) ? ` <span class="badge-template">${esc(t('template_badge'))}</span>` : ''}</h2><button type="button" class="btn sm" data-chat="proposal_section" data-index="${i}">${esc(t('chat_btn_section'))}</button></div><div class="guidance">${esc(s.guidance || '')}</div>${s.quotes_plan_summary === 'ai' ? `<div class="small dc-flag">${esc(t('sec_quotes_ai_summary'))}</div>` : ''}${(s.ai === true && CW.mayBeIncomplete(s.text)) || (s.quotes_plan_summary === 'ai' && CW.mayBeIncomplete(s.text, { anyParagraph: true })) ? `<div class="small dc-flag" data-incomplete="${i}">${esc(t('may_be_incomplete'))}</div>` : ''}<textarea id="review-proposal-section-${i}" aria-label="${esc(s.title)}" data-sec="${i}">${esc(s.text)}</textarea>${s.ai === false || (s.ai === undefined && p.ai === false) ? relatedHtml(s.related || s.sources) : sourcesHtml(s.sources)}${evidenceHtml(s.evidence, s.ai === true)}</div>`).join('')}
@@ -1645,6 +1652,22 @@
     state.chat = []; state.ui.chatFocus = null; save(); renderChat(); toast(t('chat_cleared'));
   };
   $('#chat-toggle').onclick = () => { state.ui.chatOpen = !state.ui.chatOpen; save(); applyShell(); };
+  // Drag the chat's left edge to make it wider or narrower (remembered in this browser); double-click resets
+  (() => {
+    const handle = $('#chat-resize'), root = document.documentElement, KEY = 'cwr.chatWidth';
+    const set = w => { w = Math.max(280, Math.min(Math.round(w), Math.max(320, window.innerWidth * 0.6))); root.style.setProperty('--chat-w', w + 'px'); return w; };
+    try { const w = +localStorage.getItem(KEY); if (w) set(w); } catch { /* storage unavailable */ }
+    const keep = w => { try { localStorage.setItem(KEY, String(w)); } catch { /* storage unavailable */ } };
+    handle.addEventListener('pointerdown', e => {
+      e.preventDefault(); handle.setPointerCapture(e.pointerId); document.body.classList.add('chat-resizing');
+      const right = $('#chat').getBoundingClientRect().right;
+      const move = ev => set(right - ev.clientX);
+      const up = () => { handle.removeEventListener('pointermove', move); document.body.classList.remove('chat-resizing'); keep(parseInt(getComputedStyle(root).getPropertyValue('--chat-w')) || 340); };
+      handle.addEventListener('pointermove', move); handle.addEventListener('pointerup', up, { once: true });
+    });
+    handle.addEventListener('dblclick', () => { root.style.removeProperty('--chat-w'); try { localStorage.removeItem(KEY); } catch { /* storage unavailable */ } });
+    handle.addEventListener('keydown', e => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; const cur = $('#chat').getBoundingClientRect().width; keep(set(cur + (e.key === 'ArrowLeft' ? 40 : -40))); });
+  })();
   // On Home the help chat is a folded row at the bottom; clicking its header opens it (participant review, Oct 30)
   $('#chat').querySelector('.chat-head').addEventListener('click', e => {
     if (!document.body.classList.contains('home-mode') || e.target.closest('button')) return;

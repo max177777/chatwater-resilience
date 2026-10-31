@@ -24,6 +24,7 @@ const PUBLIC = path.join(ROOT, 'public', 'sources');
 const sha = b => crypto.createHash('sha256').update(b).digest('hex');
 
 const CFG = require('./sources.json').sources;
+const EXTRA = require('./extra-sources.json'); // team documents not listed in sources.json
 const RELEASE = require('./releases/gcf-guidance-v1.json').sources; // precise GCF identities, matched by file hash
 
 function walk(dir) { return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]); }
@@ -39,7 +40,7 @@ async function main() {
     const rel = path.relative(INPUT, file).split(path.sep).join('/');
     const bytes = fs.readFileSync(file), hash = sha(bytes);
     const rel1 = RELEASE.find(r => r.sha256 === hash);
-    let meta = rel1 ? (({ file: _f, identity_terms: _i, pages: _p, url: _u, sha256: _s, ...m }) => m)(rel1) : CFG['sources:' + rel];
+    let meta = rel1 ? (({ file: _f, identity_terms: _i, pages: _p, url: _u, sha256: _s, ...m }) => m)(rel1) : (CFG['sources:' + rel] || EXTRA[rel]);
     if (!meta) { report.push(`skipped (no metadata): ${rel}`); continue; }
     const pages = [];
     await pdf(bytes, { pagerender: async page => {
