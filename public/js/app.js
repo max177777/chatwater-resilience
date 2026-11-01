@@ -646,7 +646,7 @@
       <div class="home-steps">${steps.map(([tab, k], i) => `<button type="button" class="card home-step" data-tab="${tab}"><span class="home-num">${i + 1}</span><b>${esc(t(k + '_t'))}</b><span class="small muted">${esc(t(k + '_d'))}</span></button>`).join('')}</div>
       <div class="home-grid home-grid-2">
         <div class="card home-prepare"><h2>${esc(t('home_prepare_t'))}</h2>${['home_prep1', 'home_prep2'].map(k => `<p>${esc(t(k))}</p>`).join('')}<p><a href="/sources/team-tirtawening-bandung-worked-example.docx" download>📄 ${esc(t('home_guide_doc'))}</a></p></div>
-        <div class="card"><h2>${esc(t('home_video_t'))}</h2><div data-video-slot><button type="button" class="video-toggle" data-video-open><span class="vt-icon" aria-hidden="true">▷</span> ${esc(t('home_video_btn'))} · 0:59</button></div></div>
+        <div class="card"><h2>${esc(t('home_video_t'))}</h2><div data-video-slot><button type="button" class="video-toggle" data-video-open><span class="vt-icon" aria-hidden="true">▷</span> ${esc(t('home_video_btn'))} · 0:57</button></div></div>
       </div>
       <details class="card home-fold"><summary>${esc(t('home_help_t'))}</summary><p class="small">${esc(t('home_save'))}</p><p class="small">${esc(t('ai_operations'))}</p></details>
     </section>`;
@@ -660,7 +660,7 @@
     };
     root.querySelector('[data-home-example]').onclick = async () => { go('assess:entry'); await loadSample(); };
     root.querySelector('[data-video-open]').onclick = () => {
-      root.querySelector('[data-video-slot]').innerHTML = `<video class="home-video-player" controls autoplay playsinline poster="${VIDEO_POSTER}" aria-label="${esc(t('home_video_t'))}"><source src="${VIDEO_SRC}" type="video/mp4"><source src="/media/chatwater-guide.webm" type="video/webm"></video>`;
+      root.querySelector('[data-video-slot]').innerHTML = `<video class="home-video-player" controls autoplay playsinline poster="${VIDEO_POSTER}" aria-label="${esc(t('home_video_t'))}"><source src="${VIDEO_SRC}" type="video/mp4"></video>`;
     };
     // Utility details stay folded until the user asks for them (keeps the landing page light)
     const form = root.querySelector('#home-profile'), toggle = root.querySelector('[data-home-toggle]');
